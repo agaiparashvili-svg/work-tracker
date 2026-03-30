@@ -34,23 +34,19 @@
   select option{background:var(--surface2);}
   textarea{resize:vertical;min-height:80px;}
 
-  /* CHIP SELECTOR (radio/checkbox style buttons) */
   .chip-group{display:flex;flex-wrap:wrap;gap:8px;}
   .chip{display:flex;align-items:center;gap:6px;padding:8px 14px;border-radius:20px;border:1.5px solid var(--border);background:var(--surface2);cursor:pointer;font-size:13px;font-weight:500;color:var(--text2);transition:all .2s;user-select:none;}
   .chip:hover{border-color:var(--accent2);color:var(--text);}
-  .chip.selected{border-color:var(--accent2);background:rgba(31,111,235,.15);color:var(--text);}
-  .chip.selected-green{border-color:var(--accent);background:rgba(35,134,54,.15);color:#3fb950;}
-  .chip.selected-red{border-color:var(--danger);background:rgba(218,54,51,.15);color:#f85149;}
-  .chip.selected-yellow{border-color:var(--warn);background:rgba(210,153,34,.15);color:#e3b341;}
-  .chip input[type=radio],.chip input[type=checkbox]{display:none;}
-  .chip-dot{width:8px;height:8px;border-radius:50%;background:currentColor;opacity:0.7;}
+  .chip.sel-blue{border-color:var(--accent2);background:rgba(31,111,235,.15);color:var(--text);}
+  .chip.sel-green{border-color:var(--accent);background:rgba(35,134,54,.15);color:#3fb950;}
+  .chip.sel-red{border-color:var(--danger);background:rgba(218,54,51,.15);color:#f85149;}
+  .chip.sel-yellow{border-color:var(--warn);background:rgba(210,153,34,.15);color:#e3b341;}
+  .chip input{display:none;}
 
   .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:10px 16px;border:none;border-radius:var(--radius);cursor:pointer;font-family:inherit;font-size:14px;font-weight:600;transition:all .2s;}
-  .btn-primary{background:var(--accent);color:white;}
-  .btn-primary:hover{background:#2ea043;}
+  .btn-primary{background:var(--accent);color:white;}.btn-primary:hover{background:#2ea043;}
   .btn-danger{background:var(--danger);color:white;}
-  .btn-ghost{background:var(--surface2);color:var(--text);border:1px solid var(--border);}
-  .btn-ghost:hover{background:var(--surface3);}
+  .btn-ghost{background:var(--surface2);color:var(--text);border:1px solid var(--border);}.btn-ghost:hover{background:var(--surface3);}
   .btn-sm{padding:6px 10px;font-size:12px;}
   .btn-full{width:100%;}
   .error-msg{color:#f85149;font-size:12px;margin-top:8px;}
@@ -76,8 +72,7 @@
   .nav-item:hover{color:var(--text);}
 
   .content{padding:20px 16px;max-width:960px;margin:0 auto;width:100%;}
-  .section{display:none;}
-  .section.active{display:block;}
+  .section{display:none;}.section.active{display:block;}
   .section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px;}
   .section-header h2{font-size:18px;font-weight:700;}
 
@@ -131,6 +126,12 @@
   .filter-row select{width:auto;font-size:12px;padding:6px 10px;}
   .text-sm{font-size:12px;color:var(--text2);}
 
+  /* Loading overlay */
+  #loading-screen{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;gap:16px;}
+  .spinner{width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  #loading-screen p{color:var(--text2);font-size:14px;}
+
   #notification{position:fixed;bottom:20px;right:20px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:12px 16px;font-size:13px;z-index:999;transform:translateX(200%);transition:transform .3s;max-width:300px;}
   #notification.show{transform:translateX(0);}
   #notification.notif-success{border-color:var(--accent);color:#3fb950;}
@@ -140,8 +141,14 @@
 </head>
 <body>
 
+<!-- LOADING -->
+<div id="loading-screen">
+  <div class="spinner"></div>
+  <p>იტვირთება...</p>
+</div>
+
 <!-- AUTH -->
-<div id="auth-screen">
+<div id="auth-screen" style="display:none">
   <div class="auth-card">
     <div class="auth-logo">
       <div class="icon">📋</div>
@@ -198,92 +205,50 @@
     <div class="section" id="sec-submit">
       <div class="section-header"><h2>სამუშაოს გაგზავნა</h2></div>
       <div class="card">
-
-        <!-- ობიექტის დასახელება -->
         <div class="form-group">
           <label>ობიექტის დასახელება *</label>
           <input type="text" id="w-loc" placeholder="მაგ: მარანი N3, ბაღი, სასტუმრო...">
         </div>
-
-        <!-- კატეგორია — chips -->
         <div class="form-group">
           <label>კატეგორია *</label>
-          <div class="chip-group" id="cat-chips">
-            <label class="chip" id="chip-cat-0">
-              <input type="radio" name="w-cat" value="რესტორნები" onchange="selectChip('cat',0,this)">
-              <span>🍽 რესტორნები</span>
-            </label>
-            <label class="chip" id="chip-cat-1">
-              <input type="radio" name="w-cat" value="გარეტერიტორია" onchange="selectChip('cat',1,this)">
-              <span>🌿 გარეტერიტორია</span>
-            </label>
-            <label class="chip" id="chip-cat-2">
-              <input type="radio" name="w-cat" value="ოთახები" onchange="selectChip('cat',2,this)">
-              <span>🛏 ოთახები</span>
-            </label>
-            <label class="chip" id="chip-cat-3">
-              <input type="radio" name="w-cat" value="სხვა" onchange="selectChip('cat',3,this)">
-              <span>📦 სხვა</span>
-            </label>
+          <div class="chip-group">
+            <label class="chip" id="cc-0"><input type="radio" name="w-cat" value="რესტორნები" onchange="selChip('cat',this,'sel-blue')"><span>🍽 რესტორნები</span></label>
+            <label class="chip" id="cc-1"><input type="radio" name="w-cat" value="გარეტერიტორია" onchange="selChip('cat',this,'sel-blue')"><span>🌿 გარეტერიტორია</span></label>
+            <label class="chip" id="cc-2"><input type="radio" name="w-cat" value="ოთახები" onchange="selChip('cat',this,'sel-blue')"><span>🛏 ოთახები</span></label>
+            <label class="chip" id="cc-3"><input type="radio" name="w-cat" value="სხვა" onchange="selChip('cat',this,'sel-blue')"><span>📦 სხვა</span></label>
           </div>
         </div>
-
-        <!-- თარიღი + დრო -->
         <div class="form-row">
-          <div class="form-group">
-            <label>სამუშაოს თარიღი *</label>
-            <input type="date" id="w-date">
-          </div>
-          <div class="form-group">
-            <label>დრო (საათი) *</label>
-            <input type="time" id="w-time">
-          </div>
+          <div class="form-group"><label>სამუშაოს თარიღი *</label><input type="date" id="w-date"></div>
+          <div class="form-group"><label>დრო *</label><input type="time" id="w-time"></div>
         </div>
-
-        <!-- დაზიანება -->
         <div class="form-group">
           <label>⚠️ დაზიანება / პრობლემა</label>
-          <textarea id="w-dmg" placeholder="რა სახის დაზიანება ან გაუმართაობა იყო? (სურვილისამებრ)" style="min-height:80px"></textarea>
+          <textarea id="w-dmg" placeholder="რა სახის დაზიანება იყო? (სურვილისამებრ)" style="min-height:80px"></textarea>
         </div>
-
-        <!-- შედეგი — chips -->
         <div class="form-group">
           <label>✅ შესრულების შედეგი *</label>
-          <div class="chip-group" id="res-chips">
-            <label class="chip" id="chip-res-0">
-              <input type="radio" name="w-res" value="შესრულდა" onchange="selectChip('res',0,this)">
-              <span>✅ შესრულდა</span>
-            </label>
-            <label class="chip" id="chip-res-1">
-              <input type="radio" name="w-res" value="ვერ შესრულდა" onchange="selectChip('res',1,this)">
-              <span>❌ ვერ შესრულდა</span>
-            </label>
-            <label class="chip" id="chip-res-2">
-              <input type="radio" name="w-res" value="დროებით გაკეთდა" onchange="selectChip('res',2,this)">
-              <span>🔧 დროებით გაკეთდა</span>
-            </label>
+          <div class="chip-group">
+            <label class="chip" id="rc-0"><input type="radio" name="w-res" value="შესრულდა" onchange="selChip('res',this,'sel-green')"><span>✅ შესრულდა</span></label>
+            <label class="chip" id="rc-1"><input type="radio" name="w-res" value="ვერ შესრულდა" onchange="selChip('res',this,'sel-red')"><span>❌ ვერ შესრულდა</span></label>
+            <label class="chip" id="rc-2"><input type="radio" name="w-res" value="დროებით გაკეთდა" onchange="selChip('res',this,'sel-yellow')"><span>🔧 დროებით გაკეთდა</span></label>
           </div>
         </div>
-
-        <!-- კომენტარი (არა სავალდებულო) -->
         <div class="form-group">
           <label>💬 კომენტარი <span style="color:var(--text3);font-weight:400">(სურვილისამებრ)</span></label>
           <textarea id="w-comment" placeholder="დამატებითი კომენტარი..." style="min-height:70px"></textarea>
         </div>
-
-        <!-- ფოტო -->
         <div class="form-group">
           <label>📷 ფოტო მასალა</label>
           <div class="file-area" id="drop-zone" onclick="document.getElementById('fi').click()"
             ondragover="handleDragOver(event)" ondrop="handleDrop(event)" ondragleave="this.classList.remove('over')">
             <div style="font-size:36px">📷</div>
             <p>დააჭირეთ ან გადმოიტანეთ ფოტოები</p>
-            <p style="font-size:11px;margin-top:4px;color:var(--text3)">JPG, PNG, HEIC · მაქს. 5MB</p>
+            <p style="font-size:11px;margin-top:4px;color:var(--text3)">JPG, PNG · მაქს. 2MB (Firebase ლიმიტი)</p>
           </div>
           <input type="file" id="fi" accept="image/*" multiple style="display:none" onchange="handleFiles(this.files)">
           <div class="preview-grid" id="prev-grid"></div>
         </div>
-
         <button class="btn btn-primary btn-full" onclick="submitWork()">📤 სამუშაოს გაგზავნა</button>
       </div>
     </div>
@@ -338,14 +303,9 @@
             </select>
             <select id="af-cat" onchange="renderAdminWorks()">
               <option value="all">ყველა კატეგ.</option>
-              <option>რესტორნები</option>
-              <option>გარეტერიტორია</option>
-              <option>ოთახები</option>
-              <option>სხვა</option>
+              <option>რესტორნები</option><option>გარეტერიტორია</option><option>ოთახები</option><option>სხვა</option>
             </select>
-            <select id="af-wk" onchange="renderAdminWorks()">
-              <option value="all">ყველა შემსრულებელი</option>
-            </select>
+            <select id="af-wk" onchange="renderAdminWorks()"><option value="all">ყველა შემსრულებელი</option></select>
           </div>
         </div>
         <div class="table-wrap">
@@ -396,7 +356,6 @@
         <button class="btn btn-primary" style="max-width:280px" onclick="exportExcel()">📊 Excel ჩამოტვირთვა</button>
       </div>
     </div>
-
   </div>
 </div>
 
@@ -411,245 +370,288 @@
 
 <div id="notification"></div>
 
-<script>
-const DB={
-  get users(){return JSON.parse(localStorage.getItem('wt_u')||'[]');},
-  set users(v){localStorage.setItem('wt_u',JSON.stringify(v));},
-  get works(){return JSON.parse(localStorage.getItem('wt_w')||'[]');},
-  set works(v){localStorage.setItem('wt_w',JSON.stringify(v));},
-  get sess(){return JSON.parse(sessionStorage.getItem('wt_s')||'null');},
-  set sess(v){sessionStorage.setItem('wt_s',JSON.stringify(v));}
+<!-- FIREBASE SDK -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, collection, doc, setDoc, getDoc, getDocs, addDoc, updateDoc, onSnapshot, query, orderBy, serverTimestamp }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBiKjEDDug9McKWuLr6tLusSO5Kwf5m3RE",
+  authDomain: "work-tracker-7aa42.firebaseapp.com",
+  projectId: "work-tracker-7aa42",
+  storageBucket: "work-tracker-7aa42.firebasestorage.app",
+  messagingSenderId: "639886380518",
+  appId: "1:639886380518:web:f8168469540549f9859a27",
+  measurementId: "G-3D4ES1PLMJ"
 };
 
-(function(){
-  const u=DB.users;
-  if(!u.find(x=>x.email==='admin@work.ge')){
-    u.push({id:'admin',name:'ადმინი',email:'admin@work.ge',password:'admin123',role:'admin',createdAt:new Date().toISOString()});
-    DB.users=u;
-  }
-})();
+const fireApp = initializeApp(firebaseConfig);
+const auth = getAuth(fireApp);
+const db = getFirestore(fireApp);
 
-let imgs=[];
+// ---- GLOBALS ----
+let currentUser = null;
+let currentRole = null;
+let allWorks = [];
+let allUsers = [];
+let imgs = [];
+const chipState = { cat: null, res: null };
 
-// chip selection state
-const chipState={cat:null, res:null};
+// ---- LOADING ----
+function hideLoading() { document.getElementById('loading-screen').style.display = 'none'; }
+function showAuth() { document.getElementById('auth-screen').style.display = 'flex'; }
+function showApp() { document.getElementById('app').style.display = 'flex'; }
 
-function selectChip(group, idx, input){
-  const prefix='chip-'+group+'-';
-  // deselect all in group
-  document.querySelectorAll(`[id^="${prefix}"]`).forEach(el=>{
-    el.classList.remove('selected','selected-green','selected-red','selected-yellow');
-  });
-  const el=document.getElementById(prefix+idx);
-  // pick color by group+value
-  if(group==='res'){
-    const v=input.value;
-    if(v==='შესრულდა') el.classList.add('selected-green');
-    else if(v==='ვერ შესრულდა') el.classList.add('selected-red');
-    else el.classList.add('selected-yellow');
+// ---- AUTH STATE ----
+onAuthStateChanged(auth, async (user) => {
+  if (user) {
+    currentUser = user;
+    const snap = await getDoc(doc(db, 'users', user.uid));
+    if (snap.exists()) {
+      const data = snap.data();
+      currentRole = data.role;
+      hideLoading();
+      launchApp(data);
+    } else {
+      await signOut(auth);
+      hideLoading();
+      showAuth();
+    }
   } else {
-    el.classList.add('selected');
+    currentUser = null;
+    currentRole = null;
+    hideLoading();
+    showAuth();
   }
-  chipState[group]=input.value;
-}
+});
 
-// AUTH
-function switchTab(t){
-  document.querySelectorAll('.tab').forEach((el,i)=>el.classList.toggle('active',(i===0&&t==='login')||(i===1&&t==='register')));
-  document.getElementById('login-form').style.display=t==='login'?'':'none';
-  document.getElementById('register-form').style.display=t==='register'?'':'none';
-}
-
-function doRegister(){
-  const name=document.getElementById('rg-name').value.trim();
-  const email=document.getElementById('rg-email').value.trim().toLowerCase();
-  const pass=document.getElementById('rg-pass').value;
-  const err=document.getElementById('rg-err');
-  const ok=document.getElementById('rg-ok');
-  err.textContent='';ok.textContent='';
-  if(!name||!email||!pass){err.textContent='ყველა ველი სავალდებულოა';return;}
-  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){err.textContent='ელ-ფოსტა არასწორია';return;}
-  if(pass.length<6){err.textContent='პაროლი მინიმუმ 6 სიმბოლო';return;}
-  const users=DB.users;
-  if(users.find(u=>u.email===email)){err.textContent='ეს ელ-ფოსტა უკვე დარეგისტრირებულია';return;}
-  users.push({id:Date.now().toString(),name,email,password:pass,role:'pending',createdAt:new Date().toISOString()});
-  DB.users=users;
-  ok.textContent='✓ წარმატებით დარეგისტრირდით! ადმინი მიანიჭებს როლს.';
-  ['rg-name','rg-email','rg-pass'].forEach(id=>document.getElementById(id).value='');
-}
-
-function doLogin(){
-  const email=document.getElementById('li-email').value.trim().toLowerCase();
-  const pass=document.getElementById('li-pass').value;
-  const err=document.getElementById('li-err');
-  err.textContent='';
-  const user=DB.users.find(u=>u.email===email&&u.password===pass);
-  if(!user){err.textContent='ელ-ფოსტა ან პაროლი არასწორია';return;}
-  DB.sess={id:user.id,name:user.name,email:user.email,role:user.role};
-  launchApp();
-}
-
-function doLogout(){sessionStorage.removeItem('wt_s');location.reload();}
-
-// APP
-function launchApp(){
-  document.getElementById('auth-screen').style.display='none';
-  document.getElementById('app').style.display='flex';
-  const s=DB.sess;
-  document.getElementById('ui-name').textContent=s.name;
-  const rl={admin:'ადმინი',checker:'შემმოწმებელი',worker:'შემსრულებელი',pending:'მოლოდინში'};
-  const rc={admin:'role-admin',checker:'role-checker',worker:'role-worker',pending:'role-pending'};
-  const b=document.getElementById('role-badge');
-  b.textContent=rl[s.role]||s.role;
-  b.className='role-badge '+(rc[s.role]||'role-pending');
-  buildNav(s.role);
-
-  // set defaults
-  const wd=document.getElementById('w-date');
-  if(wd) wd.valueAsDate=new Date();
-  const wt=document.getElementById('w-time');
-  if(wt){
-    const now=new Date();
-    wt.value=now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');
+// ---- REGISTER ----
+window.doRegister = async function() {
+  const name = document.getElementById('rg-name').value.trim();
+  const email = document.getElementById('rg-email').value.trim().toLowerCase();
+  const pass = document.getElementById('rg-pass').value;
+  const err = document.getElementById('rg-err');
+  const ok = document.getElementById('rg-ok');
+  err.textContent = ''; ok.textContent = '';
+  if (!name || !email || !pass) { err.textContent = 'ყველა ველი სავალდებულოა'; return; }
+  if (pass.length < 6) { err.textContent = 'პაროლი მინიმუმ 6 სიმბოლო'; return; }
+  try {
+    const cred = await createUserWithEmailAndPassword(auth, email, pass);
+    await setDoc(doc(db, 'users', cred.user.uid), {
+      uid: cred.user.uid, name, email, role: 'pending',
+      createdAt: serverTimestamp()
+    });
+    await signOut(auth);
+    ok.textContent = '✓ დარეგისტრირდით! ადმინი მიანიჭებს როლს.';
+    ['rg-name','rg-email','rg-pass'].forEach(id => document.getElementById(id).value = '');
+  } catch(e) {
+    if (e.code === 'auth/email-already-in-use') err.textContent = 'ეს ელ-ფოსტა უკვე რეგისტრირებულია';
+    else err.textContent = e.message;
   }
+};
+
+// ---- LOGIN ----
+window.doLogin = async function() {
+  const email = document.getElementById('li-email').value.trim().toLowerCase();
+  const pass = document.getElementById('li-pass').value;
+  const err = document.getElementById('li-err');
+  err.textContent = '';
+  try {
+    await signInWithEmailAndPassword(auth, email, pass);
+  } catch(e) {
+    if (e.code === 'auth/invalid-credential' || e.code === 'auth/user-not-found' || e.code === 'auth/wrong-password')
+      err.textContent = 'ელ-ფოსტა ან პაროლი არასწორია';
+    else err.textContent = e.message;
+  }
+};
+
+// ---- LOGOUT ----
+window.doLogout = async function() {
+  await signOut(auth);
+  location.reload();
+};
+
+// ---- LAUNCH APP ----
+function launchApp(userData) {
+  document.getElementById('auth-screen').style.display = 'none';
+  showApp();
+  document.getElementById('ui-name').textContent = userData.name;
+  const rl = { admin:'ადმინი', checker:'შემმოწმებელი', worker:'შემსრულებელი', pending:'მოლოდინში' };
+  const rc = { admin:'role-admin', checker:'role-checker', worker:'role-worker', pending:'role-pending' };
+  const b = document.getElementById('role-badge');
+  b.textContent = rl[userData.role] || userData.role;
+  b.className = 'role-badge ' + (rc[userData.role] || 'role-pending');
+  buildNav(userData.role, userData);
+  const wd = document.getElementById('w-date');
+  if (wd) wd.valueAsDate = new Date();
+  const wt = document.getElementById('w-time');
+  if (wt) { const n = new Date(); wt.value = n.getHours().toString().padStart(2,'0') + ':' + n.getMinutes().toString().padStart(2,'0'); }
 }
 
-function buildNav(role){
-  const nav=document.getElementById('main-nav');
-  nav.innerHTML='';
-  const map={
-    worker:[['sec-submit','📤 გაგზავნა'],['sec-myworks','📁 ჩემი']],
-    checker:[['sec-review','🔍 შემოწმება']],
-    admin:[['sec-dashboard','📊 Dashboard'],['sec-users','👥 მომხმარებლები'],['sec-export','📥 ექსპორტი']]
+function buildNav(role, userData) {
+  const nav = document.getElementById('main-nav');
+  nav.innerHTML = '';
+  const map = {
+    worker: [['sec-submit','📤 გაგზავნა'],['sec-myworks','📁 ჩემი']],
+    checker: [['sec-review','🔍 შემოწმება']],
+    admin: [['sec-dashboard','📊 Dashboard'],['sec-users','👥 მომხმარებლები'],['sec-export','📥 ექსპორტი']]
   };
-  const items=map[role]||[];
-  if(!items.length){showSection('sec-pending');return;}
-  items.forEach(([id,label],i)=>{
-    const el=document.createElement('div');
-    el.className='nav-item'+(i===0?' active':'');
-    el.textContent=label;el.dataset.sid=id;
-    el.onclick=()=>activateSection(id,el);
+  const items = map[role] || [];
+  if (!items.length) { showSection('sec-pending'); return; }
+  items.forEach(([id, label], i) => {
+    const el = document.createElement('div');
+    el.className = 'nav-item' + (i === 0 ? ' active' : '');
+    el.textContent = label; el.dataset.sid = id;
+    el.onclick = () => activateSection(id, el);
     nav.appendChild(el);
   });
   showSection(items[0][0]);
-  if(role==='worker') renderMyWorks();
-  if(role==='checker') renderReview();
-  if(role==='admin'){populateWorkerSelects();renderAdminStats();renderAdminWorks();}
+  if (role === 'worker') listenMyWorks();
+  if (role === 'checker') listenAllWorks('checker');
+  if (role === 'admin') { listenAllWorks('admin'); listenUsers(); }
 }
 
-function activateSection(id,el){
-  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+function activateSection(id, el) {
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   el.classList.add('active');
   showSection(id);
-  if(id==='sec-review') renderReview();
-  if(id==='sec-myworks') renderMyWorks();
-  if(id==='sec-dashboard'){renderAdminStats();renderAdminWorks();}
-  if(id==='sec-users') renderUsers();
-  if(id==='sec-export') populateWorkerSelects();
+  if (id === 'sec-review') renderReview();
+  if (id === 'sec-myworks') renderMyWorks();
+  if (id === 'sec-dashboard') { renderAdminStats(); renderAdminWorks(); }
+  if (id === 'sec-users') renderUsers();
 }
-function showSection(id){
-  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+function showSection(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
   document.getElementById(id)?.classList.add('active');
 }
 
-// FILES
-function handleDragOver(e){e.preventDefault();document.getElementById('drop-zone').classList.add('over');}
-function handleDrop(e){e.preventDefault();document.getElementById('drop-zone').classList.remove('over');handleFiles(e.dataTransfer.files);}
-function handleFiles(files){
-  Array.from(files).forEach(f=>{
-    if(!f.type.startsWith('image/')){notify('მხოლოდ სურათები!','error');return;}
-    if(f.size>5*1024*1024){notify('ფოტო ძალიან დიდია','error');return;}
-    const r=new FileReader();
-    r.onload=e=>{imgs.push({name:f.name,data:e.target.result});renderPrev();};
-    r.readAsDataURL(f);
+// ---- REALTIME LISTENERS ----
+function listenMyWorks() {
+  const q = query(collection(db, 'works'), orderBy('submittedAt', 'desc'));
+  onSnapshot(q, snap => {
+    allWorks = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+      .filter(w => w.workerId === currentUser.uid);
+    renderMyWorks();
   });
 }
-function renderPrev(){
-  document.getElementById('prev-grid').innerHTML=imgs.map((im,i)=>
+
+function listenAllWorks(role) {
+  const q = query(collection(db, 'works'), orderBy('submittedAt', 'desc'));
+  onSnapshot(q, snap => {
+    allWorks = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    if (role === 'checker') renderReview();
+    if (role === 'admin') { renderAdminStats(); renderAdminWorks(); }
+  });
+}
+
+function listenUsers() {
+  onSnapshot(collection(db, 'users'), snap => {
+    allUsers = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderUsers();
+    populateWorkerSelects();
+  });
+}
+
+// ---- FILES ----
+window.handleDragOver = function(e) { e.preventDefault(); document.getElementById('drop-zone').classList.add('over'); };
+window.handleDrop = function(e) { e.preventDefault(); document.getElementById('drop-zone').classList.remove('over'); handleFiles(e.dataTransfer.files); };
+window.handleFiles = function(files) {
+  Array.from(files).forEach(f => {
+    if (!f.type.startsWith('image/')) { notify('მხოლოდ სურათები!', 'error'); return; }
+    if (f.size > 2 * 1024 * 1024) { notify('ფოტო ძალიან დიდია (მაქს. 2MB)', 'error'); return; }
+    const r = new FileReader();
+    r.onload = e => { imgs.push({ name: f.name, data: e.target.result }); renderPrev(); };
+    r.readAsDataURL(f);
+  });
+};
+function renderPrev() {
+  document.getElementById('prev-grid').innerHTML = imgs.map((im, i) =>
     `<div class="preview-item"><img src="${im.data}"><button class="del-img" onclick="rmImg(${i})">✕</button></div>`
   ).join('');
 }
-function rmImg(i){imgs.splice(i,1);renderPrev();}
+window.rmImg = function(i) { imgs.splice(i, 1); renderPrev(); };
 
-// SUBMIT
-function submitWork(){
-  const loc=document.getElementById('w-loc').value.trim();
-  const date=document.getElementById('w-date').value;
-  const time=document.getElementById('w-time').value;
-  const dmg=document.getElementById('w-dmg').value.trim();
-  const comment=document.getElementById('w-comment').value.trim();
-  const cat=chipState.cat;
-  const res=chipState.res;
+// ---- CHIPS ----
+window.selChip = function(group, input, cls) {
+  const prefix = group === 'cat' ? 'cc-' : 'rc-';
+  document.querySelectorAll(`[id^="${prefix}"]`).forEach(el =>
+    el.classList.remove('sel-blue','sel-green','sel-red','sel-yellow')
+  );
+  input.closest('.chip').classList.add(cls);
+  chipState[group] = input.value;
+};
 
-  if(!loc){notify('ობიექტის დასახელება სავალდებულოა','error');return;}
-  if(!date||!time){notify('თარიღი და დრო სავალდებულოა','error');return;}
-  if(!cat){notify('კატეგორია სავალდებულოა','error');return;}
-  if(!res){notify('შედეგი სავალდებულოა','error');return;}
+// ---- SUBMIT WORK ----
+window.submitWork = async function() {
+  const loc = document.getElementById('w-loc').value.trim();
+  const date = document.getElementById('w-date').value;
+  const time = document.getElementById('w-time').value;
+  const dmg = document.getElementById('w-dmg').value.trim();
+  const comment = document.getElementById('w-comment').value.trim();
+  const cat = chipState.cat;
+  const res = chipState.res;
+  if (!loc) { notify('ობიექტის დასახელება სავალდებულოა', 'error'); return; }
+  if (!date || !time) { notify('თარიღი და დრო სავალდებულოა', 'error'); return; }
+  if (!cat) { notify('კატეგორია სავალდებულოა', 'error'); return; }
+  if (!res) { notify('შედეგი სავალდებულოა', 'error'); return; }
 
-  const s=DB.sess;
-  const works=DB.works;
-  works.push({
-    id:Date.now().toString(),
-    workerId:s.id,workerName:s.name,workerEmail:s.email,
-    location:loc,category:cat,date,time,damage:dmg,result:res,comment,
-    images:[...imgs],status:'pending',
-    submittedAt:new Date().toISOString(),
-    checkerComment:'',checkedBy:'',checkedAt:''
-  });
-  DB.works=works;
+  const snap = await getDoc(doc(db, 'users', currentUser.uid));
+  const userData = snap.data();
 
-  // reset form
-  document.getElementById('w-loc').value='';
-  document.getElementById('w-dmg').value='';
-  document.getElementById('w-comment').value='';
-  document.getElementById('w-date').valueAsDate=new Date();
-  const now=new Date();
-  document.getElementById('w-time').value=now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');
+  try {
+    await addDoc(collection(db, 'works'), {
+      workerId: currentUser.uid,
+      workerName: userData.name,
+      workerEmail: userData.email,
+      location: loc, category: cat, date, time,
+      damage: dmg, result: res, comment,
+      images: imgs,
+      status: 'pending',
+      submittedAt: serverTimestamp(),
+      checkerComment: '', checkedBy: '', checkedAt: null
+    });
+    // reset
+    document.getElementById('w-loc').value = '';
+    document.getElementById('w-dmg').value = '';
+    document.getElementById('w-comment').value = '';
+    document.getElementById('w-date').valueAsDate = new Date();
+    const n = new Date();
+    document.getElementById('w-time').value = n.getHours().toString().padStart(2,'0') + ':' + n.getMinutes().toString().padStart(2,'0');
+    document.querySelectorAll('[id^="cc-"],[id^="rc-"]').forEach(el =>
+      el.classList.remove('sel-blue','sel-green','sel-red','sel-yellow')
+    );
+    chipState.cat = null; chipState.res = null;
+    imgs = []; renderPrev();
+    notify('✓ სამუშაო გაიგზავნა!', 'success');
+  } catch(e) {
+    notify('შეცდომა: ' + e.message, 'error');
+  }
+};
 
-  // reset chips
-  document.querySelectorAll('[id^="chip-cat-"],[id^="chip-res-"]').forEach(el=>{
-    el.classList.remove('selected','selected-green','selected-red','selected-yellow');
-  });
-  document.querySelectorAll('input[name="w-cat"],input[name="w-res"]').forEach(el=>el.checked=false);
-  chipState.cat=null;chipState.res=null;
-
-  imgs=[];renderPrev();
-  notify('✓ სამუშაო გაიგზავნა!','success');
+// ---- RENDER WORKS ----
+function renderMyWorks() {
+  const el = document.getElementById('my-list');
+  if (!el) return;
+  el.innerHTML = allWorks.length ? allWorks.map(w => wCard(w, 'worker')).join('') : empty('📭', 'ჯერ სამუშაოები არ გაქვთ');
 }
 
-// MY WORKS
-function renderMyWorks(){
-  const s=DB.sess;
-  const list=[...DB.works].filter(w=>w.workerId===s.id).reverse();
-  const el=document.getElementById('my-list');
-  el.innerHTML=list.length?list.map(w=>wCard(w,'worker')).join(''):empty('📭','ჯერ სამუშაოები არ გაქვთ');
+function renderReview() {
+  const sf = document.getElementById('f-status')?.value || 'all';
+  const rf = document.getElementById('f-res')?.value || 'all';
+  let list = [...allWorks];
+  if (sf !== 'all') list = list.filter(w => w.status === sf);
+  if (rf !== 'all') list = list.filter(w => w.result === rf);
+  const el = document.getElementById('review-list');
+  if (!el) return;
+  el.innerHTML = list.length ? list.map(w => wCard(w, 'checker')).join('') : empty('🔍', 'სამუშაოები არ მოიძებნა');
 }
 
-// REVIEW
-function renderReview(){
-  const sf=document.getElementById('f-status')?.value||'all';
-  const rf=document.getElementById('f-res')?.value||'all';
-  let list=[...DB.works].reverse();
-  if(sf!=='all') list=list.filter(w=>w.status===sf);
-  if(rf!=='all') list=list.filter(w=>w.result===rf);
-  const el=document.getElementById('review-list');
-  el.innerHTML=list.length?list.map(w=>wCard(w,'checker')).join(''):empty('🔍','სამუშაოები არ მოიძებნა');
-}
-
-// ADMIN
-function populateWorkerSelects(){
-  const workers=DB.users.filter(u=>u.role==='worker');
-  ['af-wk','ex-wk'].forEach(id=>{
-    const sel=document.getElementById(id);
-    if(!sel)return;
-    sel.innerHTML='<option value="all">ყველა შემსრულებელი</option>';
-    workers.forEach(u=>sel.innerHTML+=`<option value="${u.id}">${e(u.name)}</option>`);
-  });
-}
-
-function renderAdminStats(){
-  const w=DB.works;
-  const stats=[
+function renderAdminStats() {
+  const w = allWorks;
+  const stats = [
     {n:w.length,l:'სულ სამუშაო',c:'#58a6ff'},
     {n:w.filter(x=>x.status==='pending').length,l:'მოლოდინში',c:'#e3b341'},
     {n:w.filter(x=>x.status==='approved').length,l:'დამტკიცებული',c:'#3fb950'},
@@ -657,200 +659,191 @@ function renderAdminStats(){
     {n:w.filter(x=>x.result==='შესრულდა').length,l:'შესრულდა',c:'#3fb950'},
     {n:w.filter(x=>x.result==='ვერ შესრულდა').length,l:'ვერ შესრულდა',c:'#f85149'},
     {n:w.filter(x=>x.result==='დროებით გაკეთდა').length,l:'დროებით',c:'#e3b341'},
-    {n:DB.users.filter(u=>u.role==='worker').length,l:'შემსრულებელი',c:'#bc8cff'},
+    {n:allUsers.filter(u=>u.role==='worker').length,l:'შემსრულებელი',c:'#bc8cff'},
   ];
-  document.getElementById('adm-stats').innerHTML=stats.map(s=>`<div class="stat-card"><div class="stat-num" style="color:${s.c}">${s.n}</div><div class="stat-label">${s.l}</div></div>`).join('');
+  const el = document.getElementById('adm-stats');
+  if (el) el.innerHTML = stats.map(s => `<div class="stat-card"><div class="stat-num" style="color:${s.c}">${s.n}</div><div class="stat-label">${s.l}</div></div>`).join('');
 }
 
-function renderAdminWorks(){
-  const sf=document.getElementById('af-st')?.value||'all';
-  const rf=document.getElementById('af-res')?.value||'all';
-  const cf=document.getElementById('af-cat')?.value||'all';
-  const wf=document.getElementById('af-wk')?.value||'all';
-  let list=[...DB.works].reverse();
-  if(sf!=='all') list=list.filter(w=>w.status===sf);
-  if(rf!=='all') list=list.filter(w=>w.result===rf);
-  if(cf!=='all') list=list.filter(w=>w.category===cf);
-  if(wf!=='all') list=list.filter(w=>w.workerId===wf);
-  const tb=document.getElementById('adm-tbody');
-  if(!list.length){tb.innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--text3);padding:30px">სამუშაოები არ მოიძებნა</td></tr>';return;}
-  tb.innerHTML=list.map(w=>`<tr>
+function renderAdminWorks() {
+  const sf = document.getElementById('af-st')?.value || 'all';
+  const rf = document.getElementById('af-res')?.value || 'all';
+  const cf = document.getElementById('af-cat')?.value || 'all';
+  const wf = document.getElementById('af-wk')?.value || 'all';
+  let list = [...allWorks];
+  if (sf !== 'all') list = list.filter(w => w.status === sf);
+  if (rf !== 'all') list = list.filter(w => w.result === rf);
+  if (cf !== 'all') list = list.filter(w => w.category === cf);
+  if (wf !== 'all') list = list.filter(w => w.workerId === wf);
+  const tb = document.getElementById('adm-tbody');
+  if (!tb) return;
+  if (!list.length) { tb.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text3);padding:30px">სამუშაოები არ მოიძებნა</td></tr>'; return; }
+  tb.innerHTML = list.map(w => `<tr>
     <td><strong>${e(w.location||'')}</strong></td>
     <td style="font-size:12px">${e(w.category||'')}</td>
-    <td>${e(w.workerName)}</td>
+    <td>${e(w.workerName||'')}</td>
     <td>${rBadge(w.result)}</td>
     <td>${sBadge(w.status)}</td>
-    <td style="font-size:12px;color:var(--text2);white-space:nowrap">${w.date}<br><span style="color:var(--text3)">${w.time||''}</span></td>
+    <td style="font-size:12px;color:var(--text2);white-space:nowrap">${w.date||''}<br><span style="color:var(--text3)">${w.time||''}</span></td>
     <td><button class="btn btn-ghost btn-sm" onclick="openModal('${w.id}','admin')">👁</button></td>
   </tr>`).join('');
 }
 
-function renderUsers(){
-  document.getElementById('users-tbody').innerHTML=DB.users.map(u=>`<tr>
-    <td><strong>${e(u.name)}</strong></td>
-    <td style="font-size:12px;color:var(--text2)">${e(u.email)}</td>
-    <td>${u.id==='admin'
-      ?'<span class="role-badge role-admin">ადმინი</span>'
-      :`<select onchange="setRole('${u.id}',this.value)" style="width:auto;font-size:12px;padding:4px 8px">
+function renderUsers() {
+  const tb = document.getElementById('users-tbody');
+  if (!tb) return;
+  tb.innerHTML = allUsers.map(u => `<tr>
+    <td><strong>${e(u.name||'')}</strong></td>
+    <td style="font-size:12px;color:var(--text2)">${e(u.email||'')}</td>
+    <td>${u.role === 'admin'
+      ? '<span class="role-badge role-admin">ადმინი</span>'
+      : `<select onchange="setRole('${u.id}',this.value)" style="width:auto;font-size:12px;padding:4px 8px">
           <option value="pending" ${u.role==='pending'?'selected':''}>⏳ მოლოდინში</option>
           <option value="worker" ${u.role==='worker'?'selected':''}>👷 შემსრულებელი</option>
           <option value="checker" ${u.role==='checker'?'selected':''}>🔍 შემმოწმებელი</option>
         </select>`}
     </td>
-    <td style="font-size:12px;color:var(--text3)">${(u.createdAt||'').slice(0,10)}</td>
-    <td>${u.id!=='admin'?`<button class="btn btn-danger btn-sm" onclick="delUser('${u.id}')">წაშლა</button>`:'—'}</td>
+    <td style="font-size:12px;color:var(--text3)">${u.createdAt?.toDate ? u.createdAt.toDate().toISOString().slice(0,10) : ''}</td>
+    <td>${u.role !== 'admin' ? `<button class="btn btn-danger btn-sm" onclick="delUser('${u.id}')">წაშლა</button>` : '—'}</td>
   </tr>`).join('');
 }
 
-function setRole(uid,role){
-  const users=DB.users;
-  const u=users.find(x=>x.id===uid);
-  if(!u)return;
-  u.role=role;DB.users=users;
-  notify(`✓ ${e(u.name)} — როლი მიენიჭა`,'success');
-  populateWorkerSelects();
+function populateWorkerSelects() {
+  const workers = allUsers.filter(u => u.role === 'worker');
+  ['af-wk','ex-wk'].forEach(id => {
+    const sel = document.getElementById(id);
+    if (!sel) return;
+    sel.innerHTML = '<option value="all">ყველა შემსრულებელი</option>';
+    workers.forEach(u => sel.innerHTML += `<option value="${u.id}">${e(u.name)}</option>`);
+  });
 }
 
-function delUser(id){
-  if(!confirm('წაშლა?'))return;
-  DB.users=DB.users.filter(u=>u.id!==id);
-  renderUsers();notify('წაიშალა','info');
-}
+// ---- ROLE CHANGE ----
+window.setRole = async function(uid, role) {
+  try {
+    await updateDoc(doc(db, 'users', uid), { role });
+    notify('✓ როლი მიენიჭა', 'success');
+  } catch(e) { notify('შეცდომა: ' + e.message, 'error'); }
+};
 
-// WORK CARD
-function wCard(w,viewAs){
+window.delUser = async function(id) {
+  if (!confirm('წაშლა?')) return;
+  // Note: deletes Firestore doc only, not Auth user
+  const { deleteDoc } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+  await deleteDoc(doc(db, 'users', id));
+  notify('წაიშალა', 'info');
+};
+
+// ---- WORK CARD ----
+window.wCard = function(w, viewAs) {
   return `<div class="card">
     <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;margin-bottom:10px">
       <div>
         <div class="card-title">📍 ${e(w.location||'')}</div>
-        <div class="card-meta">${e(w.category||'')} · ${w.date}${w.time?' · '+w.time:''} · ${e(w.workerName)}</div>
+        <div class="card-meta">${e(w.category||'')} · ${w.date||''}${w.time?' · '+w.time:''} · ${e(w.workerName||'')}</div>
       </div>
       <div style="display:flex;gap:6px;flex-wrap:wrap">${rBadge(w.result)} ${sBadge(w.status)}</div>
     </div>
-    ${w.damage?`<div style="font-size:12px;color:var(--text2);margin-bottom:6px">⚠️ ${e(w.damage)}</div>`:''}
-    ${w.comment?`<div style="font-size:13px;color:var(--text2)">💬 ${e(w.comment)}</div>`:''}
-    ${w.checkerComment?`<div class="comment-block">🔍 ${e(w.checkerComment)}</div>`:''}
+    ${w.damage ? `<div style="font-size:12px;color:var(--text2);margin-bottom:6px">⚠️ ${e(w.damage)}</div>` : ''}
+    ${w.comment ? `<div style="font-size:13px;color:var(--text2)">💬 ${e(w.comment)}</div>` : ''}
+    ${w.checkerComment ? `<div class="comment-block">🔍 ${e(w.checkerComment)}</div>` : ''}
     <div class="card-footer">
       <button class="btn btn-ghost btn-sm" onclick="openModal('${w.id}','${viewAs}')">👁 დეტალები</button>
-      ${viewAs==='checker'&&w.status==='pending'?`
+      ${viewAs==='checker'&&w.status==='pending' ? `
         <button class="btn btn-sm" style="background:rgba(35,134,54,.15);color:#3fb950;border:1px solid rgba(35,134,54,.3)" onclick="quickAct('${w.id}','approved')">✓ დამტკიცება</button>
         <button class="btn btn-sm" style="background:rgba(218,54,51,.15);color:#f85149;border:1px solid rgba(218,54,51,.3)" onclick="openReject('${w.id}')">✕ უარყოფა</button>
-      `:''}
+      ` : ''}
     </div>
   </div>`;
-}
+};
 
-// MODAL
-function openModal(wid,viewAs){
-  const w=DB.works.find(x=>x.id===wid);
-  if(!w)return;
-  document.getElementById('m-title').textContent=w.location||w.category||'სამუშაო';
-  let html=`
+// ---- MODAL ----
+window.openModal = function(wid, viewAs) {
+  const w = allWorks.find(x => x.id === wid);
+  if (!w) return;
+  document.getElementById('m-title').textContent = w.location || w.category || 'სამუშაო';
+  let html = `
     <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px">${rBadge(w.result)} ${sBadge(w.status)}</div>
     <div class="detail-row"><span class="detail-label">📍 ობიექტი</span><span>${e(w.location||'—')}</span></div>
     <div class="detail-row"><span class="detail-label">📋 კატეგორია</span><span>${e(w.category||'—')}</span></div>
-    <div class="detail-row"><span class="detail-label">📅 თარიღი</span><span>${w.date}${w.time?' · '+w.time:''}</span></div>
-    <div class="detail-row"><span class="detail-label">👤 შემსრულებელი</span><span>${e(w.workerName)}</span></div>
-    ${w.damage?`<div class="detail-row"><span class="detail-label">⚠️ დაზიანება</span><span>${e(w.damage)}</span></div>`:''}
-    ${w.comment?`<div class="detail-row"><span class="detail-label">💬 კომენტარი</span><span>${e(w.comment)}</span></div>`:''}
+    <div class="detail-row"><span class="detail-label">📅 თარიღი / დრო</span><span>${w.date||''}${w.time?' · '+w.time:''}</span></div>
+    <div class="detail-row"><span class="detail-label">👤 შემსრულებელი</span><span>${e(w.workerName||'')}</span></div>
+    ${w.damage ? `<div class="detail-row"><span class="detail-label">⚠️ დაზიანება</span><span>${e(w.damage)}</span></div>` : ''}
+    ${w.comment ? `<div class="detail-row"><span class="detail-label">💬 კომენტარი</span><span>${e(w.comment)}</span></div>` : ''}
   `;
-  if(w.images?.length) html+=`<div class="preview-grid" style="margin-top:12px">${w.images.map(im=>`<div class="preview-item"><img src="${im.data}"></div>`).join('')}</div>`;
-  if(w.checkerComment) html+=`<div class="comment-block" style="margin-top:12px">🔍 ${e(w.checkerComment)}</div>`;
-  if(w.checkedBy) html+=`<p class="text-sm" style="margin-top:8px">შეამოწმა: ${e(w.checkedBy)} · ${(w.checkedAt||'').slice(0,10)}</p>`;
-  document.getElementById('m-body').innerHTML=html;
+  if (w.images?.length) html += `<div class="preview-grid" style="margin-top:12px">${w.images.map(im => `<div class="preview-item"><img src="${im.data}"></div>`).join('')}</div>`;
+  if (w.checkerComment) html += `<div class="comment-block" style="margin-top:12px">🔍 ${e(w.checkerComment)}</div>`;
+  if (w.checkedBy) html += `<p class="text-sm" style="margin-top:8px">შეამოწმა: ${e(w.checkedBy)}</p>`;
+  document.getElementById('m-body').innerHTML = html;
 
-  let footer=`<button class="btn btn-ghost btn-sm" onclick="closeModal()">დახურვა</button>`;
-  if(viewAs==='checker'&&w.status==='pending'){
-    footer=`<button class="btn btn-ghost btn-sm" onclick="closeModal()">გაუქმება</button><span style="flex:1"></span>
+  let footer = `<button class="btn btn-ghost btn-sm" onclick="closeModal()">დახურვა</button>`;
+  if (viewAs === 'checker' && w.status === 'pending') {
+    footer = `<button class="btn btn-ghost btn-sm" onclick="closeModal()">გაუქმება</button><span style="flex:1"></span>
       <button class="btn btn-danger btn-sm" onclick="closeModal();openReject('${wid}')">✕ უარყოფა</button>
       <button class="btn btn-primary btn-sm" onclick="quickAct('${wid}','approved');closeModal()">✓ დამტკიცება</button>`;
   }
-  if(viewAs==='admin'){
-    footer=`<button class="btn btn-ghost btn-sm" onclick="closeModal()">დახურვა</button><span style="flex:1"></span>
-      ${w.status!=='approved'?`<button class="btn btn-primary btn-sm" onclick="admAct('${wid}','approved')">✓ დამტკიცება</button>`:''}
-      ${w.status!=='rejected'?`<button class="btn btn-danger btn-sm" onclick="admAct('${wid}','rejected')">✕ უარყოფა</button>`:''}`;
+  if (viewAs === 'admin') {
+    footer = `<button class="btn btn-ghost btn-sm" onclick="closeModal()">დახურვა</button><span style="flex:1"></span>
+      ${w.status!=='approved' ? `<button class="btn btn-primary btn-sm" onclick="admAct('${wid}','approved')">✓ დამტკიცება</button>` : ''}
+      ${w.status!=='rejected' ? `<button class="btn btn-danger btn-sm" onclick="admAct('${wid}','rejected')">✕ უარყოფა</button>` : ''}`;
   }
-  document.getElementById('m-footer').innerHTML=footer;
+  document.getElementById('m-footer').innerHTML = footer;
   document.getElementById('modal-ov').classList.add('open');
-}
-function closeModal(){document.getElementById('modal-ov').classList.remove('open');}
-document.getElementById('modal-ov').addEventListener('click',ev=>{if(ev.target===ev.currentTarget)closeModal();});
+};
 
-let _rid=null;
-function openReject(wid){
-  _rid=wid;
-  const w=DB.works.find(x=>x.id===wid);
-  document.getElementById('m-title').textContent='უარყოფის მიზეზი';
-  document.getElementById('m-body').innerHTML=`
+window.closeModal = function() { document.getElementById('modal-ov').classList.remove('open'); };
+document.getElementById('modal-ov').addEventListener('click', ev => { if (ev.target === ev.currentTarget) window.closeModal(); });
+
+let _rid = null;
+window.openReject = function(wid) {
+  _rid = wid;
+  const w = allWorks.find(x => x.id === wid);
+  document.getElementById('m-title').textContent = 'უარყოფის მიზეზი';
+  document.getElementById('m-body').innerHTML = `
     <p style="color:var(--text2);margin-bottom:12px;font-size:13px">ობიექტი: <strong>${e(w.location||w.category||'')}</strong></p>
     <div class="form-group"><label>კომენტარი</label><textarea id="rej-txt" placeholder="მიუთითეთ მიზეზი..."></textarea></div>`;
-  document.getElementById('m-footer').innerHTML=`
+  document.getElementById('m-footer').innerHTML = `
     <button class="btn btn-ghost btn-sm" onclick="closeModal()">გაუქმება</button>
     <button class="btn btn-danger btn-sm" onclick="confirmReject()">✕ უარყოფა</button>`;
   document.getElementById('modal-ov').classList.add('open');
-}
-function confirmReject(){
-  const comment=document.getElementById('rej-txt').value.trim();
-  const works=DB.works;
-  const w=works.find(x=>x.id===_rid);
-  if(!w)return;
-  w.status='rejected';w.checkerComment=comment;
-  w.checkedBy=DB.sess.name;w.checkedAt=new Date().toISOString();
-  DB.works=works;closeModal();
-  notify('სამუშაო უარყოფილია','error');renderReview();
-}
-function quickAct(wid,status){
-  const works=DB.works;const w=works.find(x=>x.id===wid);if(!w)return;
-  w.status=status;w.checkedBy=DB.sess.name;w.checkedAt=new Date().toISOString();
-  DB.works=works;notify(status==='approved'?'✓ დამტკიცდა!':'უარყოფილია',status==='approved'?'success':'error');renderReview();
-}
-function admAct(wid,status){
-  const works=DB.works;const w=works.find(x=>x.id===wid);if(!w)return;
-  w.status=status;w.checkedBy=DB.sess.name;w.checkedAt=new Date().toISOString();
-  DB.works=works;closeModal();
-  notify(status==='approved'?'✓ დამტკიცდა!':'უარყოფილია',status==='approved'?'success':'error');
-  renderAdminStats();renderAdminWorks();
-}
+};
 
-// EXPORT
-function exportExcel(){
-  const sf=document.getElementById('ex-st')?.value||'all';
-  const rf=document.getElementById('ex-res')?.value||'all';
-  const wf=document.getElementById('ex-wk')?.value||'all';
-  const cf=document.getElementById('ex-cat')?.value||'all';
-  const fr=document.getElementById('ex-from')?.value;
-  const to=document.getElementById('ex-to')?.value;
-  let list=[...DB.works];
-  if(sf!=='all') list=list.filter(w=>w.status===sf);
-  if(rf!=='all') list=list.filter(w=>w.result===rf);
-  if(wf!=='all') list=list.filter(w=>w.workerId===wf);
-  if(cf!=='all') list=list.filter(w=>w.category===cf);
-  if(fr) list=list.filter(w=>w.date>=fr);
-  if(to) list=list.filter(w=>w.date<=to);
-  if(!list.length){notify('ფილტრი ცარიელია','error');return;}
-  const sm={pending:'მოლოდინში',approved:'დამტკიცებული',rejected:'უარყოფილი'};
-  const hdr=['#','ობიექტი','შემსრულებელი','ელ-ფოსტა','კატეგორია','დაზიანება','შედეგი','კომენტარი','სამ.თარიღი','დრო','სტატუსი','შემმოწმებელი','შემმოწმ.კომენტარი','გაგზავნის თარიღი'];
-  const rows=list.map((w,i)=>[
-    i+1,w.location||'',w.workerName,w.workerEmail,w.category||'',
-    w.damage||'',w.result||'',w.comment||'',
-    w.date,w.time||'',sm[w.status]||w.status,
-    w.checkedBy||'',w.checkerComment||'',(w.submittedAt||'').slice(0,10)
-  ]);
-  const csv=[hdr,...rows].map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
-  const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');a.href=url;a.download=`samushaoebi_${new Date().toISOString().slice(0,10)}.csv`;a.click();
-  URL.revokeObjectURL(url);notify('✓ ჩამოიტვირთა!','success');
-}
+window.confirmReject = async function() {
+  const comment = document.getElementById('rej-txt').value.trim();
+  const snap = await getDoc(doc(db, 'users', currentUser.uid));
+  const uname = snap.data()?.name || '';
+  await updateDoc(doc(db, 'works', _rid), {
+    status: 'rejected', checkerComment: comment,
+    checkedBy: uname, checkedAt: serverTimestamp()
+  });
+  window.closeModal();
+  notify('სამუშაო უარყოფილია', 'error');
+};
 
-// HELPERS
-function sBadge(s){const m={pending:['s-pending','⏳ მოლოდინში'],approved:['s-approved','✓ დამტკიცებული'],rejected:['s-rejected','✕ უარყოფილი']};const[c,l]=m[s]||['s-pending',s];return `<span class="status ${c}">${l}</span>`;}
-function rBadge(r){const m={'შესრულდა':['r-done','✅ შესრულდა'],'ვერ შესრულდა':['r-failed','❌ ვერ შესრულდა'],'დროებით გაკეთდა':['r-temp','🔧 დროებით']};const[c,l]=m[r]||['',''];return r?`<span class="status ${c}">${l}</span>`:'';}
-function empty(icon,msg){return `<div style="text-align:center;padding:60px 20px;color:var(--text3)"><div style="font-size:48px;margin-bottom:12px">${icon}</div><p>${msg}</p></div>`;}
-function e(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
-function notify(msg,type='info'){const el=document.getElementById('notification');el.textContent=msg;el.className=`show notif-${type}`;clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('show'),3000);}
+window.quickAct = async function(wid, status) {
+  const snap = await getDoc(doc(db, 'users', currentUser.uid));
+  const uname = snap.data()?.name || '';
+  await updateDoc(doc(db, 'works', wid), {
+    status, checkedBy: uname, checkedAt: serverTimestamp()
+  });
+  notify(status === 'approved' ? '✓ დამტკიცდა!' : 'უარყოფილია', status === 'approved' ? 'success' : 'error');
+};
 
-window.addEventListener('DOMContentLoaded',()=>{if(DB.sess)launchApp();});
-</script>
-</body>
-</html>
+window.admAct = async function(wid, status) {
+  const snap = await getDoc(doc(db, 'users', currentUser.uid));
+  const uname = snap.data()?.name || '';
+  await updateDoc(doc(db, 'works', wid), {
+    status, checkedBy: uname, checkedAt: serverTimestamp()
+  });
+  window.closeModal();
+  notify(status === 'approved' ? '✓ დამტკიცდა!' : 'უარყოფილია', status === 'approved' ? 'success' : 'error');
+};
+
+// ---- EXPORT ----
+window.exportExcel = function() {
+  const sf = document.getElementById('ex-st')?.value || 'all';
+  const rf = document.getElementById('ex-res')?.value || 'all';
+  const wf = document.getElementById('ex-wk')?.value || 'all';
+  const cf = document.getElementById('ex-cat')?.value || 'all';
+  const fr = document.getElementById('ex-from')?.value;
+  const to = document.getElementById('
