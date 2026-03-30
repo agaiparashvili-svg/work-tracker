@@ -1,0 +1,1115 @@
+<!DOCTYPE html>
+<html lang="ka">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>სამუშაოს აღრიცხვა</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Georgian:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --surface2: #21262d;
+    --surface3: #2d333b;
+    --border: #30363d;
+    --accent: #238636;
+    --accent2: #1f6feb;
+    --warn: #d29922;
+    --danger: #da3633;
+    --text: #e6edf3;
+    --text2: #8b949e;
+    --text3: #6e7681;
+    --radius: 8px;
+    --shadow: 0 8px 24px rgba(0,0,0,0.4);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: 'Noto Sans Georgian', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 14px;
+  }
+
+  /* AUTH SCREEN */
+  #auth-screen {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 20px;
+    background: radial-gradient(ellipse at 30% 20%, rgba(35,134,54,0.12) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 80%, rgba(31,111,235,0.08) 0%, transparent 60%),
+                var(--bg);
+  }
+  .auth-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 40px;
+    width: 100%;
+    max-width: 420px;
+    box-shadow: var(--shadow);
+  }
+  .auth-logo {
+    text-align: center;
+    margin-bottom: 32px;
+  }
+  .auth-logo .icon {
+    width: 56px; height: 56px;
+    background: linear-gradient(135deg, var(--accent), #2ea043);
+    border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 12px;
+    font-size: 26px;
+  }
+  .auth-logo h1 { font-size: 22px; font-weight: 700; }
+  .auth-logo p { color: var(--text2); font-size: 13px; margin-top: 4px; }
+  .tabs {
+    display: flex;
+    background: var(--surface2);
+    border-radius: var(--radius);
+    padding: 3px;
+    margin-bottom: 24px;
+  }
+  .tab {
+    flex: 1; padding: 8px; text-align: center;
+    border-radius: 6px; cursor: pointer;
+    color: var(--text2); font-size: 13px; font-weight: 500;
+    transition: all .2s;
+  }
+  .tab.active { background: var(--surface3); color: var(--text); }
+  .form-group { margin-bottom: 16px; }
+  label { display: block; font-size: 12px; color: var(--text2); margin-bottom: 6px; font-weight: 500; }
+  input, select {
+    width: 100%; padding: 10px 12px;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: var(--radius); color: var(--text);
+    font-family: inherit; font-size: 14px;
+    transition: border-color .2s;
+    -webkit-appearance: none;
+  }
+  input:focus, select:focus { outline: none; border-color: var(--accent2); }
+  select option { background: var(--surface2); }
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    gap: 6px; padding: 10px 16px;
+    border: none; border-radius: var(--radius);
+    cursor: pointer; font-family: inherit; font-size: 14px;
+    font-weight: 600; transition: all .2s; text-decoration: none;
+  }
+  .btn-primary { background: var(--accent); color: white; width: 100%; padding: 12px; }
+  .btn-primary:hover { background: #2ea043; }
+  .btn-blue { background: var(--accent2); color: white; }
+  .btn-blue:hover { background: #388bfd; }
+  .btn-warn { background: var(--warn); color: #0d1117; }
+  .btn-danger { background: var(--danger); color: white; }
+  .btn-ghost { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+  .btn-ghost:hover { background: var(--surface3); }
+  .btn-sm { padding: 6px 10px; font-size: 12px; }
+  .error-msg { color: #f85149; font-size: 12px; margin-top: 8px; }
+  .success-msg { color: #3fb950; font-size: 12px; margin-top: 8px; }
+
+  /* MAIN APP */
+  #app { display: none; flex-direction: column; min-height: 100vh; }
+  .topbar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 16px;
+    height: 56px;
+    display: flex; align-items: center; justify-content: space-between;
+    position: sticky; top: 0; z-index: 100;
+  }
+  .topbar-left { display: flex; align-items: center; gap: 12px; }
+  .topbar-logo { font-size: 16px; font-weight: 700; color: var(--accent); }
+  .role-badge {
+    padding: 3px 8px; border-radius: 20px;
+    font-size: 11px; font-weight: 600;
+  }
+  .role-admin { background: rgba(218,54,51,.2); color: #f85149; }
+  .role-checker { background: rgba(210,153,34,.2); color: #e3b341; }
+  .role-worker { background: rgba(35,134,54,.2); color: #3fb950; }
+  .topbar-right { display: flex; align-items: center; gap: 8px; }
+  .user-info { color: var(--text2); font-size: 13px; display: none; }
+  @media(min-width:500px){ .user-info { display: block; } }
+
+  /* NAV */
+  .nav {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: flex; overflow-x: auto;
+    padding: 0 12px;
+    -ms-overflow-style: none; scrollbar-width: none;
+  }
+  .nav::-webkit-scrollbar { display: none; }
+  .nav-item {
+    padding: 12px 14px;
+    cursor: pointer; color: var(--text2);
+    white-space: nowrap; font-size: 13px;
+    border-bottom: 2px solid transparent;
+    transition: all .2s; font-weight: 500;
+  }
+  .nav-item.active { color: var(--text); border-color: var(--accent); }
+  .nav-item:hover { color: var(--text); }
+
+  /* CONTENT */
+  .content { padding: 20px 16px; max-width: 900px; margin: 0 auto; width: 100%; }
+
+  /* SECTIONS */
+  .section { display: none; }
+  .section.active { display: block; }
+  .section-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 20px; flex-wrap: wrap; gap: 10px;
+  }
+  .section-header h2 { font-size: 18px; font-weight: 700; }
+
+  /* CARDS */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+  .card-title { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+  .card-meta { font-size: 12px; color: var(--text2); margin-bottom: 12px; }
+  .card-body { color: var(--text2); font-size: 13px; line-height: 1.6; }
+  .card-footer {
+    margin-top: 16px; padding-top: 12px;
+    border-top: 1px solid var(--border);
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  }
+
+  /* STATUS BADGES */
+  .status {
+    padding: 3px 10px; border-radius: 20px;
+    font-size: 11px; font-weight: 600;
+  }
+  .status-pending { background: rgba(210,153,34,.2); color: #e3b341; }
+  .status-checking { background: rgba(31,111,235,.2); color: #58a6ff; }
+  .status-approved { background: rgba(35,134,54,.2); color: #3fb950; }
+  .status-rejected { background: rgba(218,54,51,.2); color: #f85149; }
+
+  /* STATS */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 12px; margin-bottom: 20px;
+  }
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    text-align: center;
+  }
+  .stat-num { font-size: 28px; font-weight: 700; }
+  .stat-label { font-size: 12px; color: var(--text2); margin-top: 4px; }
+
+  /* FORM */
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media(max-width:500px){ .form-row { grid-template-columns: 1fr; } }
+  textarea {
+    width: 100%; padding: 10px 12px;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: var(--radius); color: var(--text);
+    font-family: inherit; font-size: 14px;
+    resize: vertical; min-height: 100px;
+    transition: border-color .2s;
+  }
+  textarea:focus { outline: none; border-color: var(--accent2); }
+
+  /* TABLE */
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th {
+    text-align: left; padding: 10px 12px;
+    background: var(--surface2); color: var(--text2);
+    font-weight: 600; font-size: 11px; text-transform: uppercase;
+    border-bottom: 1px solid var(--border);
+  }
+  td { padding: 10px 12px; border-bottom: 1px solid var(--border); }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(255,255,255,.02); }
+
+  /* FILE UPLOAD */
+  .file-area {
+    border: 2px dashed var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: all .2s;
+    background: var(--surface2);
+  }
+  .file-area:hover, .file-area.over { border-color: var(--accent2); background: rgba(31,111,235,.05); }
+  .file-area p { color: var(--text2); font-size: 13px; margin-top: 8px; }
+  .file-icon { font-size: 32px; }
+  .file-list { margin-top: 10px; }
+  .file-item {
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--surface3); border-radius: 6px;
+    padding: 6px 10px; margin-top: 6px; font-size: 12px;
+  }
+  .file-item button {
+    background: none; border: none; color: var(--danger);
+    cursor: pointer; font-size: 14px; padding: 0 4px;
+  }
+
+  /* MODAL */
+  .modal-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,.7);
+    z-index: 200;
+    align-items: center; justify-content: center;
+    padding: 20px;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    width: 100%; max-width: 500px;
+    max-height: 90vh; overflow-y: auto;
+  }
+  .modal h3 { font-size: 16px; font-weight: 700; margin-bottom: 20px; }
+  .modal-footer { display: flex; gap: 8px; justify-content: flex-end; margin-top: 20px; }
+
+  /* EMPTY STATE */
+  .empty {
+    text-align: center; padding: 60px 20px;
+    color: var(--text3);
+  }
+  .empty-icon { font-size: 48px; margin-bottom: 12px; }
+  .empty p { font-size: 14px; }
+
+  /* NOTIFICATION */
+  #notification {
+    position: fixed; bottom: 20px; right: 20px;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 12px 16px;
+    font-size: 13px; z-index: 999;
+    transform: translateX(200%); transition: transform .3s;
+    max-width: 300px;
+  }
+  #notification.show { transform: translateX(0); }
+  #notification.notif-success { border-color: var(--accent); color: #3fb950; }
+  #notification.notif-error { border-color: var(--danger); color: #f85149; }
+  #notification.notif-info { border-color: var(--accent2); color: #58a6ff; }
+
+  /* IMAGE PREVIEW */
+  .img-preview { max-width: 100%; border-radius: 6px; margin-top: 8px; }
+  .preview-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 8px; margin-top: 10px;
+  }
+  .preview-item {
+    position: relative;
+    border-radius: 6px; overflow: hidden;
+    background: var(--surface3);
+    aspect-ratio: 1;
+  }
+  .preview-item img { width: 100%; height: 100%; object-fit: cover; }
+  .preview-item .del-img {
+    position: absolute; top: 4px; right: 4px;
+    background: rgba(0,0,0,.7); border: none;
+    color: white; border-radius: 50%;
+    width: 22px; height: 22px;
+    cursor: pointer; font-size: 12px;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  .divider { height: 1px; background: var(--border); margin: 20px 0; }
+  .flex { display: flex; }
+  .gap-8 { gap: 8px; }
+  .ml-auto { margin-left: auto; }
+  .text-sm { font-size: 12px; color: var(--text2); }
+  .mt-8 { margin-top: 8px; }
+  .comment-block {
+    background: var(--surface2); border-radius: 6px;
+    padding: 10px 12px; margin-top: 10px;
+    font-size: 13px; color: var(--text2);
+    border-left: 3px solid var(--accent2);
+  }
+  .filter-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+  .filter-row select { width: auto; font-size: 12px; padding: 6px 10px; }
+</style>
+</head>
+<body>
+
+<!-- AUTH SCREEN -->
+<div id="auth-screen">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <div class="icon">📋</div>
+      <h1>სამუშაოს აღრიცხვა</h1>
+      <p>შესრულებული სამუშაოების სისტემა</p>
+    </div>
+    <div class="tabs">
+      <div class="tab active" onclick="switchAuthTab('login')">შესვლა</div>
+      <div class="tab" onclick="switchAuthTab('register')">რეგისტრაცია</div>
+    </div>
+
+    <!-- LOGIN -->
+    <div id="login-form">
+      <div class="form-group">
+        <label>ელ-ფოსტა</label>
+        <input type="email" id="login-email" placeholder="mail@example.com">
+      </div>
+      <div class="form-group">
+        <label>პაროლი</label>
+        <input type="password" id="login-pass" placeholder="••••••••">
+      </div>
+      <div id="login-err" class="error-msg"></div>
+      <button class="btn btn-primary mt-8" style="margin-top:16px" onclick="doLogin()">შესვლა</button>
+    </div>
+
+    <!-- REGISTER -->
+    <div id="register-form" style="display:none">
+      <div class="form-group">
+        <label>სახელი და გვარი</label>
+        <input type="text" id="reg-name" placeholder="გიორგი მაისურაძე">
+      </div>
+      <div class="form-group">
+        <label>ელ-ფოსტა</label>
+        <input type="email" id="reg-email" placeholder="mail@example.com">
+      </div>
+      <div class="form-group">
+        <label>პაროლი</label>
+        <input type="password" id="reg-pass" placeholder="••••••••">
+      </div>
+      <div class="form-group">
+        <label>როლი</label>
+        <select id="reg-role">
+          <option value="worker">შემსრულებელი</option>
+          <option value="checker">შემმოწმებელი</option>
+        </select>
+      </div>
+      <div id="reg-err" class="error-msg"></div>
+      <div id="reg-ok" class="success-msg"></div>
+      <button class="btn btn-primary" style="margin-top:16px" onclick="doRegister()">რეგისტრაცია</button>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="app">
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="topbar-logo">📋 WorkTrack</div>
+      <span class="role-badge" id="role-badge"></span>
+    </div>
+    <div class="topbar-right">
+      <span class="user-info" id="user-info-text"></span>
+      <button class="btn btn-ghost btn-sm" onclick="doLogout()">გასვლა</button>
+    </div>
+  </div>
+
+  <div class="nav" id="main-nav"></div>
+
+  <div class="content">
+    <!-- WORKER: Submit Work -->
+    <div class="section active" id="sec-submit">
+      <div class="section-header">
+        <h2>სამუშაოს გაგზავნა</h2>
+      </div>
+      <div class="card">
+        <div class="form-group">
+          <label>სამუშაოს სათაური</label>
+          <input type="text" id="w-title" placeholder="მოკლე აღწერა">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>კატეგორია</label>
+            <select id="w-cat">
+              <option value="მშენებლობა">მშენებლობა</option>
+              <option value="სარემონტო">სარემონტო</option>
+              <option value="ელექტრო">ელექტრო</option>
+              <option value="სანტექნიკა">სანტექნიკა</option>
+              <option value="სხვა">სხვა</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>თარიღი</label>
+            <input type="date" id="w-date">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>სამუშაოს დეტალური აღწერა</label>
+          <textarea id="w-desc" placeholder="მიუთითეთ შესრულებული სამუშაო, ადგილი, პირობები..."></textarea>
+        </div>
+        <div class="form-group">
+          <label>ფოტო მასალა (სამუშაოს მტკიცებულება)</label>
+          <div class="file-area" id="drop-zone" onclick="document.getElementById('file-input').click()"
+               ondragover="handleDragOver(event)" ondrop="handleDrop(event)" ondragleave="this.classList.remove('over')">
+            <div class="file-icon">📷</div>
+            <p>დააჭირეთ ან გადმოიტანეთ ფოტოები</p>
+            <p style="font-size:11px;margin-top:4px;color:var(--text3)">JPG, PNG, HEIC • მაქს. 5MB თითო</p>
+          </div>
+          <input type="file" id="file-input" accept="image/*" multiple style="display:none" onchange="handleFiles(this.files)">
+          <div class="preview-grid" id="preview-grid"></div>
+        </div>
+        <button class="btn btn-primary" onclick="submitWork()">📤 სამუშაოს გაგზავნა</button>
+      </div>
+    </div>
+
+    <!-- WORKER: My Works -->
+    <div class="section" id="sec-myworks">
+      <div class="section-header">
+        <h2>ჩემი სამუშაოები</h2>
+      </div>
+      <div id="my-works-list"></div>
+    </div>
+
+    <!-- CHECKER: Review -->
+    <div class="section" id="sec-review">
+      <div class="section-header">
+        <h2>შემოწმება</h2>
+        <div class="filter-row">
+          <select id="filter-status" onchange="renderReview()">
+            <option value="all">ყველა სტატუსი</option>
+            <option value="pending">მოლოდინში</option>
+            <option value="approved">დამტკიცებული</option>
+            <option value="rejected">უარყოფილი</option>
+          </select>
+        </div>
+      </div>
+      <div id="review-list"></div>
+    </div>
+
+    <!-- ADMIN: Dashboard -->
+    <div class="section" id="sec-dashboard">
+      <div class="section-header">
+        <h2>Dashboard</h2>
+        <button class="btn btn-ghost btn-sm" onclick="exportExcel()">📊 Excel-ში ექსპორტი</button>
+      </div>
+      <div class="stats-grid" id="admin-stats"></div>
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px">
+          <strong>ყველა სამუშაო</strong>
+          <div class="filter-row" style="margin:0">
+            <select id="adm-filter-status" onchange="renderAdminWorks()">
+              <option value="all">ყველა</option>
+              <option value="pending">მოლოდინში</option>
+              <option value="checking">შემოწმებაში</option>
+              <option value="approved">დამტკიცებული</option>
+              <option value="rejected">უარყოფილი</option>
+            </select>
+            <select id="adm-filter-worker" onchange="renderAdminWorks()">
+              <option value="all">ყველა შემსრულებელი</option>
+            </select>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>სათაური</th>
+                <th>შემსრულებელი</th>
+                <th>კატეგ.</th>
+                <th>თარიღი</th>
+                <th>სტატუსი</th>
+                <th>მოქმედება</th>
+              </tr>
+            </thead>
+            <tbody id="admin-works-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ADMIN: Users -->
+    <div class="section" id="sec-users">
+      <div class="section-header">
+        <h2>მომხმარებლები</h2>
+      </div>
+      <div class="card">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>სახელი</th><th>ელ-ფოსტა</th><th>როლი</th><th>რეგ. თარიღი</th><th>მოქმედება</th></tr>
+            </thead>
+            <tbody id="users-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ADMIN: Export -->
+    <div class="section" id="sec-export">
+      <div class="section-header">
+        <h2>Excel ექსპორტი</h2>
+      </div>
+      <div class="card">
+        <p style="color:var(--text2);margin-bottom:20px">აირჩიეთ ექსპორტის პარამეტრები</p>
+        <div class="form-row">
+          <div class="form-group">
+            <label>სტატუსი</label>
+            <select id="exp-status">
+              <option value="all">ყველა</option>
+              <option value="approved">დამტკიცებული</option>
+              <option value="rejected">უარყოფილი</option>
+              <option value="pending">მოლოდინში</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>შემსრულებელი</label>
+            <select id="exp-worker">
+              <option value="all">ყველა</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>თარიღი — დან</label>
+            <input type="date" id="exp-from">
+          </div>
+          <div class="form-group">
+            <label>თარიღი — მდე</label>
+            <input type="date" id="exp-to">
+          </div>
+        </div>
+        <button class="btn btn-primary" style="max-width:250px" onclick="exportExcel()">📊 Excel ფაილის ჩამოტვირთვა</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- WORK DETAIL MODAL -->
+<div class="modal-overlay" id="work-modal">
+  <div class="modal">
+    <h3 id="modal-title"></h3>
+    <div id="modal-body"></div>
+    <div class="modal-footer" id="modal-footer"></div>
+  </div>
+</div>
+
+<!-- NOTIFICATION -->
+<div id="notification"></div>
+
+<script>
+// ========== DATA STORE ==========
+const DB = {
+  get users() { return JSON.parse(localStorage.getItem('wt_users') || '[]'); },
+  set users(v) { localStorage.setItem('wt_users', JSON.stringify(v)); },
+  get works() { return JSON.parse(localStorage.getItem('wt_works') || '[]'); },
+  set works(v) { localStorage.setItem('wt_works', JSON.stringify(v)); },
+  get session() { return JSON.parse(sessionStorage.getItem('wt_session') || 'null'); },
+  set session(v) { sessionStorage.setItem('wt_session', JSON.stringify(v)); }
+};
+
+// SEED admin
+(function(){
+  const users = DB.users;
+  if (!users.find(u => u.email === 'admin@work.ge')) {
+    users.push({
+      id: 'admin', name: 'ადმინი', email: 'admin@work.ge',
+      password: 'admin123', role: 'admin',
+      createdAt: new Date().toISOString()
+    });
+    DB.users = users;
+  }
+})();
+
+let uploadedImages = []; // base64 list for current submission
+
+// ========== AUTH ==========
+function switchAuthTab(tab) {
+  document.querySelectorAll('.tab').forEach((t,i) => {
+    t.classList.toggle('active', (i===0 && tab==='login') || (i===1 && tab==='register'));
+  });
+  document.getElementById('login-form').style.display = tab==='login' ? '' : 'none';
+  document.getElementById('register-form').style.display = tab==='register' ? '' : 'none';
+}
+
+function doRegister() {
+  const name = document.getElementById('reg-name').value.trim();
+  const email = document.getElementById('reg-email').value.trim().toLowerCase();
+  const pass = document.getElementById('reg-pass').value;
+  const role = document.getElementById('reg-role').value;
+  const errEl = document.getElementById('reg-err');
+  const okEl = document.getElementById('reg-ok');
+  errEl.textContent = ''; okEl.textContent = '';
+
+  if (!name || !email || !pass) { errEl.textContent = 'ყველა ველი სავალდებულოა'; return; }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { errEl.textContent = 'ელ-ფოსტა არასწორია'; return; }
+  if (pass.length < 6) { errEl.textContent = 'პაროლი მინიმუმ 6 სიმბოლო'; return; }
+
+  const users = DB.users;
+  if (users.find(u => u.email === email)) {
+    errEl.textContent = 'ეს ელ-ფოსტა უკვე რეგისტრირებულია'; return;
+  }
+  users.push({ id: Date.now().toString(), name, email, password: pass, role, createdAt: new Date().toISOString() });
+  DB.users = users;
+  okEl.textContent = '✓ წარმატებით დარეგისტრირდით! შეგიძლიათ შეხვიდეთ.';
+  document.getElementById('reg-name').value = '';
+  document.getElementById('reg-email').value = '';
+  document.getElementById('reg-pass').value = '';
+}
+
+function doLogin() {
+  const email = document.getElementById('login-email').value.trim().toLowerCase();
+  const pass = document.getElementById('login-pass').value;
+  const errEl = document.getElementById('login-err');
+  errEl.textContent = '';
+
+  const user = DB.users.find(u => u.email === email && u.password === pass);
+  if (!user) { errEl.textContent = 'ელ-ფოსტა ან პაროლი არასწორია'; return; }
+
+  DB.session = { id: user.id, name: user.name, email: user.email, role: user.role };
+  launchApp();
+}
+
+function doLogout() {
+  sessionStorage.removeItem('wt_session');
+  location.reload();
+}
+
+// ========== APP INIT ==========
+function launchApp() {
+  document.getElementById('auth-screen').style.display = 'none';
+  const app = document.getElementById('app');
+  app.style.display = 'flex';
+
+  const s = DB.session;
+  document.getElementById('user-info-text').textContent = s.name;
+  const badge = document.getElementById('role-badge');
+  const roleMap = { admin: ['ადმინი', 'role-admin'], checker: ['შემმოწმებელი', 'role-checker'], worker: ['შემსრულებელი', 'role-worker'] };
+  badge.textContent = roleMap[s.role][0];
+  badge.className = 'role-badge ' + roleMap[s.role][1];
+
+  buildNav(s.role);
+
+  // Set today's date default
+  document.getElementById('w-date').valueAsDate = new Date();
+  populateAdminFilters();
+}
+
+function buildNav(role) {
+  const nav = document.getElementById('main-nav');
+  nav.innerHTML = '';
+  let items = [];
+  if (role === 'worker') {
+    items = [['sec-submit','📤 გაგზავნა'], ['sec-myworks','📁 ჩემი სამუშაოები']];
+  } else if (role === 'checker') {
+    items = [['sec-review','🔍 შემოწმება']];
+  } else {
+    items = [['sec-dashboard','📊 Dashboard'], ['sec-users','👥 მომხმარებლები'], ['sec-export','📥 ექსპორტი']];
+  }
+  items.forEach(([id, label], i) => {
+    const el = document.createElement('div');
+    el.className = 'nav-item' + (i===0?' active':'');
+    el.textContent = label;
+    el.onclick = () => activateSection(id, el);
+    nav.appendChild(el);
+  });
+
+  const firstId = items[0][0];
+  showSection(firstId);
+  if (role === 'checker') renderReview();
+  if (role === 'admin') { renderAdminStats(); renderAdminWorks(); }
+  if (role === 'worker') renderMyWorks();
+}
+
+function activateSection(id, el) {
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  el.classList.add('active');
+  showSection(id);
+  if (id === 'sec-review') renderReview();
+  if (id === 'sec-myworks') renderMyWorks();
+  if (id === 'sec-dashboard') { renderAdminStats(); renderAdminWorks(); }
+  if (id === 'sec-users') renderUsers();
+  if (id === 'sec-export') populateExportFilters();
+}
+
+function showSection(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById(id)?.classList.add('active');
+}
+
+// ========== FILE UPLOAD ==========
+function handleDragOver(e) {
+  e.preventDefault();
+  document.getElementById('drop-zone').classList.add('over');
+}
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('drop-zone').classList.remove('over');
+  handleFiles(e.dataTransfer.files);
+}
+function handleFiles(files) {
+  Array.from(files).forEach(file => {
+    if (!file.type.startsWith('image/')) return;
+    if (file.size > 5*1024*1024) { notify('ფოტო ძალიან დიდია (მაქს. 5MB)', 'error'); return; }
+    const reader = new FileReader();
+    reader.onload = e => {
+      uploadedImages.push({ name: file.name, data: e.target.result });
+      renderPreviews();
+    };
+    reader.readAsDataURL(file);
+  });
+}
+function renderPreviews() {
+  const grid = document.getElementById('preview-grid');
+  grid.innerHTML = '';
+  uploadedImages.forEach((img, i) => {
+    grid.innerHTML += `<div class="preview-item">
+      <img src="${img.data}" alt="${img.name}">
+      <button class="del-img" onclick="removeImg(${i})">✕</button>
+    </div>`;
+  });
+}
+function removeImg(i) { uploadedImages.splice(i,1); renderPreviews(); }
+
+// ========== SUBMIT WORK ==========
+function submitWork() {
+  const title = document.getElementById('w-title').value.trim();
+  const cat = document.getElementById('w-cat').value;
+  const date = document.getElementById('w-date').value;
+  const desc = document.getElementById('w-desc').value.trim();
+
+  if (!title || !desc || !date) { notify('სათაური, თარიღი და აღწერა სავალდებულოა', 'error'); return; }
+
+  const s = DB.session;
+  const works = DB.works;
+  works.push({
+    id: Date.now().toString(),
+    workerId: s.id,
+    workerName: s.name,
+    workerEmail: s.email,
+    title, category: cat, date, description: desc,
+    images: [...uploadedImages],
+    status: 'pending',
+    submittedAt: new Date().toISOString(),
+    checkerComment: '',
+    adminComment: '',
+    checkedBy: '',
+    checkedAt: ''
+  });
+  DB.works = works;
+
+  // Reset
+  document.getElementById('w-title').value = '';
+  document.getElementById('w-desc').value = '';
+  document.getElementById('w-date').valueAsDate = new Date();
+  uploadedImages = [];
+  renderPreviews();
+
+  notify('✓ სამუშაო წარმატებით გაიგზავნა!', 'success');
+}
+
+// ========== MY WORKS ==========
+function renderMyWorks() {
+  const s = DB.session;
+  const works = DB.works.filter(w => w.workerId === s.id).reverse();
+  const el = document.getElementById('my-works-list');
+  if (!works.length) { el.innerHTML = emptyState('📭','ჯერ სამუშაოები არ გაქვთ გაგზავნილი'); return; }
+  el.innerHTML = works.map(w => workCard(w, 'worker')).join('');
+}
+
+// ========== REVIEW ==========
+function renderReview() {
+  const filter = document.getElementById('filter-status')?.value || 'all';
+  let works = DB.works.filter(w => w.status !== 'pending' || true);
+  // checkers see all
+  if (filter !== 'all') works = works.filter(w => w.status === filter);
+  works = works.reverse();
+  const el = document.getElementById('review-list');
+  if (!works.length) { el.innerHTML = emptyState('🔍','შემოწმების სამუშაოები არ არის'); return; }
+  el.innerHTML = works.map(w => workCard(w, 'checker')).join('');
+}
+
+// ========== ADMIN ==========
+function populateAdminFilters() {
+  const users = DB.users.filter(u => u.role === 'worker');
+  ['adm-filter-worker','exp-worker'].forEach(id => {
+    const sel = document.getElementById(id);
+    if (!sel) return;
+    sel.innerHTML = '<option value="all">ყველა შემსრულებელი</option>';
+    users.forEach(u => sel.innerHTML += `<option value="${u.id}">${u.name}</option>`);
+  });
+}
+
+function renderAdminStats() {
+  const works = DB.works;
+  const stats = [
+    { num: works.length, label: 'სულ სამუშაო', color: '#58a6ff' },
+    { num: works.filter(w=>w.status==='pending').length, label: 'მოლოდინში', color: '#e3b341' },
+    { num: works.filter(w=>w.status==='approved').length, label: 'დამტკიცებული', color: '#3fb950' },
+    { num: works.filter(w=>w.status==='rejected').length, label: 'უარყოფილი', color: '#f85149' },
+    { num: DB.users.filter(u=>u.role==='worker').length, label: 'შემსრულებელი', color: '#bc8cff' },
+  ];
+  document.getElementById('admin-stats').innerHTML = stats.map(s =>
+    `<div class="stat-card"><div class="stat-num" style="color:${s.color}">${s.num}</div><div class="stat-label">${s.label}</div></div>`
+  ).join('');
+}
+
+function renderAdminWorks() {
+  const statusFilter = document.getElementById('adm-filter-status')?.value || 'all';
+  const workerFilter = document.getElementById('adm-filter-worker')?.value || 'all';
+  let works = DB.works.reverse();
+  if (statusFilter !== 'all') works = works.filter(w => w.status === statusFilter);
+  if (workerFilter !== 'all') works = works.filter(w => w.workerId === workerFilter);
+
+  const tbody = document.getElementById('admin-works-body');
+  if (!works.length) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text3);padding:30px">სამუშაოები არ მოიძებნა</td></tr>'; return; }
+  tbody.innerHTML = works.map(w => `
+    <tr>
+      <td><strong>${esc(w.title)}</strong></td>
+      <td>${esc(w.workerName)}</td>
+      <td><span style="font-size:11px">${esc(w.category)}</span></td>
+      <td style="font-size:12px;color:var(--text2)">${w.date}</td>
+      <td>${statusBadge(w.status)}</td>
+      <td>
+        <button class="btn btn-ghost btn-sm" onclick="openModal('${w.id}','admin')">👁 ნახვა</button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function renderUsers() {
+  const users = DB.users;
+  const tbody = document.getElementById('users-body');
+  tbody.innerHTML = users.map(u => `
+    <tr>
+      <td><strong>${esc(u.name)}</strong></td>
+      <td style="font-size:12px;color:var(--text2)">${esc(u.email)}</td>
+      <td>${roleBadge(u.role)}</td>
+      <td style="font-size:12px;color:var(--text3)">${u.createdAt ? u.createdAt.slice(0,10) : ''}</td>
+      <td>
+        ${u.id !== 'admin' ? `<button class="btn btn-danger btn-sm" onclick="deleteUser('${u.id}')">წაშლა</button>` : '<span style="color:var(--text3);font-size:12px">სისტემა</span>'}
+      </td>
+    </tr>
+  `).join('');
+}
+
+function deleteUser(id) {
+  if (!confirm('დარწმუნებული ხართ?')) return;
+  DB.users = DB.users.filter(u => u.id !== id);
+  renderUsers();
+  notify('მომხმარებელი წაიშალა', 'info');
+}
+
+// ========== WORK CARD ==========
+function workCard(w, viewAs) {
+  return `<div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px">
+      <div>
+        <div class="card-title">${esc(w.title)}</div>
+        <div class="card-meta">${esc(w.category)} · ${w.date} · ${esc(w.workerName)}</div>
+      </div>
+      ${statusBadge(w.status)}
+    </div>
+    <div class="card-body">${esc(w.description).substring(0,150)}${w.description.length>150?'...':''}</div>
+    ${w.checkerComment ? `<div class="comment-block">💬 ${esc(w.checkerComment)}</div>` : ''}
+    <div class="card-footer">
+      <button class="btn btn-ghost btn-sm" onclick="openModal('${w.id}','${viewAs}')">👁 დეტალები</button>
+      ${viewAs==='checker' && w.status==='pending' ? `
+        <button class="btn btn-ghost btn-sm" style="border-color:var(--accent);color:var(--accent)" onclick="quickAction('${w.id}','approved')">✓ დამტკიცება</button>
+        <button class="btn btn-ghost btn-sm" style="border-color:var(--danger);color:var(--danger)" onclick="openRejectModal('${w.id}')">✕ უარყოფა</button>
+      ` : ''}
+    </div>
+  </div>`;
+}
+
+// ========== MODAL ==========
+function openModal(workId, viewAs) {
+  const w = DB.works.find(x => x.id === workId);
+  if (!w) return;
+  document.getElementById('modal-title').textContent = w.title;
+  let html = `
+    <div class="text-sm" style="margin-bottom:12px">
+      <strong>${esc(w.workerName)}</strong> · ${esc(w.category)} · ${w.date}
+    </div>
+    ${statusBadge(w.status)}
+    <div class="divider"></div>
+    <p style="font-size:13px;line-height:1.7;color:var(--text2)">${esc(w.description)}</p>
+  `;
+  if (w.images && w.images.length) {
+    html += `<div class="preview-grid" style="margin-top:12px">` +
+      w.images.map(img => `<div class="preview-item"><img src="${img.data}" alt="${esc(img.name)}"></div>`).join('') +
+      `</div>`;
+  }
+  if (w.checkerComment) html += `<div class="comment-block" style="margin-top:12px">💬 ${esc(w.checkerComment)}</div>`;
+  if (w.checkedBy) html += `<p class="text-sm" style="margin-top:8px">შეამოწმა: ${esc(w.checkedBy)} · ${w.checkedAt?.slice(0,10)||''}</p>`;
+
+  document.getElementById('modal-body').innerHTML = html;
+
+  let footer = `<button class="btn btn-ghost btn-sm" onclick="closeModal()">დახურვა</button>`;
+
+  if (viewAs === 'checker' && w.status === 'pending') {
+    footer = `
+      <button class="btn btn-ghost btn-sm" onclick="closeModal()">გაუქმება</button>
+      <div style="flex:1"></div>
+      <button class="btn btn-danger btn-sm" onclick="closeModal();openRejectModal('${workId}')">✕ უარყოფა</button>
+      <button class="btn btn-primary btn-sm" onclick="quickAction('${workId}','approved');closeModal()">✓ დამტკიცება</button>
+    `;
+  }
+
+  if (viewAs === 'admin') {
+    footer = `
+      <button class="btn btn-ghost btn-sm" onclick="closeModal()">დახურვა</button>
+      <div style="flex:1"></div>
+      ${w.status!=='approved' ? `<button class="btn btn-primary btn-sm" onclick="adminAction('${workId}','approved')">✓ დამტკიცება</button>` : ''}
+      ${w.status!=='rejected' ? `<button class="btn btn-danger btn-sm" onclick="adminAction('${workId}','rejected')">✕ უარყოფა</button>` : ''}
+    `;
+  }
+
+  document.getElementById('modal-footer').innerHTML = footer;
+  document.getElementById('work-modal').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('work-modal').classList.remove('open');
+}
+
+// Close on overlay click
+document.getElementById('work-modal').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeModal();
+});
+
+let _rejectId = null;
+function openRejectModal(workId) {
+  _rejectId = workId;
+  const w = DB.works.find(x => x.id === workId);
+  document.getElementById('modal-title').textContent = 'უარყოფის მიზეზი';
+  document.getElementById('modal-body').innerHTML = `
+    <p style="color:var(--text2);margin-bottom:12px;font-size:13px">სამუშაო: <strong>${esc(w.title)}</strong></p>
+    <div class="form-group">
+      <label>კომენტარი / მიზეზი</label>
+      <textarea id="reject-comment" placeholder="მიუთითეთ რატომ უარიყოფება..."></textarea>
+    </div>
+  `;
+  document.getElementById('modal-footer').innerHTML = `
+    <button class="btn btn-ghost btn-sm" onclick="closeModal()">გაუქმება</button>
+    <button class="btn btn-danger btn-sm" onclick="confirmReject()">✕ უარყოფა</button>
+  `;
+  document.getElementById('work-modal').classList.add('open');
+}
+
+function confirmReject() {
+  const comment = document.getElementById('reject-comment').value.trim();
+  const works = DB.works;
+  const w = works.find(x => x.id === _rejectId);
+  if (!w) return;
+  w.status = 'rejected';
+  w.checkerComment = comment;
+  w.checkedBy = DB.session.name;
+  w.checkedAt = new Date().toISOString();
+  DB.works = works;
+  closeModal();
+  notify('სამუშაო უარყოფილია', 'error');
+  renderReview();
+  if (DB.session.role === 'admin') { renderAdminStats(); renderAdminWorks(); }
+}
+
+function quickAction(workId, status) {
+  const works = DB.works;
+  const w = works.find(x => x.id === workId);
+  if (!w) return;
+  w.status = status;
+  w.checkedBy = DB.session.name;
+  w.checkedAt = new Date().toISOString();
+  DB.works = works;
+  notify(status === 'approved' ? '✓ დამტკიცდა!' : 'უარყოფილია', status === 'approved' ? 'success' : 'error');
+  renderReview();
+}
+
+function adminAction(workId, status) {
+  const works = DB.works;
+  const w = works.find(x => x.id === workId);
+  if (!w) return;
+  w.status = status;
+  w.checkedBy = DB.session.name;
+  w.checkedAt = new Date().toISOString();
+  DB.works = works;
+  closeModal();
+  notify(status === 'approved' ? '✓ დამტკიცდა!' : 'უარყოფილია', status === 'approved' ? 'success' : 'error');
+  renderAdminStats();
+  renderAdminWorks();
+}
+
+// ========== EXCEL EXPORT ==========
+function populateExportFilters() {
+  populateAdminFilters();
+}
+
+function exportExcel() {
+  const statusFilter = document.getElementById('exp-status')?.value || 'all';
+  const workerFilter = document.getElementById('exp-worker')?.value || 'all';
+  const fromDate = document.getElementById('exp-from')?.value;
+  const toDate = document.getElementById('exp-to')?.value;
+
+  let works = DB.works;
+  if (statusFilter !== 'all') works = works.filter(w => w.status === statusFilter);
+  if (workerFilter !== 'all') works = works.filter(w => w.workerId === workerFilter);
+  if (fromDate) works = works.filter(w => w.date >= fromDate);
+  if (toDate) works = works.filter(w => w.date <= toDate);
+
+  if (!works.length) { notify('ფილტრის შედეგი ცარიელია', 'error'); return; }
+
+  // Build CSV (UTF-8 with BOM for Excel Georgian support)
+  const statusMap = { pending:'მოლოდინში', checking:'შემოწმებაში', approved:'დამტკიცებული', rejected:'უარყოფილი' };
+  const header = ['#','სათაური','შემსრულებელი','ელ-ფოსტა','კატეგორია','სამ. თარიღი','სტატუსი','შემმოწმებელი','კომენტარი','გაგზავნის თარიღი'];
+  const rows = works.map((w,i) => [
+    i+1,
+    w.title,
+    w.workerName,
+    w.workerEmail,
+    w.category,
+    w.date,
+    statusMap[w.status] || w.status,
+    w.checkedBy || '',
+    w.checkerComment || '',
+    w.submittedAt ? w.submittedAt.slice(0,10) : ''
+  ]);
+
+  const csvContent = [header, ...rows].map(r => r.map(cell => `"${String(cell).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const bom = '\uFEFF';
+  const blob = new Blob([bom + csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `samushaoebi_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+  notify('✓ ფაილი ჩამოიტვირთა!', 'success');
+}
+
+// ========== HELPERS ==========
+function statusBadge(s) {
+  const map = { pending:['status-pending','⏳ მოლოდინში'], checking:['status-checking','🔍 შემოწმებაში'], approved:['status-approved','✓ დამტკიცებული'], rejected:['status-rejected','✕ უარყოფილი'] };
+  const [cls, label] = map[s] || ['status-pending', s];
+  return `<span class="status ${cls}">${label}</span>`;
+}
+function roleBadge(r) {
+  const map = { admin:['role-admin','ადმინი'], checker:['role-checker','შემმოწმებელი'], worker:['role-worker','შემსრულებელი'] };
+  const [cls, label] = map[r] || ['',''];
+  return `<span class="role-badge ${cls}">${label}</span>`;
+}
+function emptyState(icon, msg) {
+  return `<div class="empty"><div class="empty-icon">${icon}</div><p>${msg}</p></div>`;
+}
+function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+function notify(msg, type='info') {
+  const el = document.getElementById('notification');
+  el.textContent = msg;
+  el.className = `show notif-${type}`;
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.classList.remove('show'), 3000);
+}
+
+// ========== BOOT ==========
+window.addEventListener('DOMContentLoaded', () => {
+  const s = DB.session;
+  if (s) launchApp();
+});
+</script>
+</body>
+</html>
