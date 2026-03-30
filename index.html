@@ -32,7 +32,18 @@
   input,select,textarea{width:100%;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-family:inherit;font-size:14px;transition:border-color .2s;-webkit-appearance:none;}
   input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent2);}
   select option{background:var(--surface2);}
-  textarea{resize:vertical;min-height:90px;}
+  textarea{resize:vertical;min-height:80px;}
+
+  /* CHIP SELECTOR (radio/checkbox style buttons) */
+  .chip-group{display:flex;flex-wrap:wrap;gap:8px;}
+  .chip{display:flex;align-items:center;gap:6px;padding:8px 14px;border-radius:20px;border:1.5px solid var(--border);background:var(--surface2);cursor:pointer;font-size:13px;font-weight:500;color:var(--text2);transition:all .2s;user-select:none;}
+  .chip:hover{border-color:var(--accent2);color:var(--text);}
+  .chip.selected{border-color:var(--accent2);background:rgba(31,111,235,.15);color:var(--text);}
+  .chip.selected-green{border-color:var(--accent);background:rgba(35,134,54,.15);color:#3fb950;}
+  .chip.selected-red{border-color:var(--danger);background:rgba(218,54,51,.15);color:#f85149;}
+  .chip.selected-yellow{border-color:var(--warn);background:rgba(210,153,34,.15);color:#e3b341;}
+  .chip input[type=radio],.chip input[type=checkbox]{display:none;}
+  .chip-dot{width:8px;height:8px;border-radius:50%;background:currentColor;opacity:0.7;}
 
   .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:10px 16px;border:none;border-radius:var(--radius);cursor:pointer;font-family:inherit;font-size:14px;font-weight:600;transition:all .2s;}
   .btn-primary{background:var(--accent);color:white;}
@@ -129,6 +140,7 @@
 </head>
 <body>
 
+<!-- AUTH -->
 <div id="auth-screen">
   <div class="auth-card">
     <div class="auth-logo">
@@ -158,6 +170,7 @@
   </div>
 </div>
 
+<!-- APP -->
 <div id="app">
   <div class="topbar">
     <div class="topbar-left">
@@ -185,40 +198,82 @@
     <div class="section" id="sec-submit">
       <div class="section-header"><h2>სამუშაოს გაგზავნა</h2></div>
       <div class="card">
-        <div class="form-group"><label>სათაური *</label><input type="text" id="w-title" placeholder="სამუშაოს მოკლე სათაური"></div>
-        <div class="form-row">
-          <div class="form-group"><label>კატეგორია</label>
-            <select id="w-cat"><option>მშენებლობა</option><option>სარემონტო</option><option>ელექტრო</option><option>სანტექნიკა</option><option>გზა / ასფალტი</option><option>სხვა</option></select>
+
+        <!-- ობიექტის დასახელება -->
+        <div class="form-group">
+          <label>ობიექტის დასახელება *</label>
+          <input type="text" id="w-loc" placeholder="მაგ: მარანი N3, ბაღი, სასტუმრო...">
+        </div>
+
+        <!-- კატეგორია — chips -->
+        <div class="form-group">
+          <label>კატეგორია *</label>
+          <div class="chip-group" id="cat-chips">
+            <label class="chip" id="chip-cat-0">
+              <input type="radio" name="w-cat" value="რესტორნები" onchange="selectChip('cat',0,this)">
+              <span>🍽 რესტორნები</span>
+            </label>
+            <label class="chip" id="chip-cat-1">
+              <input type="radio" name="w-cat" value="გარეტერიტორია" onchange="selectChip('cat',1,this)">
+              <span>🌿 გარეტერიტორია</span>
+            </label>
+            <label class="chip" id="chip-cat-2">
+              <input type="radio" name="w-cat" value="ოთახები" onchange="selectChip('cat',2,this)">
+              <span>🛏 ოთახები</span>
+            </label>
+            <label class="chip" id="chip-cat-3">
+              <input type="radio" name="w-cat" value="სხვა" onchange="selectChip('cat',3,this)">
+              <span>📦 სხვა</span>
+            </label>
           </div>
-          <div class="form-group"><label>სამუშაოს თარიღი *</label><input type="date" id="w-date"></div>
         </div>
 
-        <div class="form-group">
-          <label>📍 ადგილმდებარეობა *</label>
-          <input type="text" id="w-loc" placeholder="მისამართი, ობიექტის სახელი, სოფელი/ქალაქი...">
+        <!-- თარიღი + დრო -->
+        <div class="form-row">
+          <div class="form-group">
+            <label>სამუშაოს თარიღი *</label>
+            <input type="date" id="w-date">
+          </div>
+          <div class="form-group">
+            <label>დრო (საათი) *</label>
+            <input type="time" id="w-time">
+          </div>
         </div>
 
+        <!-- დაზიანება -->
         <div class="form-group">
-          <label>⚠️ დაზიანება / პრობლემის აღწერა</label>
+          <label>⚠️ დაზიანება / პრობლემა</label>
           <textarea id="w-dmg" placeholder="რა სახის დაზიანება ან გაუმართაობა იყო? (სურვილისამებრ)" style="min-height:80px"></textarea>
         </div>
 
+        <!-- შედეგი — chips -->
         <div class="form-group">
           <label>✅ შესრულების შედეგი *</label>
-          <select id="w-res">
-            <option value="შესრულდა">✅  შესრულდა</option>
-            <option value="ვერ შესრულდა">❌  ვერ შესრულდა</option>
-            <option value="დროებით გაკეთდა">🔧  დროებით გაკეთდა</option>
-          </select>
+          <div class="chip-group" id="res-chips">
+            <label class="chip" id="chip-res-0">
+              <input type="radio" name="w-res" value="შესრულდა" onchange="selectChip('res',0,this)">
+              <span>✅ შესრულდა</span>
+            </label>
+            <label class="chip" id="chip-res-1">
+              <input type="radio" name="w-res" value="ვერ შესრულდა" onchange="selectChip('res',1,this)">
+              <span>❌ ვერ შესრულდა</span>
+            </label>
+            <label class="chip" id="chip-res-2">
+              <input type="radio" name="w-res" value="დროებით გაკეთდა" onchange="selectChip('res',2,this)">
+              <span>🔧 დროებით გაკეთდა</span>
+            </label>
+          </div>
         </div>
 
+        <!-- კომენტარი (არა სავალდებულო) -->
         <div class="form-group">
-          <label>სამუშაოს დეტალური აღწერა *</label>
-          <textarea id="w-desc" placeholder="დეტალურად გაეწერეთ შესრულებული სამუშაო..."></textarea>
+          <label>💬 კომენტარი <span style="color:var(--text3);font-weight:400">(სურვილისამებრ)</span></label>
+          <textarea id="w-comment" placeholder="დამატებითი კომენტარი..." style="min-height:70px"></textarea>
         </div>
 
+        <!-- ფოტო -->
         <div class="form-group">
-          <label>📷 ფოტო მასალა (მტკიცებულება)</label>
+          <label>📷 ფოტო მასალა</label>
           <div class="file-area" id="drop-zone" onclick="document.getElementById('fi').click()"
             ondragover="handleDragOver(event)" ondrop="handleDrop(event)" ondragleave="this.classList.remove('over')">
             <div style="font-size:36px">📷</div>
@@ -281,6 +336,13 @@
               <option value="ვერ შესრულდა">ვერ შესრულდა</option>
               <option value="დროებით გაკეთდა">დროებით გაკეთდა</option>
             </select>
+            <select id="af-cat" onchange="renderAdminWorks()">
+              <option value="all">ყველა კატეგ.</option>
+              <option>რესტორნები</option>
+              <option>გარეტერიტორია</option>
+              <option>ოთახები</option>
+              <option>სხვა</option>
+            </select>
             <select id="af-wk" onchange="renderAdminWorks()">
               <option value="all">ყველა შემსრულებელი</option>
             </select>
@@ -288,7 +350,7 @@
         </div>
         <div class="table-wrap">
           <table>
-            <thead><tr><th>სათაური</th><th>ადგილი</th><th>შემსრულებელი</th><th>შედეგი</th><th>სტატუსი</th><th>თარიღი</th><th></th></tr></thead>
+            <thead><tr><th>ობიექტი</th><th>კატეგ.</th><th>შემსრულებელი</th><th>შედეგი</th><th>სტატუსი</th><th>თარიღი/დრო</th><th></th></tr></thead>
             <tbody id="adm-tbody"></tbody>
           </table>
         </div>
@@ -324,7 +386,7 @@
         <div class="form-row">
           <div class="form-group"><label>შემსრულებელი</label><select id="ex-wk"><option value="all">ყველა</option></select></div>
           <div class="form-group"><label>კატეგორია</label>
-            <select id="ex-cat"><option value="all">ყველა</option><option>მშენებლობა</option><option>სარემონტო</option><option>ელექტრო</option><option>სანტექნიკა</option><option>გზა / ასფალტი</option><option>სხვა</option></select>
+            <select id="ex-cat"><option value="all">ყველა</option><option>რესტორნები</option><option>გარეტერიტორია</option><option>ოთახები</option><option>სხვა</option></select>
           </div>
         </div>
         <div class="form-row">
@@ -368,6 +430,28 @@ const DB={
 })();
 
 let imgs=[];
+
+// chip selection state
+const chipState={cat:null, res:null};
+
+function selectChip(group, idx, input){
+  const prefix='chip-'+group+'-';
+  // deselect all in group
+  document.querySelectorAll(`[id^="${prefix}"]`).forEach(el=>{
+    el.classList.remove('selected','selected-green','selected-red','selected-yellow');
+  });
+  const el=document.getElementById(prefix+idx);
+  // pick color by group+value
+  if(group==='res'){
+    const v=input.value;
+    if(v==='შესრულდა') el.classList.add('selected-green');
+    else if(v==='ვერ შესრულდა') el.classList.add('selected-red');
+    else el.classList.add('selected-yellow');
+  } else {
+    el.classList.add('selected');
+  }
+  chipState[group]=input.value;
+}
 
 // AUTH
 function switchTab(t){
@@ -419,8 +503,15 @@ function launchApp(){
   b.textContent=rl[s.role]||s.role;
   b.className='role-badge '+(rc[s.role]||'role-pending');
   buildNav(s.role);
+
+  // set defaults
   const wd=document.getElementById('w-date');
   if(wd) wd.valueAsDate=new Date();
+  const wt=document.getElementById('w-time');
+  if(wt){
+    const now=new Date();
+    wt.value=now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');
+  }
 }
 
 function buildNav(role){
@@ -482,24 +573,46 @@ function rmImg(i){imgs.splice(i,1);renderPrev();}
 
 // SUBMIT
 function submitWork(){
-  const title=document.getElementById('w-title').value.trim();
-  const date=document.getElementById('w-date').value;
   const loc=document.getElementById('w-loc').value.trim();
+  const date=document.getElementById('w-date').value;
+  const time=document.getElementById('w-time').value;
   const dmg=document.getElementById('w-dmg').value.trim();
-  const res=document.getElementById('w-res').value;
-  const desc=document.getElementById('w-desc').value.trim();
-  const cat=document.getElementById('w-cat').value;
-  if(!title||!date||!loc||!desc){notify('სათაური, თარიღი, ადგილი და აღწერა სავალდებულოა','error');return;}
+  const comment=document.getElementById('w-comment').value.trim();
+  const cat=chipState.cat;
+  const res=chipState.res;
+
+  if(!loc){notify('ობიექტის დასახელება სავალდებულოა','error');return;}
+  if(!date||!time){notify('თარიღი და დრო სავალდებულოა','error');return;}
+  if(!cat){notify('კატეგორია სავალდებულოა','error');return;}
+  if(!res){notify('შედეგი სავალდებულოა','error');return;}
+
   const s=DB.sess;
   const works=DB.works;
-  works.push({id:Date.now().toString(),workerId:s.id,workerName:s.name,workerEmail:s.email,
-    title,category:cat,date,location:loc,damage:dmg,result:res,description:desc,
-    images:[...imgs],status:'pending',submittedAt:new Date().toISOString(),
-    checkerComment:'',checkedBy:'',checkedAt:''});
+  works.push({
+    id:Date.now().toString(),
+    workerId:s.id,workerName:s.name,workerEmail:s.email,
+    location:loc,category:cat,date,time,damage:dmg,result:res,comment,
+    images:[...imgs],status:'pending',
+    submittedAt:new Date().toISOString(),
+    checkerComment:'',checkedBy:'',checkedAt:''
+  });
   DB.works=works;
-  ['w-title','w-desc','w-dmg','w-loc'].forEach(id=>document.getElementById(id).value='');
+
+  // reset form
+  document.getElementById('w-loc').value='';
+  document.getElementById('w-dmg').value='';
+  document.getElementById('w-comment').value='';
   document.getElementById('w-date').valueAsDate=new Date();
-  document.getElementById('w-res').value='შესრულდა';
+  const now=new Date();
+  document.getElementById('w-time').value=now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');
+
+  // reset chips
+  document.querySelectorAll('[id^="chip-cat-"],[id^="chip-res-"]').forEach(el=>{
+    el.classList.remove('selected','selected-green','selected-red','selected-yellow');
+  });
+  document.querySelectorAll('input[name="w-cat"],input[name="w-res"]').forEach(el=>el.checked=false);
+  chipState.cat=null;chipState.res=null;
+
   imgs=[];renderPrev();
   notify('✓ სამუშაო გაიგზავნა!','success');
 }
@@ -552,20 +665,22 @@ function renderAdminStats(){
 function renderAdminWorks(){
   const sf=document.getElementById('af-st')?.value||'all';
   const rf=document.getElementById('af-res')?.value||'all';
+  const cf=document.getElementById('af-cat')?.value||'all';
   const wf=document.getElementById('af-wk')?.value||'all';
   let list=[...DB.works].reverse();
   if(sf!=='all') list=list.filter(w=>w.status===sf);
   if(rf!=='all') list=list.filter(w=>w.result===rf);
+  if(cf!=='all') list=list.filter(w=>w.category===cf);
   if(wf!=='all') list=list.filter(w=>w.workerId===wf);
   const tb=document.getElementById('adm-tbody');
   if(!list.length){tb.innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--text3);padding:30px">სამუშაოები არ მოიძებნა</td></tr>';return;}
   tb.innerHTML=list.map(w=>`<tr>
-    <td><strong>${e(w.title)}</strong></td>
-    <td style="font-size:12px;color:var(--text2)">${e(w.location||'')}</td>
+    <td><strong>${e(w.location||'')}</strong></td>
+    <td style="font-size:12px">${e(w.category||'')}</td>
     <td>${e(w.workerName)}</td>
     <td>${rBadge(w.result)}</td>
     <td>${sBadge(w.status)}</td>
-    <td style="font-size:12px;color:var(--text2)">${w.date}</td>
+    <td style="font-size:12px;color:var(--text2);white-space:nowrap">${w.date}<br><span style="color:var(--text3)">${w.time||''}</span></td>
     <td><button class="btn btn-ghost btn-sm" onclick="openModal('${w.id}','admin')">👁</button></td>
   </tr>`).join('');
 }
@@ -606,13 +721,15 @@ function delUser(id){
 function wCard(w,viewAs){
   return `<div class="card">
     <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;margin-bottom:10px">
-      <div><div class="card-title">${e(w.title)}</div>
-      <div class="card-meta">${e(w.category)} · ${w.date} · ${e(w.workerName)}</div></div>
+      <div>
+        <div class="card-title">📍 ${e(w.location||'')}</div>
+        <div class="card-meta">${e(w.category||'')} · ${w.date}${w.time?' · '+w.time:''} · ${e(w.workerName)}</div>
+      </div>
       <div style="display:flex;gap:6px;flex-wrap:wrap">${rBadge(w.result)} ${sBadge(w.status)}</div>
     </div>
-    ${w.location?`<div style="font-size:12px;color:var(--text2);margin-bottom:6px">📍 ${e(w.location)}</div>`:''}
-    <div style="font-size:13px;color:var(--text2)">${e(w.description).slice(0,120)}${w.description.length>120?'...':''}</div>
-    ${w.checkerComment?`<div class="comment-block">💬 ${e(w.checkerComment)}</div>`:''}
+    ${w.damage?`<div style="font-size:12px;color:var(--text2);margin-bottom:6px">⚠️ ${e(w.damage)}</div>`:''}
+    ${w.comment?`<div style="font-size:13px;color:var(--text2)">💬 ${e(w.comment)}</div>`:''}
+    ${w.checkerComment?`<div class="comment-block">🔍 ${e(w.checkerComment)}</div>`:''}
     <div class="card-footer">
       <button class="btn btn-ghost btn-sm" onclick="openModal('${w.id}','${viewAs}')">👁 დეტალები</button>
       ${viewAs==='checker'&&w.status==='pending'?`
@@ -627,19 +744,18 @@ function wCard(w,viewAs){
 function openModal(wid,viewAs){
   const w=DB.works.find(x=>x.id===wid);
   if(!w)return;
-  document.getElementById('m-title').textContent=w.title;
+  document.getElementById('m-title').textContent=w.location||w.category||'სამუშაო';
   let html=`
     <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px">${rBadge(w.result)} ${sBadge(w.status)}</div>
-    <div class="detail-row"><span class="detail-label">📋 კატეგორია</span><span>${e(w.category)}</span></div>
-    <div class="detail-row"><span class="detail-label">📅 თარიღი</span><span>${w.date}</span></div>
+    <div class="detail-row"><span class="detail-label">📍 ობიექტი</span><span>${e(w.location||'—')}</span></div>
+    <div class="detail-row"><span class="detail-label">📋 კატეგორია</span><span>${e(w.category||'—')}</span></div>
+    <div class="detail-row"><span class="detail-label">📅 თარიღი</span><span>${w.date}${w.time?' · '+w.time:''}</span></div>
     <div class="detail-row"><span class="detail-label">👤 შემსრულებელი</span><span>${e(w.workerName)}</span></div>
-    <div class="detail-row"><span class="detail-label">📍 ადგილმდებარეობა</span><span>${e(w.location||'—')}</span></div>
     ${w.damage?`<div class="detail-row"><span class="detail-label">⚠️ დაზიანება</span><span>${e(w.damage)}</span></div>`:''}
-    <div class="divider"></div>
-    <p style="font-size:13px;line-height:1.7;color:var(--text2)">${e(w.description)}</p>
+    ${w.comment?`<div class="detail-row"><span class="detail-label">💬 კომენტარი</span><span>${e(w.comment)}</span></div>`:''}
   `;
   if(w.images?.length) html+=`<div class="preview-grid" style="margin-top:12px">${w.images.map(im=>`<div class="preview-item"><img src="${im.data}"></div>`).join('')}</div>`;
-  if(w.checkerComment) html+=`<div class="comment-block" style="margin-top:12px">💬 ${e(w.checkerComment)}</div>`;
+  if(w.checkerComment) html+=`<div class="comment-block" style="margin-top:12px">🔍 ${e(w.checkerComment)}</div>`;
   if(w.checkedBy) html+=`<p class="text-sm" style="margin-top:8px">შეამოწმა: ${e(w.checkedBy)} · ${(w.checkedAt||'').slice(0,10)}</p>`;
   document.getElementById('m-body').innerHTML=html;
 
@@ -666,7 +782,7 @@ function openReject(wid){
   const w=DB.works.find(x=>x.id===wid);
   document.getElementById('m-title').textContent='უარყოფის მიზეზი';
   document.getElementById('m-body').innerHTML=`
-    <p style="color:var(--text2);margin-bottom:12px;font-size:13px">სამუშაო: <strong>${e(w.title)}</strong></p>
+    <p style="color:var(--text2);margin-bottom:12px;font-size:13px">ობიექტი: <strong>${e(w.location||w.category||'')}</strong></p>
     <div class="form-group"><label>კომენტარი</label><textarea id="rej-txt" placeholder="მიუთითეთ მიზეზი..."></textarea></div>`;
   document.getElementById('m-footer').innerHTML=`
     <button class="btn btn-ghost btn-sm" onclick="closeModal()">გაუქმება</button>
@@ -678,8 +794,10 @@ function confirmReject(){
   const works=DB.works;
   const w=works.find(x=>x.id===_rid);
   if(!w)return;
-  w.status='rejected';w.checkerComment=comment;w.checkedBy=DB.sess.name;w.checkedAt=new Date().toISOString();
-  DB.works=works;closeModal();notify('სამუშაო უარყოფილია','error');renderReview();
+  w.status='rejected';w.checkerComment=comment;
+  w.checkedBy=DB.sess.name;w.checkedAt=new Date().toISOString();
+  DB.works=works;closeModal();
+  notify('სამუშაო უარყოფილია','error');renderReview();
 }
 function quickAct(wid,status){
   const works=DB.works;const w=works.find(x=>x.id===wid);if(!w)return;
@@ -689,7 +807,8 @@ function quickAct(wid,status){
 function admAct(wid,status){
   const works=DB.works;const w=works.find(x=>x.id===wid);if(!w)return;
   w.status=status;w.checkedBy=DB.sess.name;w.checkedAt=new Date().toISOString();
-  DB.works=works;closeModal();notify(status==='approved'?'✓ დამტკიცდა!':'უარყოფილია',status==='approved'?'success':'error');
+  DB.works=works;closeModal();
+  notify(status==='approved'?'✓ დამტკიცდა!':'უარყოფილია',status==='approved'?'success':'error');
   renderAdminStats();renderAdminWorks();
 }
 
@@ -710,8 +829,13 @@ function exportExcel(){
   if(to) list=list.filter(w=>w.date<=to);
   if(!list.length){notify('ფილტრი ცარიელია','error');return;}
   const sm={pending:'მოლოდინში',approved:'დამტკიცებული',rejected:'უარყოფილი'};
-  const hdr=['#','სათაური','შემსრულებელი','ელ-ფოსტა','კატეგორია','ადგილმდებარეობა','დაზიანება','შედეგი','სამ.თარიღი','სტატუსი','შემმოწმებელი','კომენტარი','გაგზავნის თარიღი'];
-  const rows=list.map((w,i)=>[i+1,w.title,w.workerName,w.workerEmail,w.category,w.location||'',w.damage||'',w.result||'',w.date,sm[w.status]||w.status,w.checkedBy||'',w.checkerComment||'',(w.submittedAt||'').slice(0,10)]);
+  const hdr=['#','ობიექტი','შემსრულებელი','ელ-ფოსტა','კატეგორია','დაზიანება','შედეგი','კომენტარი','სამ.თარიღი','დრო','სტატუსი','შემმოწმებელი','შემმოწმ.კომენტარი','გაგზავნის თარიღი'];
+  const rows=list.map((w,i)=>[
+    i+1,w.location||'',w.workerName,w.workerEmail,w.category||'',
+    w.damage||'',w.result||'',w.comment||'',
+    w.date,w.time||'',sm[w.status]||w.status,
+    w.checkedBy||'',w.checkerComment||'',(w.submittedAt||'').slice(0,10)
+  ]);
   const csv=[hdr,...rows].map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
   const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
   const url=URL.createObjectURL(blob);
