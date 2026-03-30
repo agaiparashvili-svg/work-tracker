@@ -846,4 +846,62 @@ window.exportExcel = function() {
   const wf = document.getElementById('ex-wk')?.value || 'all';
   const cf = document.getElementById('ex-cat')?.value || 'all';
   const fr = document.getElementById('ex-from')?.value;
-  const to = document.getElementById('
+  const to = document.getElementById('ex-to')?.value;
+  let list = [...allWorks];
+  if (sf !== 'all') list = list.filter(w => w.status === sf);
+  if (rf !== 'all') list = list.filter(w => w.result === rf);
+  if (wf !== 'all') list = list.filter(w => w.workerId === wf);
+  if (cf !== 'all') list = list.filter(w => w.category === cf);
+  if (fr) list = list.filter(w => w.date >= fr);
+  if (to) list = list.filter(w => w.date <= to);
+  if (!list.length) { notify('ფილტრი ცარიელია', 'error'); return; }
+  const sm = { pending:'მოლოდინში', approved:'დამტკიცებული', rejected:'უარყოფილი' };
+  const hdr = ['#','ობიექტი','შემსრულებელი','ელ-ფოსტა','კატეგორია','დაზიანება','შედეგი','კომენტარი','სამ.თარიღი','დრო','სტატუსი','შემმოწმებელი','შემმოწმ.კომენტარი'];
+  const rows = list.map((w, i) => [
+    i+1, w.location||'', w.workerName||'', w.workerEmail||'',
+    w.category||'', w.damage||'', w.result||'', w.comment||'',
+    w.date||'', w.time||'', sm[w.status]||w.status,
+    w.checkedBy||'', w.checkerComment||''
+  ]);
+  const csv = [hdr, ...rows].map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `samushaoebi_${new Date().toISOString().slice(0,10)}.csv`; a.click();
+  URL.revokeObjectURL(url);
+  notify('✓ ჩამოიტვირთა!', 'success');
+};
+
+// ---- FILTERS (expose for onchange) ----
+window.renderReview = renderReview;
+window.renderAdminWorks = renderAdminWorks;
+
+// ---- HELPERS ----
+window.switchTab = function(t) {
+  document.querySelectorAll('.tab').forEach((el, i) => el.classList.toggle('active', (i===0&&t==='login')||(i===1&&t==='register')));
+  document.getElementById('login-form').style.display = t==='login' ? '' : 'none';
+  document.getElementById('register-form').style.display = t==='register' ? '' : 'none';
+};
+
+function sBadge(s) { const m={pending:['s-pending','⏳ მოლოდინში'],approved:['s-approved','✓ დამტკიცებული'],rejected:['s-rejected','✕ უარყოფილი']};const[c,l]=m[s]||['s-pending',s];return `<span class="status ${c}">${l}</span>`; }
+function rBadge(r) { const m={'შესრულდა':['r-done','✅ შესრულდა'],'ვერ შესრულდა':['r-failed','❌ ვერ შესრულდა'],'დროებით გაკეთდა':['r-temp','🔧 დროებით']};const[c,l]=m[r]||['',''];return r?`<span class="status ${c}">${l}</span>`:''; }
+function empty(icon, msg) { return `<div style="text-align:center;padding:60px 20px;color:var(--text3)"><div style="font-size:48px;margin-bottom:12px">${icon}</div><p>${msg}</p></div>`; }
+function e(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function notify(msg, type='info') { const el=document.getElementById('notification');el.textContent=msg;el.className=`show notif-${type}`;clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('show'),3000); }
+
+// Seed admin user profile in Firestore if not exists
+onAuthStateChanged(auth, async (user) => {
+  if (user && user.email === 'admin@work.ge') {
+    const snap = await getDoc(doc(db, 'users', user.uid));
+    if (!snap.exists()) {
+      await setDoc(doc(db, 'users', user.uid), {
+        uid: user.uid, name: 'ადმინი', email: user.email,
+        role: 'admin', createdAt: serverTimestamp()
+      });
+    }
+  }
+});
+
+</script>
+</body>
+</html>
