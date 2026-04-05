@@ -58,7 +58,7 @@
   .topbar-logo{font-size:16px;font-weight:700;color:var(--accent);}
   .role-badge{padding:3px 8px;border-radius:20px;font-size:11px;font-weight:600;}
   .role-admin{background:rgba(218,54,51,.2);color:#f85149;}
-  .role-checker{background:rgba(210,153,34,.2);color:#e3b341;}
+  .role-supervisor{background:rgba(210,153,34,.2);color:#e3b341;}
   .role-worker{background:rgba(35,134,54,.2);color:#3fb950;}
   .role-pending{background:rgba(110,118,129,.2);color:#8b949e;}
   .topbar-right{display:flex;align-items:center;gap:8px;}
@@ -239,6 +239,11 @@
           <textarea id="w-comment" placeholder="დამატებითი კომენტარი..." style="min-height:70px"></textarea>
         </div>
         <div class="form-group">
+          <label>👤 ვისაც გაგზავნის <span style="color:var(--text3);font-weight:400">(სურვილისამებრ)</span></label>
+          <div class="chip-group" id="assignee-chips"></div>
+          <p id="assignee-empty" style="font-size:12px;color:var(--text3);margin-top:6px;display:none">სუპერვაიზერები ჯერ არ არიან დამატებული</p>
+        </div>
+        <div class="form-group">
           <label>📷 ფოტო მასალა</label>
           <div class="file-area" id="drop-zone" onclick="document.getElementById('fi').click()"
             ondragover="handleDragOver(event)" ondrop="handleDrop(event)" ondragleave="this.classList.remove('over')">
@@ -262,7 +267,7 @@
     <!-- REVIEW -->
     <div class="section" id="sec-review">
       <div class="section-header">
-        <h2>შემოწმება</h2>
+        <h2>სუპერვაიზერის პანელი</h2>
         <div class="filter-row" style="margin:0">
           <select id="f-status" onchange="renderReview()">
             <option value="all">ყველა სტატუსი</option>
@@ -399,6 +404,7 @@ let allWorks = [];
 let allUsers = [];
 let imgs = [];
 const chipState = { cat: null, res: null };
+let assignedTo = []; // multi-select assignees
 
 // ---- LOADING ----
 function hideLoading() { document.getElementById('loading-screen').style.display = 'none'; }
@@ -479,8 +485,8 @@ function launchApp(userData) {
   document.getElementById('auth-screen').style.display = 'none';
   showApp();
   document.getElementById('ui-name').textContent = userData.name;
-  const rl = { admin:'ადმინი', checker:'შემმოწმებელი', worker:'შემსრულებელი', pending:'მოლოდინში' };
-  const rc = { admin:'role-admin', checker:'role-checker', worker:'role-worker', pending:'role-pending' };
+  const rl = { admin:'ადმინი', supervisor:'სუპერვაიზერი', worker:'შემსრულებელი', pending:'მოლოდინში' };
+  const rc = { admin:'role-admin', supervisor:'role-supervisor', worker:'role-worker', pending:'role-pending' };
   const b = document.getElementById('role-badge');
   b.textContent = rl[userData.role] || userData.role;
   b.className = 'role-badge ' + (rc[userData.role] || 'role-pending');
@@ -496,7 +502,7 @@ function buildNav(role, userData) {
   nav.innerHTML = '';
   const map = {
     worker: [['sec-submit','📤 გაგზავნა'],['sec-myworks','📁 ჩემი']],
-    checker: [['sec-review','🔍 შემოწმება']],
+    supervisor: [['sec-submit','📤 გაგზავნა'],['sec-myworks','📁 ჩემი'],['sec-review','🔍 შემოწმება']],
     admin: [['sec-dashboard','📊 Dashboard'],['sec-users','👥 მომხმარებლები'],['sec-export','📥 ექსპორტი']]
   };
   const items = map[role] || [];
@@ -509,8 +515,8 @@ function buildNav(role, userData) {
     nav.appendChild(el);
   });
   showSection(items[0][0]);
-  if (role === 'worker') listenMyWorks();
-  if (role === 'checker') listenAllWorks('checker');
+  if (role === 'worker') { listenMyWorks(); listenUsers(); }
+  if (role === 'supervisor') { listenMyWorks(); listenAllWorks('supervisor'); listenUsers(); }
   if (role === 'admin') { listenAllWorks('admin'); listenUsers(); }
 }
 
@@ -520,6 +526,7 @@ function activateSection(id, el) {
   showSection(id);
   if (id === 'sec-review') renderReview();
   if (id === 'sec-myworks') renderMyWorks();
+  if (id === 'sec-submit') renderAssigneeChips();
   if (id === 'sec-dashboard') { renderAdminStats(); renderAdminWorks(); }
   if (id === 'sec-users') renderUsers();
 }
@@ -542,7 +549,7 @@ function listenAllWorks(role) {
   const q = query(collection(db, 'works'), orderBy('submittedAt', 'desc'));
   onSnapshot(q, snap => {
     allWorks = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    if (role === 'checker') renderReview();
+    if (role === 'supervisor') { renderReview(); renderMyWorks(); }
     if (role === 'admin') { renderAdminStats(); renderAdminWorks(); }
   });
 }
@@ -552,8 +559,34 @@ function listenUsers() {
     allUsers = snap.docs.map(d => ({ id: d.id, ...d.data() }));
     renderUsers();
     populateWorkerSelects();
+    renderAssigneeChips();
   });
 }
+
+function renderAssigneeChips() {
+  const container = document.getElementById('assignee-chips');
+  const emptyMsg = document.getElementById('assignee-empty');
+  if (!container) return;
+  const supervisors = allUsers.filter(u => u.role === 'supervisor');
+  if (!supervisors.length) {
+    container.innerHTML = '';
+    if (emptyMsg) emptyMsg.style.display = 'block';
+    return;
+  }
+  if (emptyMsg) emptyMsg.style.display = 'none';
+  container.innerHTML = supervisors.map(u => `
+    <label class="chip ${assignedTo.includes(u.id) ? 'sel-blue' : ''}" id="asgn-${u.id}" onclick="toggleAssignee('${u.id}','${e(u.name)}')">
+      <span>👤 ${e(u.name)}</span>
+    </label>
+  `).join('');
+}
+
+window.toggleAssignee = function(uid, name) {
+  const idx = assignedTo.indexOf(uid);
+  if (idx === -1) assignedTo.push(uid);
+  else assignedTo.splice(idx, 1);
+  renderAssigneeChips();
+};
 
 // ---- FILES ----
 window.handleDragOver = function(e) { e.preventDefault(); document.getElementById('drop-zone').classList.add('over'); };
@@ -608,6 +641,7 @@ window.submitWork = async function() {
       workerEmail: userData.email,
       location: loc, category: cat, date, time,
       damage: dmg, result: res, comment,
+      assignedTo: assignedTo,
       images: imgs,
       status: 'pending',
       submittedAt: serverTimestamp(),
@@ -624,6 +658,8 @@ window.submitWork = async function() {
       el.classList.remove('sel-blue','sel-green','sel-red','sel-yellow')
     );
     chipState.cat = null; chipState.res = null;
+    assignedTo = [];
+    renderAssigneeChips();
     imgs = []; renderPrev();
     notify('✓ სამუშაო გაიგზავნა!', 'success');
   } catch(e) {
@@ -646,7 +682,7 @@ function renderReview() {
   if (rf !== 'all') list = list.filter(w => w.result === rf);
   const el = document.getElementById('review-list');
   if (!el) return;
-  el.innerHTML = list.length ? list.map(w => wCard(w, 'checker')).join('') : empty('🔍', 'სამუშაოები არ მოიძებნა');
+  el.innerHTML = list.length ? list.map(w => wCard(w, 'supervisor')).join('') : empty('🔍', 'სამუშაოები არ მოიძებნა');
 }
 
 function renderAdminStats() {
@@ -700,7 +736,7 @@ function renderUsers() {
       : `<select onchange="setRole('${u.id}',this.value)" style="width:auto;font-size:12px;padding:4px 8px">
           <option value="pending" ${u.role==='pending'?'selected':''}>⏳ მოლოდინში</option>
           <option value="worker" ${u.role==='worker'?'selected':''}>👷 შემსრულებელი</option>
-          <option value="checker" ${u.role==='checker'?'selected':''}>🔍 შემმოწმებელი</option>
+          <option value="supervisor" ${u.role==='supervisor'?'selected':''}>🔍 სუპერვაიზერი</option>
         </select>`}
     </td>
     <td style="font-size:12px;color:var(--text3)">${u.createdAt?.toDate ? u.createdAt.toDate().toISOString().slice(0,10) : ''}</td>
@@ -749,7 +785,7 @@ window.wCard = function(w, viewAs) {
     ${w.checkerComment ? `<div class="comment-block">🔍 ${e(w.checkerComment)}</div>` : ''}
     <div class="card-footer">
       <button class="btn btn-ghost btn-sm" onclick="openModal('${w.id}','${viewAs}')">👁 დეტალები</button>
-      ${viewAs==='checker'&&w.status==='pending' ? `
+      ${viewAs==='supervisor'&&w.status==='pending' ? `
         <button class="btn btn-sm" style="background:rgba(35,134,54,.15);color:#3fb950;border:1px solid rgba(35,134,54,.3)" onclick="quickAct('${w.id}','approved')">✓ დამტკიცება</button>
         <button class="btn btn-sm" style="background:rgba(218,54,51,.15);color:#f85149;border:1px solid rgba(218,54,51,.3)" onclick="openReject('${w.id}')">✕ უარყოფა</button>
       ` : ''}
@@ -770,6 +806,7 @@ window.openModal = function(wid, viewAs) {
     <div class="detail-row"><span class="detail-label">👤 შემსრულებელი</span><span>${e(w.workerName||'')}</span></div>
     ${w.damage ? `<div class="detail-row"><span class="detail-label">⚠️ დაზიანება</span><span>${e(w.damage)}</span></div>` : ''}
     ${w.comment ? `<div class="detail-row"><span class="detail-label">💬 კომენტარი</span><span>${e(w.comment)}</span></div>` : ''}
+    ${w.assignedTo?.length ? `<div class="detail-row"><span class="detail-label">👤 გაგზავნილია</span><span>${w.assignedTo.map(uid=>{ const u=allUsers.find(x=>x.id===uid); return u?e(u.name):uid; }).join(', ')}</span></div>` : ''}
   `;
   if (w.images?.length) html += `<div class="preview-grid" style="margin-top:12px">${w.images.map(im => `<div class="preview-item"><img src="${im.data}"></div>`).join('')}</div>`;
   if (w.checkerComment) html += `<div class="comment-block" style="margin-top:12px">🔍 ${e(w.checkerComment)}</div>`;
@@ -777,7 +814,7 @@ window.openModal = function(wid, viewAs) {
   document.getElementById('m-body').innerHTML = html;
 
   let footer = `<button class="btn btn-ghost btn-sm" onclick="closeModal()">დახურვა</button>`;
-  if (viewAs === 'checker' && w.status === 'pending') {
+  if (viewAs === 'supervisor' && w.status === 'pending') {
     footer = `<button class="btn btn-ghost btn-sm" onclick="closeModal()">გაუქმება</button><span style="flex:1"></span>
       <button class="btn btn-danger btn-sm" onclick="closeModal();openReject('${wid}')">✕ უარყოფა</button>
       <button class="btn btn-primary btn-sm" onclick="quickAct('${wid}','approved');closeModal()">✓ დამტკიცება</button>`;
@@ -856,12 +893,13 @@ window.exportExcel = function() {
   if (to) list = list.filter(w => w.date <= to);
   if (!list.length) { notify('ფილტრი ცარიელია', 'error'); return; }
   const sm = { pending:'მოლოდინში', approved:'დამტკიცებული', rejected:'უარყოფილი' };
-  const hdr = ['#','ობიექტი','შემსრულებელი','ელ-ფოსტა','კატეგორია','დაზიანება','შედეგი','კომენტარი','სამ.თარიღი','დრო','სტატუსი','შემმოწმებელი','შემმოწმ.კომენტარი'];
+  const hdr = ['#','ობიექტი','შემსრულებელი','ელ-ფოსტა','კატეგორია','დაზიანება','შედეგი','კომენტარი','სამ.თარიღი','დრო','სტატუსი','სუპერვაიზერი','კომენტარი (სუპ.)','გაგზავნილია'];
   const rows = list.map((w, i) => [
     i+1, w.location||'', w.workerName||'', w.workerEmail||'',
     w.category||'', w.damage||'', w.result||'', w.comment||'',
     w.date||'', w.time||'', sm[w.status]||w.status,
-    w.checkedBy||'', w.checkerComment||''
+    w.checkedBy||'', w.checkerComment||'',
+    (w.assignedTo||[]).map(uid=>{ const u=allUsers.find(x=>x.id===uid); return u?u.name:uid; }).join('; ')
   ]);
   const csv = [hdr, ...rows].map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
   const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
@@ -901,6 +939,9 @@ onAuthStateChanged(auth, async (user) => {
     }
   }
 });
+
+// call renderAssigneeChips on launchApp for worker/supervisor
+
 
 </script>
 </body>
