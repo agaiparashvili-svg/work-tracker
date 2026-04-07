@@ -381,6 +381,37 @@
       </div>
     </div>
 
+    <!-- ALL REDIRECTS (admin + supervisor view) -->
+    <div class="section" id="sec-redirects-all">
+      <div class="section-header"><h2>📨 ყველა გადამისამართება</h2></div>
+      <div class="filter-row">
+        <select id="arf-sv" onchange="renderAllRedirectsPanel()">
+          <option value="all">ყველა სუპერვაიზერი</option>
+        </select>
+        <select id="arf-cat" onchange="renderAllRedirectsPanel()">
+          <option value="all">ყველა კატეგ.</option>
+          <option>რესტორნები</option><option>გარეტერიტორია</option><option>ოთახები</option><option>სხვა</option>
+        </select>
+      </div>
+      <div id="all-redirects-list"></div>
+    </div>
+
+    <!-- ADMIN PREVIEW -->
+    <div class="section" id="sec-preview">
+      <div class="section-header"><h2>👁 როლის Preview</h2></div>
+      <div class="card" style="margin-bottom:16px">
+        <p style="color:var(--text2);font-size:13px;margin-bottom:16px">შეარჩიეთ მომხმარებელი რათა ნახოთ მისი სამუშაო გვერდი</p>
+        <div class="form-group">
+          <label>მომხმარებლის არჩევა</label>
+          <select id="preview-user-select" onchange="renderPreviewForUser(this.value)">
+            <option value="">— აირჩიეთ —</option>
+          </select>
+        </div>
+      </div>
+      <div id="preview-banner" style="display:none;background:rgba(31,111,235,.1);border:1px solid var(--accent2);border-radius:8px;padding:12px 16px;margin-bottom:16px;font-size:13px;color:#58a6ff"></div>
+      <div id="preview-content"></div>
+    </div>
+
     <!-- EXPORT -->
     <div class="section" id="sec-export">
       <div class="section-header"><h2>Excel ექსპორტი</h2></div>
@@ -447,10 +478,13 @@ const db = getFirestore(fireApp);
 let currentUser = null;
 let currentRole = null;
 let allWorks = [];
+let myOwnWorks = []; // only current user's submitted works
 let allUsers = [];
+let allRedirects = []; // all redirects from all supervisors
 let imgs = [];
 const chipState = { cat: null, res: null };
 let assignedTo = []; // multi-select assignees
+let adminPreviewRole = null; // for admin preview mode
 
 // ---- LOADING ----
 function hideLoading() { document.getElementById('loading-screen').style.display = 'none'; }
@@ -548,8 +582,8 @@ function buildNav(role, userData) {
   nav.innerHTML = '';
   const map = {
     worker: [['sec-submit','📤 გაგზავნა'],['sec-myworks','📁 ჩემი']],
-    supervisor: [['sec-submit','📤 გაგზავნა'],['sec-myworks','📁 ჩემი'],['sec-review','🔍 შემოწმება'],['sec-redirect','📨 გადამისამართება']],
-    admin: [['sec-dashboard','📊 Dashboard'],['sec-users','👥 მომხმარებლები'],['sec-export','📥 ექსპორტი']]
+    supervisor: [['sec-submit','📤 გაგზავნა'],['sec-myworks','📁 ჩემი'],['sec-review','🔍 შემოწმება'],['sec-redirect','📨 გადამისამართება'],['sec-redirects-all','📋 ყველა გადამ.']],
+    admin: [['sec-dashboard','📊 Dashboard'],['sec-users','👥 მომხმარებლები'],['sec-redirects-all','📨 გადამისამართებები'],['sec-preview','👁 Preview'],['sec-export','📥 ექსპორტი']]
   };
   const items = map[role] || [];
   if (!items.length) { showSection('sec-pending'); return; }
@@ -562,8 +596,8 @@ function buildNav(role, userData) {
   });
   showSection(items[0][0]);
   if (role === 'worker') { listenMyWorks(); listenUsers(); }
-  if (role === 'supervisor') { listenMyWorks(); listenAllWorks('supervisor'); listenUsers(); listenRedirectHistory(); }
-  if (role === 'admin') { listenAllWorks('admin'); listenUsers(); }
+  if (role === 'supervisor') { listenMyWorks(); listenAllWorks('supervisor'); listenUsers(); listenRedirectHistory(); listenAllRedirects(); }
+  if (role === 'admin') { listenAllWorks('admin'); listenUsers(); listenAllRedirects(); }
 }
 
 function activateSection(id, el) {
@@ -574,6 +608,8 @@ function activateSection(id, el) {
   if (id === 'sec-myworks') renderMyWorks();
   if (id === 'sec-submit') renderAssigneeChips();
   if (id === 'sec-redirect') renderRedirectSection();
+  if (id === 'sec-redirects-all') renderAllRedirectsPanel();
+  if (id === 'sec-preview') renderPreviewSection();
   if (id === 'sec-dashboard') { renderAdminStats(); renderAdminWorks(); }
   if (id === 'sec-users') renderUsers();
 }
@@ -586,8 +622,9 @@ function showSection(id) {
 function listenMyWorks() {
   const q = query(collection(db, 'works'), orderBy('submittedAt', 'desc'));
   onSnapshot(q, snap => {
-    allWorks = snap.docs.map(d => ({ id: d.id, ...d.data() }))
-      .filter(w => w.workerId === currentUser.uid);
+    const all = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    myOwnWorks = all.filter(w => w.workerId === currentUser.uid);
+    allWorks = myOwnWorks;
     renderMyWorks();
   });
 }
@@ -596,8 +633,17 @@ function listenAllWorks(role) {
   const q = query(collection(db, 'works'), orderBy('submittedAt', 'desc'));
   onSnapshot(q, snap => {
     allWorks = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    myOwnWorks = allWorks.filter(w => w.workerId === currentUser.uid);
     if (role === 'supervisor') { renderReview(); renderMyWorks(); }
     if (role === 'admin') { renderAdminStats(); renderAdminWorks(); }
+  });
+}
+
+function listenAllRedirects() {
+  const q = query(collection(db, 'redirects'), orderBy('createdAt', 'desc'));
+  onSnapshot(q, snap => {
+    allRedirects = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderAllRedirectsPanel();
   });
 }
 
@@ -607,6 +653,10 @@ function listenUsers() {
     renderUsers();
     populateWorkerSelects();
     renderAssigneeChips();
+    // update preview select if on preview section
+    if (document.getElementById('sec-preview')?.classList.contains('active')) {
+      renderPreviewSection();
+    }
   });
 }
 
@@ -716,7 +766,8 @@ window.submitWork = async function() {
 function renderMyWorks() {
   const el = document.getElementById('my-list');
   if (!el) return;
-  el.innerHTML = allWorks.length ? allWorks.map(w => wCard(w, 'worker')).join('') : empty('📭', 'ჯერ სამუშაოები არ გაქვთ');
+  const list = myOwnWorks;
+  el.innerHTML = list.length ? list.map(w => wCard(w, currentRole === 'supervisor' ? 'worker' : 'worker')).join('') : empty('📭', 'ჯერ სამუშაოები არ გაქვთ');
 }
 
 function renderReview() {
@@ -992,6 +1043,121 @@ onAuthStateChanged(auth, async (user) => {
     }
   }
 });
+
+// ---- ALL REDIRECTS PANEL ----
+function renderAllRedirectsPanel() {
+  const el = document.getElementById('all-redirects-list');
+  if (!el) return;
+
+  // Populate supervisor filter
+  const svSel = document.getElementById('arf-sv');
+  if (svSel) {
+    const supervisors = [...new Map(allRedirects.map(r => [r.supervisorId, {id:r.supervisorId,name:r.supervisorName}])).values()];
+    const curVal = svSel.value;
+    svSel.innerHTML = '<option value="all">ყველა სუპერვაიზერი</option>' +
+      supervisors.map(s => `<option value="${s.id}">${e(s.name||'')}</option>`).join('');
+    svSel.value = curVal;
+  }
+
+  const svf = document.getElementById('arf-sv')?.value || 'all';
+  const catf = document.getElementById('arf-cat')?.value || 'all';
+  let list = [...allRedirects];
+  if (svf !== 'all') list = list.filter(r => r.supervisorId === svf);
+  if (catf !== 'all') list = list.filter(r => r.category === catf);
+
+  if (!list.length) { el.innerHTML = empty('📭', 'გადამისამართებები არ მოიძებნა'); return; }
+
+  // Group by supervisor
+  const grouped = {};
+  list.forEach(r => {
+    const key = r.supervisorId || 'unknown';
+    if (!grouped[key]) grouped[key] = { name: r.supervisorName || '?', items: [] };
+    grouped[key].items.push(r);
+  });
+
+  el.innerHTML = Object.values(grouped).map(g => `
+    <div style="margin-bottom:24px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+        <span style="font-size:13px;font-weight:700;color:var(--warn)">👤 ${e(g.name)}</span>
+        <span style="font-size:11px;color:var(--text3);background:var(--surface2);padding:2px 8px;border-radius:20px">${g.items.length} დავალება</span>
+      </div>
+      ${g.items.map(r => `
+        <div class="card" style="margin-left:16px;border-left:3px solid var(--warn)">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;margin-bottom:8px">
+            <div>
+              <div class="card-title">📍 ${e(r.location||'')}</div>
+              <div class="card-meta">${e(r.category||'')} · ${r.date||''}${r.time?' · '+r.time:''}</div>
+            </div>
+            <span class="status s-redirected">📨 გაგზავნილი</span>
+          </div>
+          <div style="font-size:13px;color:var(--text2);margin-bottom:8px">${e(r.description||'')}</div>
+          <div style="font-size:12px;color:var(--text2)">👥 პასუხისმგებელი: <strong>${(r.assignedTo||[]).map(n=>e(n)).join(', ')}</strong></div>
+          ${r.note ? `<div style="font-size:12px;color:var(--text3);margin-top:4px">💬 ${e(r.note)}</div>` : ''}
+        </div>
+      `).join('')}
+    </div>
+  `).join('');
+}
+window.renderAllRedirectsPanel = renderAllRedirectsPanel;
+
+// ---- ADMIN PREVIEW ----
+function renderPreviewSection() {
+  const sel = document.getElementById('preview-user-select');
+  if (!sel) return;
+  const nonAdmins = allUsers.filter(u => u.role !== 'admin');
+  sel.innerHTML = '<option value="">— აირჩიეთ —</option>' +
+    nonAdmins.map(u => {
+      const roleLabel = {worker:'👷',supervisor:'🔍',pending:'⏳'}[u.role]||'';
+      return `<option value="${u.id}">${roleLabel} ${e(u.name)} (${e(u.role)})</option>`;
+    }).join('');
+  document.getElementById('preview-banner').style.display = 'none';
+  document.getElementById('preview-content').innerHTML = '';
+}
+
+window.renderPreviewForUser = function(uid) {
+  if (!uid) {
+    document.getElementById('preview-banner').style.display = 'none';
+    document.getElementById('preview-content').innerHTML = '';
+    return;
+  }
+  const user = allUsers.find(u => u.id === uid);
+  if (!user) return;
+  const roleLabel = {worker:'შემსრულებელი',supervisor:'სუპერვაიზერი',pending:'მოლოდინში'}[user.role]||user.role;
+  const banner = document.getElementById('preview-banner');
+  banner.style.display = 'block';
+  banner.innerHTML = `👁 Preview: <strong>${e(user.name)}</strong> — ${roleLabel} · ხედავთ მის სამუშაო ჩანაწერებს`;
+
+  const userWorks = allWorks.filter(w => w.workerId === uid);
+  const content = document.getElementById('preview-content');
+
+  if (user.role === 'worker' || user.role === 'supervisor') {
+    // Show their submitted works
+    const mySection = `
+      <div style="margin-bottom:16px">
+        <h3 style="font-size:15px;font-weight:700;margin-bottom:12px;color:var(--text2)">📁 გაგზავნილი სამუშაოები (${userWorks.length})</h3>
+        ${userWorks.length ? userWorks.map(w => wCard(w, 'worker')).join('') : empty('📭', 'სამუშაოები არ არის')}
+      </div>`;
+
+    // If supervisor — also show their redirects
+    const userRedirects = allRedirects.filter(r => r.supervisorId === uid);
+    const rdSection = user.role === 'supervisor' ? `
+      <div>
+        <h3 style="font-size:15px;font-weight:700;margin-bottom:12px;color:var(--text2)">📨 გაგზავნილი დავალებები (${userRedirects.length})</h3>
+        ${userRedirects.length ? userRedirects.map(r => `
+          <div class="card">
+            <div class="card-title">📍 ${e(r.location||'')}</div>
+            <div class="card-meta">${e(r.category||'')} · ${r.date||''}</div>
+            <div style="font-size:13px;color:var(--text2);margin:8px 0">${e(r.description||'')}</div>
+            <div style="font-size:12px">👥 ${(r.assignedTo||[]).map(n=>e(n)).join(', ')}</div>
+          </div>`).join('') : empty('📭', 'დავალებები არ არის')}
+      </div>` : '';
+    content.innerHTML = mySection + rdSection;
+  } else {
+    content.innerHTML = empty('⏳', 'ეს მომხმარებელი მოლოდინშია — სამუშაო გვერდი არ გააჩნია');
+  }
+};
+
+// ---- END PREVIEW ----
 
 // ---- REDIRECT SECTION ----
 const REDIRECT_PEOPLE = [
