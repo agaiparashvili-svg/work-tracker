@@ -709,10 +709,8 @@ function listenUsers() {
     renderUsers();
     populateWorkerSelects();
     renderAssigneeChips();
-    // Re-filter tasks now that we know user name
+    renderRdPeopleChips(); // update redirect people list dynamically
     if (myTasks !== undefined) {
-      const userName = allUsers.find(u => u.id === currentUser?.uid)?.name || '';
-      // re-snapshot not needed, just re-render
       renderMyTasks();
     }
     if (document.getElementById('sec-preview')?.classList.contains('active')) {
@@ -886,8 +884,17 @@ function renderAdminWorks() {
 function renderUsers() {
   const tb = document.getElementById('users-tbody');
   if (!tb) return;
-  tb.innerHTML = allUsers.map(u => `<tr>
-    <td><strong>${e(u.name||'')}</strong></td>
+  tb.innerHTML = allUsers.map(u => {
+    const displayName = u.displayName || u.name || '';
+    return `<tr>
+    <td>
+      <div style="font-size:13px;font-weight:600;color:var(--text2);margin-bottom:4px">${e(u.name||'')} <span style="font-weight:400;font-size:11px">(სისტემური)</span></div>
+      <div style="display:flex;align-items:center;gap:6px">
+        <input type="text" id="dn-${u.id}" value="${e(displayName)}" placeholder="სახელი სიაში..." style="font-size:12px;padding:4px 8px;width:160px"
+          onkeydown="if(event.key==='Enter')saveDisplayName('${u.id}')">
+        <button class="btn btn-ghost btn-sm" onclick="saveDisplayName('${u.id}')" style="font-size:11px;padding:4px 8px">💾</button>
+      </div>
+    </td>
     <td style="font-size:12px;color:var(--text2)">${e(u.email||'')}</td>
     <td>${u.role === 'admin'
       ? '<span class="role-badge role-admin">ადმინი</span>'
@@ -899,7 +906,8 @@ function renderUsers() {
     </td>
     <td style="font-size:12px;color:var(--text3)">${u.createdAt?.toDate ? u.createdAt.toDate().toISOString().slice(0,10) : ''}</td>
     <td>${u.role !== 'admin' ? `<button class="btn btn-danger btn-sm" onclick="delUser('${u.id}')">წაშლა</button>` : '—'}</td>
-  </tr>`).join('');
+  </tr>`;
+  }).join('');
 }
 
 function populateWorkerSelects() {
@@ -918,6 +926,15 @@ window.setRole = async function(uid, role) {
     await updateDoc(doc(db, 'users', uid), { role });
     notify('✓ როლი მიენიჭა', 'success');
   } catch(e) { notify('შეცდომა: ' + e.message, 'error'); }
+};
+
+window.saveDisplayName = async function(uid) {
+  const val = document.getElementById('dn-' + uid)?.value.trim();
+  if (!val) { notify('სახელი ცარიელია', 'error'); return; }
+  try {
+    await updateDoc(doc(db, 'users', uid), { displayName: val });
+    notify('✓ სახელი შეინახა: ' + val, 'success');
+  } catch(err) { notify('შეცდომა: ' + err.message, 'error'); }
 };
 
 window.delUser = async function(id) {
@@ -1221,14 +1238,8 @@ window.renderPreviewForUser = function(uid) {
 // ---- END PREVIEW ----
 
 // ---- REDIRECT SECTION ----
-const REDIRECT_PEOPLE = [
-  'ლაშა წოწკოლაური','გიორგი აზარიაშვილი','ნუგზარ ანდრონიკაშვილი',
-  'ვახტანგი ახალკაციშვილი','ლაშა ბიტიაშვილი','ზურაბ ბუხრაძე',
-  'ლაზარე გაიპარაშვილი','შავლეგი თაგაური','თამაზი თანდილაშვილი',
-  'ზურაბი იარაჯული','ვალიკო კობრეშვილი','კახაბერი კობრეშვილი',
-  'ვახტანგი მაისურაძე','ზურაბ ტოტიკაშვილი','მამუკა შათირიშვილი',
-  'ილია ბეშკენაძე','მამუკა კობრეშვილი'
-];
+// REDIRECT_PEOPLE now comes dynamically from allUsers (worker + supervisor roles)
+// No hardcoded list needed
 
 let rdSelectedPeople = [];
 chipState['rdcat'] = null;
@@ -1257,11 +1268,18 @@ function renderRedirectSection() {
 function renderRdPeopleChips() {
   const c = document.getElementById('rd-people-chips');
   if (!c) return;
-  c.innerHTML = REDIRECT_PEOPLE.map(name => `
-    <label class="chip ${rdSelectedPeople.includes(name)?'sel-blue':''}" style="margin-bottom:4px" onclick="toggleRdPerson('${name}')">
-      <span>👤 ${e(name)}</span>
-    </label>
-  `).join('');
+  const people = allUsers.filter(u => (u.role === 'worker' || u.role === 'supervisor') && u.id !== currentUser?.uid);
+  if (!people.length) {
+    c.innerHTML = '<p style="font-size:13px;color:var(--text3)">რეგისტრირებული მომხმარებლები არ მოიძებნა</p>';
+    return;
+  }
+  const roleIcon = { worker:'👷', supervisor:'🔍' };
+  c.innerHTML = people.map(u => {
+    const label = u.displayName || u.name || '';
+    return `<label class="chip ${rdSelectedPeople.includes(label)?'sel-blue':''}" style="margin-bottom:4px" onclick="toggleRdPerson('${e(label)}')">
+      <span>${roleIcon[u.role]||'👤'} ${e(label)}</span>
+    </label>`;
+  }).join('');
 }
 
 window.toggleRdPerson = function(name) {
@@ -1299,9 +1317,9 @@ window.submitRedirect = async function() {
       createdAt: serverTimestamp()
     });
 
-    // Create a notification for each assigned person (match by name in users collection)
+    // Create a notification for each assigned person (match by displayName or name)
     for (const personName of rdSelectedPeople) {
-      const matchedUser = allUsers.find(u => u.name === personName);
+      const matchedUser = allUsers.find(u => (u.displayName || u.name) === personName);
       if (matchedUser) {
         await addDoc(collection(db, 'notifications'), {
           toUid: matchedUser.id,
@@ -1448,12 +1466,11 @@ window.markAllRead = async function() {
 function listenMyTasks() {
   const q = query(collection(db, 'redirects'), orderBy('createdAt', 'desc'));
   onSnapshot(q, snap => {
-    // Find current user's name — may need to look it up
-    const getUserName = () => allUsers.find(u => u.id === currentUser.uid)?.name || '';
-    const userName = getUserName();
+    const me = allUsers.find(u => u.id === currentUser.uid);
+    const myLabel = me?.displayName || me?.name || '';
     myTasks = snap.docs
       .map(d => ({ id: d.id, ...d.data() }))
-      .filter(r => (r.assignedTo || []).includes(userName));
+      .filter(r => myLabel && (r.assignedTo || []).includes(myLabel));
     renderMyTasks();
   });
 }
@@ -1462,7 +1479,8 @@ function renderMyTasks() {
   const el = document.getElementById('tasks-list');
   if (!el) return;
   const sf = document.getElementById('tf-st')?.value || 'all';
-  const userName = allUsers.find(u => u.id === currentUser.uid)?.name || '';
+  const me = allUsers.find(u => u.id === currentUser.uid);
+  const userName = me?.displayName || me?.name || '';
 
   let list = [...myTasks];
   if (sf !== 'all') {
