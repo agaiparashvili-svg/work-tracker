@@ -138,6 +138,27 @@
   #notification.notif-success{border-color:var(--accent);color:#3fb950;}
   #notification.notif-error{border-color:var(--danger);color:#f85149;}
   #notification.notif-info{border-color:var(--accent2);color:#58a6ff;}
+
+  /* Notification panel */
+  #notif-panel{position:fixed;top:56px;right:12px;width:340px;max-height:480px;background:var(--surface);border:1px solid var(--border);border-radius:12px;z-index:300;box-shadow:var(--shadow);overflow:hidden;display:none;flex-direction:column;}
+  #notif-panel.open{display:flex;}
+  .notif-header{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+  .notif-header strong{font-size:14px;}
+  .notif-list{overflow-y:auto;flex:1;}
+  .notif-item{padding:12px 16px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .15s;}
+  .notif-item:hover{background:var(--surface2);}
+  .notif-item.unread{background:rgba(31,111,235,.07);}
+  .notif-item .ni-title{font-size:13px;font-weight:600;margin-bottom:3px;}
+  .notif-item .ni-body{font-size:12px;color:var(--text2);}
+  .notif-item .ni-time{font-size:11px;color:var(--text3);margin-top:3px;}
+  .notif-dot{width:8px;height:8px;border-radius:50%;background:var(--accent2);flex-shrink:0;}
+
+  /* Task status chips */
+  .tstat-chip{display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border-radius:20px;border:1.5px solid var(--border);background:var(--surface2);cursor:pointer;font-size:12px;font-weight:600;color:var(--text2);transition:all .2s;user-select:none;}
+  .tstat-chip.sel-green{border-color:var(--accent);background:rgba(35,134,54,.15);color:#3fb950;}
+  .tstat-chip.sel-red{border-color:var(--danger);background:rgba(218,54,51,.15);color:#f85149;}
+  .tstat-chip.sel-yellow{border-color:var(--warn);background:rgba(210,153,34,.15);color:#e3b341;}
+  .tstat-chip.sel-blue{border-color:var(--accent2);background:rgba(31,111,235,.15);color:#58a6ff;}
 </style>
 </head>
 <body>
@@ -178,6 +199,17 @@
   </div>
 </div>
 
+<!-- NOTIFICATION PANEL -->
+<div id="notif-panel">
+  <div class="notif-header">
+    <strong>🔔 შეტყობინებები</strong>
+    <button class="btn btn-ghost btn-sm" onclick="markAllRead()" style="font-size:11px;padding:4px 8px">ყველა წაკითხული</button>
+  </div>
+  <div class="notif-list" id="notif-list">
+    <div style="text-align:center;padding:30px;color:var(--text3);font-size:13px">შეტყობინებები არ არის</div>
+  </div>
+</div>
+
 <!-- APP -->
 <div id="app">
   <div class="topbar">
@@ -187,6 +219,9 @@
     </div>
     <div class="topbar-right">
       <span class="user-info" id="ui-name"></span>
+      <button class="btn btn-ghost btn-sm" id="notif-bell" onclick="openNotifPanel()" style="position:relative;display:none">
+        🔔 <span id="notif-count" style="display:none;position:absolute;top:-4px;right:-4px;background:var(--danger);color:white;border-radius:50%;width:17px;height:17px;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;line-height:1"></span>
+      </button>
       <button class="btn btn-ghost btn-sm" onclick="doLogout()">გასვლა</button>
     </div>
   </div>
@@ -200,6 +235,24 @@
         <h2 style="margin-bottom:10px">მოლოდინში</h2>
         <p style="color:var(--text2);line-height:1.7">თქვენს ანგარიშს ჯერ არ მიუნიჭებია როლი.<br>გთხოვეთ ადმინს გააქტიუროს თქვენი ანგარიში.</p>
       </div>
+    </div>
+
+    <!-- MY TASKS (received redirects) -->
+    <div class="section" id="sec-tasks">
+      <div class="section-header">
+        <h2>📬 ჩემი დავალებები</h2>
+        <div class="filter-row" style="margin:0">
+          <select id="tf-st" onchange="renderMyTasks()">
+            <option value="all">ყველა</option>
+            <option value="new">🆕 ახალი</option>
+            <option value="in_progress">🔄 მიმდინარე</option>
+            <option value="done">✅ შესრულდა</option>
+            <option value="failed">❌ ვერ შესრულდა</option>
+            <option value="temp">🔧 დროებით</option>
+          </select>
+        </div>
+      </div>
+      <div id="tasks-list"></div>
     </div>
 
     <!-- SUBMIT -->
@@ -481,6 +534,8 @@ let allWorks = [];
 let myOwnWorks = []; // only current user's submitted works
 let allUsers = [];
 let allRedirects = []; // all redirects from all supervisors
+let myTasks = []; // redirects assigned to current user (by name)
+let myNotifications = []; // unread notification docs
 let imgs = [];
 const chipState = { cat: null, res: null };
 let assignedTo = []; // multi-select assignees
@@ -581,8 +636,8 @@ function buildNav(role, userData) {
   const nav = document.getElementById('main-nav');
   nav.innerHTML = '';
   const map = {
-    worker: [['sec-submit','📤 გაგზავნა'],['sec-myworks','📁 ჩემი']],
-    supervisor: [['sec-submit','📤 გაგზავნა'],['sec-myworks','📁 ჩემი'],['sec-review','🔍 შემოწმება'],['sec-redirect','📨 გადამისამართება'],['sec-redirects-all','📋 ყველა გადამ.']],
+    worker: [['sec-submit','📤 გაგზავნა'],['sec-myworks','📁 ჩემი'],['sec-tasks','📬 დავალებები']],
+    supervisor: [['sec-submit','📤 გაგზავნა'],['sec-myworks','📁 ჩემი'],['sec-tasks','📬 დავალებები'],['sec-review','🔍 შემოწმება'],['sec-redirect','📨 გადამისამართება'],['sec-redirects-all','📋 ყველა გადამ.']],
     admin: [['sec-dashboard','📊 Dashboard'],['sec-users','👥 მომხმარებლები'],['sec-redirects-all','📨 გადამისამართებები'],['sec-preview','👁 Preview'],['sec-export','📥 ექსპორტი']]
   };
   const items = map[role] || [];
@@ -595,8 +650,8 @@ function buildNav(role, userData) {
     nav.appendChild(el);
   });
   showSection(items[0][0]);
-  if (role === 'worker') { listenMyWorks(); listenUsers(); }
-  if (role === 'supervisor') { listenMyWorks(); listenAllWorks('supervisor'); listenUsers(); listenRedirectHistory(); listenAllRedirects(); }
+  if (role === 'worker') { listenMyWorks(); listenUsers(); listenMyTasks(); listenMyNotifications(); }
+  if (role === 'supervisor') { listenMyWorks(); listenAllWorks('supervisor'); listenUsers(); listenRedirectHistory(); listenAllRedirects(); listenMyTasks(); listenMyNotifications(); }
   if (role === 'admin') { listenAllWorks('admin'); listenUsers(); listenAllRedirects(); }
 }
 
@@ -604,6 +659,7 @@ function activateSection(id, el) {
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   el.classList.add('active');
   showSection(id);
+  if (id === 'sec-tasks') renderMyTasks();
   if (id === 'sec-review') renderReview();
   if (id === 'sec-myworks') renderMyWorks();
   if (id === 'sec-submit') renderAssigneeChips();
@@ -653,7 +709,12 @@ function listenUsers() {
     renderUsers();
     populateWorkerSelects();
     renderAssigneeChips();
-    // update preview select if on preview section
+    // Re-filter tasks now that we know user name
+    if (myTasks !== undefined) {
+      const userName = allUsers.find(u => u.id === currentUser?.uid)?.name || '';
+      // re-snapshot not needed, just re-render
+      renderMyTasks();
+    }
     if (document.getElementById('sec-preview')?.classList.contains('active')) {
       renderPreviewSection();
     }
@@ -1227,15 +1288,34 @@ window.submitRedirect = async function() {
   const udata = snap.data();
 
   try {
-    await addDoc(collection(db, 'redirects'), {
+    const rdRef = await addDoc(collection(db, 'redirects'), {
       supervisorId: currentUser.uid,
       supervisorName: udata.name,
       location: loc, category: cat, date, time,
       description: desc, note,
       assignedTo: rdSelectedPeople,
+      taskStatus: {}, // { personName: { status, comment, updatedAt } }
       status: 'active',
       createdAt: serverTimestamp()
     });
+
+    // Create a notification for each assigned person (match by name in users collection)
+    for (const personName of rdSelectedPeople) {
+      const matchedUser = allUsers.find(u => u.name === personName);
+      if (matchedUser) {
+        await addDoc(collection(db, 'notifications'), {
+          toUid: matchedUser.id,
+          toName: personName,
+          fromName: udata.name,
+          redirectId: rdRef.id,
+          title: '📨 ახალი დავალება',
+          body: `${udata.name}: ${loc} — ${desc.slice(0,60)}${desc.length>60?'...':''}`,
+          read: false,
+          createdAt: serverTimestamp()
+        });
+      }
+    }
+
     notify('✓ დავალება გაიგზავნა!', 'success');
     renderRedirectSection();
   } catch(err) {
@@ -1254,7 +1334,18 @@ function listenRedirectHistory() {
     const el = document.getElementById('rd-history-list');
     if (!el) return;
     if (!list.length) { el.innerHTML = empty('📭', 'ჯერ გაგზავნილი დავალებები არ არის'); return; }
-    el.innerHTML = list.map(r => `
+    el.innerHTML = list.map(r => {
+      const taskMap = r.taskStatus || {};
+      const statusRows = Object.entries(taskMap).map(([name, ts]) => {
+        const stLabels = { in_progress:'🔄 მიმდინარე', done:'✅ შესრულდა', failed:'❌ ვერ შესრულდა', temp:'🔧 დროებით', new:'🆕 ახალი' };
+        const stClasses = { done:'s-approved', failed:'s-rejected', in_progress:'s-pending', temp:'s-pending', new:'s-redirected' };
+        return `<div style="display:flex;align-items:center;gap:8px;font-size:12px;margin-top:6px">
+          <span style="color:var(--text2)">👤 ${e(name)}:</span>
+          <span class="status ${stClasses[ts.status]||'s-pending'}" style="font-size:10px">${stLabels[ts.status]||ts.status}</span>
+          ${ts.comment ? `<span style="color:var(--text3)">— ${e(ts.comment.slice(0,40))}</span>` : ''}
+        </div>`;
+      }).join('');
+      return `
       <div class="card">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;margin-bottom:8px">
           <div>
@@ -1263,17 +1354,220 @@ function listenRedirectHistory() {
           </div>
           <span class="status s-redirected">📨 გაგზავნილი</span>
         </div>
-        <div style="font-size:13px;color:var(--text2);margin-bottom:8px">${e(r.description||'')}</div>
-        <div style="font-size:12px;color:var(--text2)">👤 პასუხისმგებელი: <strong>${(r.assignedTo||[]).map(n=>e(n)).join(', ')}</strong></div>
+        <div style="font-size:13px;color:var(--text2);margin-bottom:6px">${e(r.description||'')}</div>
+        <div style="font-size:12px;color:var(--text2)">👥 პასუხისმგებელი: <strong>${(r.assignedTo||[]).map(n=>e(n)).join(', ')}</strong></div>
         ${r.note ? `<div style="font-size:12px;color:var(--text3);margin-top:4px">💬 ${e(r.note)}</div>` : ''}
+        ${statusRows ? `<div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border)">${statusRows}</div>` : ''}
       </div>
-    `).join('');
+    `}).join('');
   });
 }
 
 // ---- END REDIRECT ----
 
+// ---- NOTIFICATIONS ----
+function listenMyNotifications() {
+  const q = query(collection(db, 'notifications'), orderBy('createdAt', 'desc'));
+  onSnapshot(q, snap => {
+    myNotifications = snap.docs
+      .map(d => ({ id: d.id, ...d.data() }))
+      .filter(n => n.toUid === currentUser.uid);
+    renderNotifBell();
+    renderNotifList();
+  });
+}
 
+function renderNotifBell() {
+  const bell = document.getElementById('notif-bell');
+  const cnt = document.getElementById('notif-count');
+  if (!bell) return;
+  bell.style.display = 'inline-flex';
+  const unread = myNotifications.filter(n => !n.read).length;
+  if (unread > 0) {
+    cnt.style.display = 'flex';
+    cnt.textContent = unread > 9 ? '9+' : unread;
+  } else {
+    cnt.style.display = 'none';
+  }
+}
+
+function renderNotifList() {
+  const el = document.getElementById('notif-list');
+  if (!el) return;
+  if (!myNotifications.length) {
+    el.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text3);font-size:13px">შეტყობინებები არ არის</div>';
+    return;
+  }
+  el.innerHTML = myNotifications.map(n => {
+    const ts = n.createdAt?.toDate ? n.createdAt.toDate().toLocaleString('ka-GE',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : '';
+    return `<div class="notif-item ${n.read?'':'unread'}" onclick="notifClick('${n.id}','${n.redirectId||''}')">
+      <div style="display:flex;align-items:flex-start;gap:10px">
+        <div style="flex:1">
+          <div class="ni-title">${e(n.title||'')}</div>
+          <div class="ni-body">${e(n.body||'')}</div>
+          <div class="ni-time">${ts}</div>
+        </div>
+        ${!n.read ? '<div class="notif-dot" style="margin-top:4px"></div>' : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+window.openNotifPanel = function() {
+  document.getElementById('notif-panel').classList.toggle('open');
+};
+
+// Close panel on outside click
+document.addEventListener('click', ev => {
+  const panel = document.getElementById('notif-panel');
+  const bell = document.getElementById('notif-bell');
+  if (panel && !panel.contains(ev.target) && bell && !bell.contains(ev.target)) {
+    panel.classList.remove('open');
+  }
+});
+
+window.notifClick = async function(nid, redirectId) {
+  // mark as read
+  try { await updateDoc(doc(db, 'notifications', nid), { read: true }); } catch(e){}
+  document.getElementById('notif-panel').classList.remove('open');
+  if (redirectId) {
+    // navigate to tasks section
+    const taskNav = [...document.querySelectorAll('.nav-item')].find(el => el.dataset.sid === 'sec-tasks');
+    if (taskNav) { taskNav.click(); }
+  }
+};
+
+window.markAllRead = async function() {
+  const unread = myNotifications.filter(n => !n.read);
+  for (const n of unread) {
+    try { await updateDoc(doc(db, 'notifications', n.id), { read: true }); } catch(e){}
+  }
+};
+
+// ---- MY TASKS (received redirects) ----
+function listenMyTasks() {
+  const q = query(collection(db, 'redirects'), orderBy('createdAt', 'desc'));
+  onSnapshot(q, snap => {
+    // Find current user's name — may need to look it up
+    const getUserName = () => allUsers.find(u => u.id === currentUser.uid)?.name || '';
+    const userName = getUserName();
+    myTasks = snap.docs
+      .map(d => ({ id: d.id, ...d.data() }))
+      .filter(r => (r.assignedTo || []).includes(userName));
+    renderMyTasks();
+  });
+}
+
+function renderMyTasks() {
+  const el = document.getElementById('tasks-list');
+  if (!el) return;
+  const sf = document.getElementById('tf-st')?.value || 'all';
+  const userName = allUsers.find(u => u.id === currentUser.uid)?.name || '';
+
+  let list = [...myTasks];
+  if (sf !== 'all') {
+    list = list.filter(r => {
+      const ts = (r.taskStatus || {})[userName]?.status || 'new';
+      return ts === sf;
+    });
+  }
+
+  if (!list.length) { el.innerHTML = empty('📭', 'დავალებები არ მოიძებნა'); return; }
+
+  el.innerHTML = list.map(r => {
+    const myStatus = (r.taskStatus || {})[userName] || {};
+    const st = myStatus.status || 'new';
+    const stLabels = { new:'🆕 ახალი', in_progress:'🔄 მიმდინარე', done:'✅ შესრულდა', failed:'❌ ვერ შესრულდა', temp:'🔧 დროებით' };
+    const stColors = { new:'s-redirected', in_progress:'s-pending', done:'s-approved', failed:'s-rejected', temp:'s-pending' };
+    return `<div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;margin-bottom:10px">
+        <div>
+          <div class="card-title">📍 ${e(r.location||'')}</div>
+          <div class="card-meta">${e(r.category||'')} · ${r.date||''}${r.time?' · '+r.time:''} · ${e(r.supervisorName||'')}</div>
+        </div>
+        <span class="status ${stColors[st]||'s-pending'}">${stLabels[st]||st}</span>
+      </div>
+      <div style="font-size:13px;color:var(--text2);margin-bottom:10px">${e(r.description||'')}</div>
+      ${r.note ? `<div style="font-size:12px;color:var(--text3);margin-bottom:10px">💬 ${e(r.note)}</div>` : ''}
+      ${myStatus.comment ? `<div class="comment-block" style="margin-bottom:10px">📝 ${e(myStatus.comment)}</div>` : ''}
+      <div class="card-footer">
+        <button class="btn btn-ghost btn-sm" onclick="openTaskUpdate('${r.id}','${e(userName)}','${e(r.location||'')}')">✏️ სტატუსის განახლება</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+window.renderMyTasks = renderMyTasks;
+
+window.openTaskUpdate = function(redirectId, userName, location) {
+  const r = myTasks.find(x => x.id === redirectId);
+  const myStatus = (r?.taskStatus || {})[userName] || {};
+  const cur = myStatus.status || 'new';
+  const curComment = myStatus.comment || '';
+
+  document.getElementById('m-title').textContent = '✏️ ' + location;
+  document.getElementById('m-body').innerHTML = `
+    <p style="color:var(--text2);font-size:13px;margin-bottom:16px">${e(r?.description||'')}</p>
+    <div class="form-group">
+      <label>სტატუსი</label>
+      <div style="display:flex;flex-wrap:wrap;gap:8px" id="tstat-chips">
+        ${[['in_progress','🔄 მიმდინარე','sel-blue'],['done','✅ შესრულდა','sel-green'],['failed','❌ ვერ შესრულდა','sel-red'],['temp','🔧 დროებით','sel-yellow']].map(([val,lbl,cls])=>`
+          <span class="tstat-chip ${cur===val?cls:''}" data-val="${val}" onclick="selectTaskStatus(this,'${cls}')">${lbl}</span>
+        `).join('')}
+      </div>
+    </div>
+    <div class="form-group">
+      <label>💬 კომენტარი</label>
+      <textarea id="task-comment" placeholder="კომენტარი..." style="min-height:90px">${e(curComment)}</textarea>
+    </div>
+  `;
+  document.getElementById('m-footer').innerHTML = `
+    <button class="btn btn-ghost btn-sm" onclick="closeModal()">გაუქმება</button>
+    <button class="btn btn-primary btn-sm" onclick="submitTaskUpdate('${redirectId}','${e(userName)}','${r?.supervisorId||''}')">📤 გაგზავნა</button>
+  `;
+  document.getElementById('modal-ov').classList.add('open');
+};
+
+window.selectTaskStatus = function(chip, cls) {
+  document.querySelectorAll('#tstat-chips .tstat-chip').forEach(c =>
+    c.classList.remove('sel-green','sel-red','sel-yellow','sel-blue')
+  );
+  chip.classList.add(cls);
+};
+
+window.submitTaskUpdate = async function(redirectId, userName, supervisorId) {
+  const statusChip = document.querySelector('#tstat-chips .tstat-chip.sel-green, #tstat-chips .tstat-chip.sel-red, #tstat-chips .tstat-chip.sel-yellow, #tstat-chips .tstat-chip.sel-blue');
+  const status = statusChip?.dataset.val;
+  const comment = document.getElementById('task-comment')?.value.trim() || '';
+  if (!status) { notify('სტატუსი სავალდებულოა', 'error'); return; }
+
+  try {
+    // Update the redirect doc's taskStatus map
+    await updateDoc(doc(db, 'redirects', redirectId), {
+      [`taskStatus.${userName}`]: { status, comment, updatedAt: new Date().toISOString() }
+    });
+
+    // Notify the supervisor
+    if (supervisorId) {
+      const stLabels = { in_progress:'🔄 მიმდინარე', done:'✅ შესრულდა', failed:'❌ ვერ შესრულდა', temp:'🔧 დროებით' };
+      await addDoc(collection(db, 'notifications'), {
+        toUid: supervisorId,
+        toName: '',
+        fromName: userName,
+        redirectId,
+        title: `${stLabels[status]||status} — ${userName}`,
+        body: `${userName}-მა განაახლა სტატუსი${comment?' · '+comment.slice(0,60):''}`,
+        read: false,
+        createdAt: serverTimestamp()
+      });
+    }
+
+    window.closeModal();
+    notify('✓ სტატუსი განახლდა!', 'success');
+  } catch(err) {
+    notify('შეცდომა: ' + err.message, 'error');
+  }
+};
+// ---- END NOTIFICATIONS & TASKS ----
 </script>
 </body>
 </html>
