@@ -741,7 +741,37 @@ function launchApp(userData) {
   if (wd) wd.valueAsDate = new Date();
   const wt = document.getElementById('w-time');
   if (wt) { const n = new Date(); wt.value = n.getHours().toString().padStart(2,'0') + ':' + n.getMinutes().toString().padStart(2,'0'); }
+  if ('Notification' in window && Notification.permission === 'default' && userData.role !== 'admin' && userData.role !== 'pending') {
+    setTimeout(showPermBanner, 1000);
+  }
 }
+
+function showPermBanner() {
+  if (document.getElementById('perm-banner')) return;
+  const banner = document.createElement('div');
+  banner.id = 'perm-banner';
+  banner.style.cssText = 'background:rgba(99,102,241,.12);border-bottom:1px solid rgba(99,102,241,.3);padding:10px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:13px;flex-wrap:wrap;';
+  banner.innerHTML = `
+    <span style="color:#a5b4fc">🔔 შეტყობინებების მისაღებად დაუშვით წვდომა</span>
+    <div style="display:flex;gap:8px">
+      <button onclick="enableNotifs()" style="background:var(--accent2);color:white;border:none;border-radius:6px;padding:6px 14px;cursor:pointer;font-size:12px;font-weight:700">დაშვება</button>
+      <button onclick="document.getElementById('perm-banner').remove()" style="background:var(--surface3);color:var(--text2);border:none;border-radius:6px;padding:6px 10px;cursor:pointer;font-size:12px">✕</button>
+    </div>`;
+  const nav = document.getElementById('main-nav');
+  if (nav) nav.after(banner);
+}
+
+window.enableNotifs = async function() {
+  await requestNotifPermission();
+  document.getElementById('perm-banner')?.remove();
+  if (Notification.permission === 'granted') {
+    notify('✓ შეტყობინებები ჩართულია!', 'success');
+    playNotifSound();
+    initFCM();
+  } else {
+    notify('შეტყობინებები არ დაშვება', 'error');
+  }
+};
 
 function buildNav(role, userData) {
   const nav = document.getElementById('main-nav');
@@ -1645,10 +1675,60 @@ function listenRedirectHistory() {
 
 // ---- END REDIRECT ----
 
+// ---- WEB NOTIFICATIONS + SOUND ----
+function playNotifSound() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    [[0,880],[0.15,1100],[0.3,880]].forEach(([when,freq]) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.frequency.value = freq; osc.type = 'sine';
+      gain.gain.setValueAtTime(0.4, ctx.currentTime + when);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + when + 0.12);
+      osc.start(ctx.currentTime + when);
+      osc.stop(ctx.currentTime + when + 0.14);
+    });
+  } catch(e) {}
+}
+
+function showWebNotification(title, body) {
+  if (!('Notification' in window)) return;
+  if (Notification.permission === 'granted') {
+    try {
+      const n = new Notification(title, {
+        body,
+        icon: 'https://agaiparashvili-svg.github.io/work-tracker/icon-192.png',
+        vibrate: [200,100,200],
+        tag: 'worktrack-notif',
+        renotify: true,
+      });
+      n.onclick = () => { window.focus(); n.close(); };
+    } catch(e) {}
+  }
+}
+
+async function requestNotifPermission() {
+  if (!('Notification' in window)) return;
+  if (Notification.permission === 'default') {
+    await Notification.requestPermission();
+  }
+  if ('serviceWorker' in navigator && Notification.permission === 'granted') {
+    try {
+      const existing = await navigator.serviceWorker.getRegistration('./');
+      if (!existing) {
+        const swCode = `self.addEventListener('push',e=>{const d=e.data?e.data.json():{};self.registration.showNotification(d.title||'📨',{body:d.body||'',vibrate:[200,100,200],tag:'worktrack',renotify:true});});`;
+        const blob = new Blob([swCode], {type:'application/javascript'});
+        await navigator.serviceWorker.register(URL.createObjectURL(blob), {scope:'./'});
+      }
+    } catch(e) {}
+  }
+}
+
 // ---- FCM PUSH SETUP ----
 // VAPID key — Firebase Console → Project Settings → Cloud Messaging → Web Push certificates
 // შეცვალე შენი VAPID key-ით!
-const VAPID_KEY = 'BCqbZRcQqnrtVZRb-U--3ReFIfPEu7308Iop7VGY4VgOwe-Q2Cs46VPzmAkyBHFQp9I876hLCqYn9bex-oh07h4';
+const VAPID_KEY = 'BEl62iUYgUivxIkv69yViEuiBIa40HI80NM9be27bVBtMfXMDfWf5YXGgaVBwcQSMX94z6d9XcFHNrXIRkTIR-g';
 
 async function initFCM() {
   if (!messaging) return;
