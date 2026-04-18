@@ -6,159 +6,241 @@
 <title>სამუშაოს აღრიცხვა</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Georgian:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Georgian:wght@300;400;500;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap');
+
   :root {
-    --bg:#0d1117;--surface:#161b22;--surface2:#21262d;--surface3:#2d333b;
-    --border:#30363d;--accent:#238636;--accent2:#1f6feb;--warn:#d29922;
-    --danger:#da3633;--text:#e6edf3;--text2:#8b949e;--text3:#6e7681;
-    --radius:8px;--shadow:0 8px 24px rgba(0,0,0,.4);
+    --bg:#07090f;
+    --surface:#0d1117;
+    --surface2:#111827;
+    --surface3:#1a2235;
+    --border:#1f2d42;
+    --border2:#2a3d57;
+    --accent:#10b981;
+    --accent-dim:rgba(16,185,129,.12);
+    --accent2:#6366f1;
+    --accent2-dim:rgba(99,102,241,.12);
+    --warn:#f59e0b;
+    --warn-dim:rgba(245,158,11,.1);
+    --danger:#f43f5e;
+    --danger-dim:rgba(244,63,94,.1);
+    --purple:#a78bfa;
+    --sky:#38bdf8;
+    --text:#e8edf5;
+    --text2:#6b7fa3;
+    --text3:#3a4d6a;
+    --radius:10px;
+    --radius-lg:14px;
+    --radius-xl:20px;
+    --shadow:0 24px 64px rgba(0,0,0,.7);
+    --font-body:'Noto Sans Georgian',sans-serif;
   }
   *{margin:0;padding:0;box-sizing:border-box;}
-  body{font-family:'Noto Sans Georgian',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;}
+  body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;-webkit-font-smoothing:antialiased;}
 
+  /* ── AUTH ── */
   #auth-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px;
-    background:radial-gradient(ellipse at 30% 20%,rgba(35,134,54,.12) 0%,transparent 60%),
-               radial-gradient(ellipse at 80% 80%,rgba(31,111,235,.08) 0%,transparent 60%),var(--bg);}
-  .auth-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:40px;width:100%;max-width:420px;box-shadow:var(--shadow);}
-  .auth-logo{text-align:center;margin-bottom:32px;}
-  .auth-logo .icon{width:56px;height:56px;background:linear-gradient(135deg,var(--accent),#2ea043);border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:26px;}
-  .auth-logo h1{font-size:22px;font-weight:700;}
-  .auth-logo p{color:var(--text2);font-size:13px;margin-top:4px;}
-  .tabs{display:flex;background:var(--surface2);border-radius:var(--radius);padding:3px;margin-bottom:24px;}
-  .tab{flex:1;padding:8px;text-align:center;border-radius:6px;cursor:pointer;color:var(--text2);font-size:13px;font-weight:500;transition:all .2s;}
-  .tab.active{background:var(--surface3);color:var(--text);}
+    background:
+      radial-gradient(ellipse 60% 50% at 15% 15%,rgba(99,102,241,.07) 0%,transparent 100%),
+      radial-gradient(ellipse 50% 40% at 85% 85%,rgba(16,185,129,.05) 0%,transparent 100%),
+      var(--bg);}
+  .auth-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-xl);padding:44px;width:100%;max-width:420px;box-shadow:var(--shadow);}
+  .auth-logo{text-align:center;margin-bottom:36px;}
+  .auth-logo .icon{width:58px;height:58px;background:linear-gradient(145deg,#10b981,#059669);border-radius:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;font-size:26px;box-shadow:0 8px 28px rgba(16,185,129,.25);}
+  .auth-logo h1{font-size:21px;font-weight:700;letter-spacing:-.4px;color:var(--text);}
+  .auth-logo p{color:var(--text3);font-size:13px;margin-top:5px;}
+  .tabs{display:flex;background:var(--surface2);border-radius:var(--radius);padding:3px;margin-bottom:28px;border:1px solid var(--border);}
+  .tab{flex:1;padding:9px;text-align:center;border-radius:8px;cursor:pointer;color:var(--text3);font-size:13px;font-weight:600;transition:all .22s;}
+  .tab.active{background:var(--surface3);color:var(--text);box-shadow:0 2px 8px rgba(0,0,0,.35);}
 
-  .form-group{margin-bottom:16px;}
-  label{display:block;font-size:12px;color:var(--text2);margin-bottom:6px;font-weight:500;}
-  input,select,textarea{width:100%;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-family:inherit;font-size:14px;transition:border-color .2s;-webkit-appearance:none;}
-  input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent2);}
+  /* ── FORMS ── */
+  .form-group{margin-bottom:18px;}
+  label{display:block;font-size:11px;color:var(--text2);margin-bottom:7px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;}
+  input,select,textarea{width:100%;padding:11px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-family:inherit;font-size:14px;transition:all .2s;-webkit-appearance:none;}
+  input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent2);background:var(--surface3);box-shadow:0 0 0 3px rgba(99,102,241,.1);}
   select option{background:var(--surface2);}
-  textarea{resize:vertical;min-height:80px;}
+  textarea{resize:vertical;min-height:80px;line-height:1.6;}
 
+  /* ── CHIPS ── */
   .chip-group{display:flex;flex-wrap:wrap;gap:8px;}
-  .chip{display:flex;align-items:center;gap:6px;padding:8px 14px;border-radius:20px;border:1.5px solid var(--border);background:var(--surface2);cursor:pointer;font-size:13px;font-weight:500;color:var(--text2);transition:all .2s;user-select:none;}
-  .chip:hover{border-color:var(--accent2);color:var(--text);}
-  .chip.sel-blue{border-color:var(--accent2);background:rgba(31,111,235,.15);color:var(--text);}
-  .chip.sel-green{border-color:var(--accent);background:rgba(35,134,54,.15);color:#3fb950;}
-  .chip.sel-red{border-color:var(--danger);background:rgba(218,54,51,.15);color:#f85149;}
-  .chip.sel-yellow{border-color:var(--warn);background:rgba(210,153,34,.15);color:#e3b341;}
+  .chip{display:flex;align-items:center;gap:6px;padding:8px 16px;border-radius:24px;border:1.5px solid var(--border);background:var(--surface2);cursor:pointer;font-size:13px;font-weight:500;color:var(--text3);transition:all .2s;user-select:none;}
+  .chip:hover{border-color:var(--border2);color:var(--text2);}
+  .chip.sel-blue{border-color:var(--accent2);background:var(--accent2-dim);color:#a5b4fc;}
+  .chip.sel-green{border-color:var(--accent);background:var(--accent-dim);color:#6ee7b7;}
+  .chip.sel-red{border-color:var(--danger);background:var(--danger-dim);color:#fda4af;}
+  .chip.sel-yellow{border-color:var(--warn);background:var(--warn-dim);color:#fcd34d;}
   .chip input{display:none;}
 
-  .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:10px 16px;border:none;border-radius:var(--radius);cursor:pointer;font-family:inherit;font-size:14px;font-weight:600;transition:all .2s;}
-  .btn-primary{background:var(--accent);color:white;}.btn-primary:hover{background:#2ea043;}
-  .btn-danger{background:var(--danger);color:white;}
-  .btn-ghost{background:var(--surface2);color:var(--text);border:1px solid var(--border);}.btn-ghost:hover{background:var(--surface3);}
-  .btn-sm{padding:6px 10px;font-size:12px;}
+  /* ── BUTTONS ── */
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:10px 20px;border:none;border-radius:var(--radius);cursor:pointer;font-family:inherit;font-size:13px;font-weight:700;transition:all .2s;letter-spacing:-.1px;}
+  .btn-primary{background:linear-gradient(135deg,#10b981,#059669);color:white;box-shadow:0 4px 16px rgba(16,185,129,.28);}
+  .btn-primary:hover{transform:translateY(-1px);box-shadow:0 6px 22px rgba(16,185,129,.38);}
+  .btn-danger{background:linear-gradient(135deg,#f43f5e,#e11d48);color:white;box-shadow:0 4px 16px rgba(244,63,94,.22);}
+  .btn-danger:hover{transform:translateY(-1px);}
+  .btn-ghost{background:transparent;color:var(--text2);border:1px solid var(--border);}
+  .btn-ghost:hover{background:var(--surface2);color:var(--text);border-color:var(--border2);}
+  .btn-sm{padding:6px 12px;font-size:12px;}
   .btn-full{width:100%;}
-  .error-msg{color:#f85149;font-size:12px;margin-top:8px;}
-  .success-msg{color:#3fb950;font-size:12px;margin-top:8px;}
+  .error-msg{color:#fda4af;font-size:12px;margin-top:8px;}
+  .success-msg{color:#6ee7b7;font-size:12px;margin-top:8px;}
 
+  /* ── TOPBAR ── */
   #app{display:none;flex-direction:column;min-height:100vh;}
-  .topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 16px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
-  .topbar-left{display:flex;align-items:center;gap:12px;}
-  .topbar-logo{font-size:16px;font-weight:700;color:var(--accent);}
-  .role-badge{padding:3px 8px;border-radius:20px;font-size:11px;font-weight:600;}
-  .role-admin{background:rgba(218,54,51,.2);color:#f85149;}
-  .role-supervisor{background:rgba(210,153,34,.2);color:#e3b341;}
-  .role-worker{background:rgba(35,134,54,.2);color:#3fb950;}
-  .role-pending{background:rgba(110,118,129,.2);color:#8b949e;}
+  .topbar{background:rgba(13,17,23,.96);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:0 20px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+  .topbar-left{display:flex;align-items:center;gap:14px;}
+  .topbar-logo{font-size:15px;font-weight:800;letter-spacing:-.5px;color:var(--text);display:flex;align-items:center;gap:8px;}
+  .topbar-logo span{background:linear-gradient(135deg,#10b981,#6366f1);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+  .role-badge{padding:3px 9px;border-radius:6px;font-size:10px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;}
+  .role-admin{background:rgba(244,63,94,.12);color:#fda4af;border:1px solid rgba(244,63,94,.25);}
+  .role-supervisor{background:rgba(245,158,11,.12);color:#fcd34d;border:1px solid rgba(245,158,11,.25);}
+  .role-worker{background:rgba(16,185,129,.12);color:#6ee7b7;border:1px solid rgba(16,185,129,.25);}
+  .role-pending{background:rgba(107,127,163,.1);color:#6b7fa3;border:1px solid rgba(107,127,163,.2);}
+  .role-nightwatch{background:rgba(167,139,250,.12);color:#c4b5fd;border:1px solid rgba(167,139,250,.25);}
   .topbar-right{display:flex;align-items:center;gap:8px;}
-  .user-info{color:var(--text2);font-size:13px;}
+  .user-info{color:var(--text2);font-size:13px;font-weight:500;}
   @media(max-width:480px){.user-info{display:none;}}
 
-  .nav{background:var(--surface);border-bottom:1px solid var(--border);display:flex;overflow-x:auto;padding:0 12px;-ms-overflow-style:none;scrollbar-width:none;}
+  /* ── NAV ── */
+  .nav{background:rgba(13,17,23,.9);border-bottom:1px solid var(--border);display:flex;overflow-x:auto;padding:0 12px;-ms-overflow-style:none;scrollbar-width:none;}
   .nav::-webkit-scrollbar{display:none;}
-  .nav-item{padding:12px 14px;cursor:pointer;color:var(--text2);white-space:nowrap;font-size:13px;border-bottom:2px solid transparent;transition:all .2s;font-weight:500;}
-  .nav-item.active{color:var(--text);border-color:var(--accent);}
-  .nav-item:hover{color:var(--text);}
+  .nav-item{padding:13px 15px;cursor:pointer;color:var(--text3);white-space:nowrap;font-size:13px;border-bottom:2px solid transparent;transition:all .2s;font-weight:600;letter-spacing:-.1px;}
+  .nav-item.active{color:var(--accent);border-color:var(--accent);}
+  .nav-item:hover{color:var(--text2);}
 
-  .content{padding:20px 16px;max-width:960px;margin:0 auto;width:100%;}
-  .section{display:none;}.section.active{display:block;}
-  .section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px;}
-  .section-header h2{font-size:18px;font-weight:700;}
+  /* ── CONTENT ── */
+  .content{padding:24px 16px;max-width:960px;margin:0 auto;width:100%;}
+  .section{display:none;}.section.active{display:block;animation:fadeIn .25s ease;}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+  .section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:12px;}
+  .section-header h2{font-size:19px;font-weight:800;letter-spacing:-.5px;color:var(--text);}
 
-  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:16px;}
-  .card-title{font-size:15px;font-weight:600;margin-bottom:4px;}
-  .card-meta{font-size:12px;color:var(--text2);margin-bottom:10px;}
+  /* ── WORK CARD (main list item) ── */
+  .wcard{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:0;margin-bottom:10px;transition:all .22s;overflow:hidden;position:relative;}
+  .wcard:hover{border-color:var(--border2);box-shadow:0 6px 28px rgba(0,0,0,.4);transform:translateY(-1px);}
+  .wcard-stripe{width:3px;position:absolute;top:0;bottom:0;left:0;border-radius:2px 0 0 2px;}
+  .wcard-stripe-green{background:linear-gradient(180deg,#10b981,#059669);}
+  .wcard-stripe-red{background:linear-gradient(180deg,#f43f5e,#e11d48);}
+  .wcard-stripe-yellow{background:linear-gradient(180deg,#f59e0b,#d97706);}
+  .wcard-stripe-blue{background:linear-gradient(180deg,#6366f1,#4f46e5);}
+  .wcard-body{padding:16px 18px 16px 22px;}
+  .wcard-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:10px;}
+  .wcard-info{flex:1;min-width:0;}
+  .wcard-location{font-size:15px;font-weight:700;color:var(--text);letter-spacing:-.3px;margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .wcard-location::before{content:'📍 ';}
+  .wcard-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+  /* Avatar for worker name */
+  .wcard-avatar{width:22px;height:22px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex-shrink:0;color:white;letter-spacing:0;}
+  .wcard-worker{display:inline-flex;align-items:center;gap:6px;background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:3px 10px 3px 4px;font-size:12px;font-weight:600;color:var(--text2);}
+  .wcard-cat{font-size:11px;color:var(--text3);background:var(--surface2);border:1px solid var(--border);padding:3px 9px;border-radius:6px;font-weight:600;letter-spacing:.2px;}
+  .wcard-date{font-size:11px;color:var(--text3);font-weight:500;}
+  .wcard-badges{display:flex;gap:5px;flex-wrap:wrap;flex-shrink:0;align-items:flex-start;}
+  .wcard-detail{margin:8px 0 0;padding:8px 10px;background:var(--surface2);border-radius:8px;font-size:12px;color:var(--text2);line-height:1.55;border-left:2px solid var(--border2);}
+  .wcard-detail.dmg{border-left-color:var(--warn);color:#fcd34d;background:rgba(245,158,11,.06);}
+  .wcard-footer{padding:10px 18px 14px 22px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+
+  /* ── GENERIC CARD (forms, info blocks) ── */
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:22px;margin-bottom:14px;transition:border-color .2s;}
+  .card:hover{border-color:var(--border2);}
+  .card-title{font-size:15px;font-weight:700;margin-bottom:5px;}
+  .card-meta{font-size:12px;color:var(--text3);margin-bottom:10px;}
   .card-footer{margin-top:16px;padding-top:12px;border-top:1px solid var(--border);display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
 
-  .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin-bottom:20px;}
-  .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;text-align:center;}
-  .stat-num{font-size:28px;font-weight:700;}
-  .stat-label{font-size:11px;color:var(--text2);margin-top:4px;}
+  /* ── STATS ── */
+  .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(115px,1fr));gap:8px;margin-bottom:20px;}
+  .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px 12px;text-align:center;position:relative;overflow:hidden;transition:all .2s;cursor:default;}
+  .stat-card:hover{transform:translateY(-2px);border-color:var(--border2);box-shadow:0 6px 20px rgba(0,0,0,.3);}
+  .stat-card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:currentColor;opacity:.25;}
+  .stat-num{font-size:26px;font-weight:800;letter-spacing:-1px;line-height:1;}
+  .stat-label{font-size:10px;color:var(--text3);margin-top:6px;font-weight:600;letter-spacing:.3px;text-transform:uppercase;}
 
-  .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  /* ── FORM ROW ── */
+  .form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
   @media(max-width:560px){.form-row{grid-template-columns:1fr;}}
 
-  .status{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;}
-  .s-pending{background:rgba(210,153,34,.2);color:#e3b341;}
-  .s-approved{background:rgba(35,134,54,.2);color:#3fb950;}
-  .s-rejected{background:rgba(218,54,51,.2);color:#f85149;}
-  .s-redirected{background:rgba(31,111,235,.2);color:#58a6ff;}
-  .r-done{background:rgba(35,134,54,.15);color:#3fb950;border:1px solid rgba(35,134,54,.3);}
-  .r-failed{background:rgba(218,54,51,.15);color:#f85149;border:1px solid rgba(218,54,51,.3);}
-  .r-temp{background:rgba(210,153,34,.15);color:#e3b341;border:1px solid rgba(210,153,34,.3);}
+  /* ── STATUS BADGES ── */
+  .status{padding:3px 10px;border-radius:6px;font-size:10px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;display:inline-flex;align-items:center;gap:4px;}
+  .s-pending{background:rgba(245,158,11,.1);color:#fbbf24;border:1px solid rgba(245,158,11,.2);}
+  .s-approved{background:rgba(16,185,129,.1);color:#34d399;border:1px solid rgba(16,185,129,.2);}
+  .s-rejected{background:rgba(244,63,94,.1);color:#fb7185;border:1px solid rgba(244,63,94,.2);}
+  .s-redirected{background:rgba(99,102,241,.1);color:#a5b4fc;border:1px solid rgba(99,102,241,.2);}
+  .r-done{background:rgba(16,185,129,.09);color:#34d399;border:1px solid rgba(16,185,129,.18);}
+  .r-failed{background:rgba(244,63,94,.09);color:#fb7185;border:1px solid rgba(244,63,94,.18);}
+  .r-temp{background:rgba(245,158,11,.09);color:#fbbf24;border:1px solid rgba(245,158,11,.18);}
 
-  .table-wrap{overflow-x:auto;}
+  /* ── TABLE ── */
+  .table-wrap{overflow-x:auto;border-radius:var(--radius);overflow:hidden;border:1px solid var(--border);}
   table{width:100%;border-collapse:collapse;font-size:13px;}
-  th{text-align:left;padding:10px 12px;background:var(--surface2);color:var(--text2);font-weight:600;font-size:11px;text-transform:uppercase;border-bottom:1px solid var(--border);}
-  td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:middle;}
+  th{text-align:left;padding:10px 14px;background:var(--surface2);color:var(--text3);font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:.8px;border-bottom:1px solid var(--border);}
+  td{padding:12px 14px;border-bottom:1px solid var(--border);vertical-align:middle;}
   tr:last-child td{border-bottom:none;}
-  tr:hover td{background:rgba(255,255,255,.02);}
+  tr:hover td{background:rgba(99,102,241,.025);}
 
-  .file-area{border:2px dashed var(--border);border-radius:var(--radius);padding:24px;text-align:center;cursor:pointer;transition:all .2s;background:var(--surface2);}
-  .file-area:hover,.file-area.over{border-color:var(--accent2);background:rgba(31,111,235,.05);}
-  .file-area p{color:var(--text2);font-size:13px;margin-top:8px;}
-  .preview-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:8px;margin-top:10px;}
-  .preview-item{position:relative;border-radius:6px;overflow:hidden;background:var(--surface3);aspect-ratio:1;}
+  /* ── FILE UPLOAD ── */
+  .file-area{border:2px dashed var(--border);border-radius:var(--radius-lg);padding:28px;text-align:center;cursor:pointer;transition:all .2s;background:var(--surface2);}
+  .file-area:hover,.file-area.over{border-color:var(--accent2);background:rgba(99,102,241,.04);}
+  .file-area p{color:var(--text2);font-size:13px;margin-top:10px;}
+  .preview-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:8px;margin-top:12px;}
+  .preview-item{position:relative;border-radius:10px;overflow:hidden;background:var(--surface3);aspect-ratio:1;}
   .preview-item img{width:100%;height:100%;object-fit:cover;}
-  .preview-item .del-img{position:absolute;top:4px;right:4px;background:rgba(0,0,0,.7);border:none;color:white;border-radius:50%;width:22px;height:22px;cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;}
+  .preview-item .del-img{position:absolute;top:5px;right:5px;background:rgba(0,0,0,.75);border:none;color:white;border-radius:50%;width:22px;height:22px;cursor:pointer;font-size:11px;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);}
 
-  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;align-items:center;justify-content:center;padding:16px;}
+  /* ── MODAL ── */
+  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.82);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);z-index:200;align-items:center;justify-content:center;padding:16px;}
   .modal-overlay.open{display:flex;}
-  .modal{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:24px;width:100%;max-width:560px;max-height:92vh;overflow-y:auto;}
-  .modal h3{font-size:16px;font-weight:700;margin-bottom:20px;}
-  .modal-footer{display:flex;gap:8px;justify-content:flex-end;margin-top:20px;flex-wrap:wrap;}
+  .modal{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-xl);padding:28px;width:100%;max-width:560px;max-height:92vh;overflow-y:auto;box-shadow:var(--shadow);}
+  .modal h3{font-size:17px;font-weight:800;margin-bottom:22px;letter-spacing:-.4px;}
+  .modal-footer{display:flex;gap:8px;justify-content:flex-end;margin-top:22px;flex-wrap:wrap;}
 
-  .detail-row{display:flex;gap:8px;margin-bottom:10px;font-size:13px;}
-  .detail-label{color:var(--text2);min-width:140px;flex-shrink:0;}
-  .divider{height:1px;background:var(--border);margin:16px 0;}
-  .comment-block{background:var(--surface2);border-radius:6px;padding:10px 12px;margin-top:10px;font-size:13px;color:var(--text2);border-left:3px solid var(--accent2);}
+  /* ── DETAIL ROWS ── */
+  .detail-row{display:flex;gap:10px;margin-bottom:11px;font-size:13px;align-items:flex-start;}
+  .detail-label{color:var(--text3);min-width:150px;flex-shrink:0;font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.4px;padding-top:1px;}
+  .divider{height:1px;background:var(--border);margin:18px 0;}
+  .comment-block{background:var(--surface2);border-radius:10px;padding:12px 14px;margin-top:10px;font-size:13px;color:var(--text2);border-left:3px solid var(--accent2);line-height:1.6;}
   .filter-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
-  .filter-row select{width:auto;font-size:12px;padding:6px 10px;}
+  .filter-row select{width:auto;font-size:12px;padding:7px 11px;}
   .text-sm{font-size:12px;color:var(--text2);}
 
-  /* Loading overlay */
-  #loading-screen{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;gap:16px;}
-  .spinner{width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;}
+  /* ── LOADING ── */
+  #loading-screen{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;gap:18px;}
+  .spinner{width:36px;height:36px;border:2.5px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;}
   @keyframes spin{to{transform:rotate(360deg);}}
-  #loading-screen p{color:var(--text2);font-size:14px;}
+  #loading-screen p{color:var(--text3);font-size:13px;font-weight:600;letter-spacing:.3px;}
 
-  #notification{position:fixed;bottom:20px;right:20px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:12px 16px;font-size:13px;z-index:999;transform:translateX(200%);transition:transform .3s;max-width:300px;}
-  #notification.show{transform:translateX(0);}
-  #notification.notif-success{border-color:var(--accent);color:#3fb950;}
-  #notification.notif-error{border-color:var(--danger);color:#f85149;}
-  #notification.notif-info{border-color:var(--accent2);color:#58a6ff;}
+  /* ── TOAST ── */
+  #notification{position:fixed;bottom:24px;right:24px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:13px 18px;font-size:13px;z-index:999;transform:translateY(110px);opacity:0;transition:all .32s cubic-bezier(.34,1.56,.64,1);max-width:320px;box-shadow:var(--shadow);font-weight:600;}
+  #notification.show{transform:translateY(0);opacity:1;}
+  #notification.notif-success{border-color:rgba(16,185,129,.35);color:#34d399;background:rgba(16,185,129,.07);}
+  #notification.notif-error{border-color:rgba(244,63,94,.35);color:#fb7185;background:rgba(244,63,94,.07);}
+  #notification.notif-info{border-color:rgba(99,102,241,.35);color:#a5b4fc;background:rgba(99,102,241,.07);}
 
-  /* Notification panel */
-  #notif-panel{position:fixed;top:56px;right:12px;width:340px;max-height:480px;background:var(--surface);border:1px solid var(--border);border-radius:12px;z-index:300;box-shadow:var(--shadow);overflow:hidden;display:none;flex-direction:column;}
+  /* ── NOTIF PANEL ── */
+  #notif-panel{position:fixed;top:60px;right:16px;width:340px;max-height:480px;background:var(--surface);border:1px solid var(--border);border-radius:16px;z-index:300;box-shadow:var(--shadow);overflow:hidden;display:none;flex-direction:column;}
   #notif-panel.open{display:flex;}
-  .notif-header{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
-  .notif-header strong{font-size:14px;}
+  .notif-header{padding:13px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+  .notif-header strong{font-size:13px;font-weight:700;}
   .notif-list{overflow-y:auto;flex:1;}
-  .notif-item{padding:12px 16px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .15s;}
+  .notif-item{padding:13px 16px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .15s;}
   .notif-item:hover{background:var(--surface2);}
-  .notif-item.unread{background:rgba(31,111,235,.07);}
-  .notif-item .ni-title{font-size:13px;font-weight:600;margin-bottom:3px;}
-  .notif-item .ni-body{font-size:12px;color:var(--text2);}
+  .notif-item.unread{background:rgba(99,102,241,.05);border-left:2px solid var(--accent2);}
+  .notif-item .ni-title{font-size:13px;font-weight:700;margin-bottom:3px;}
+  .notif-item .ni-body{font-size:12px;color:var(--text2);line-height:1.5;}
   .notif-item .ni-time{font-size:11px;color:var(--text3);margin-top:3px;}
-  .notif-dot{width:8px;height:8px;border-radius:50%;background:var(--accent2);flex-shrink:0;}
+  .notif-dot{width:7px;height:7px;border-radius:50%;background:var(--accent2);flex-shrink:0;box-shadow:0 0 5px var(--accent2);}
 
-  /* Task status chips */
-  .tstat-chip{display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border-radius:20px;border:1.5px solid var(--border);background:var(--surface2);cursor:pointer;font-size:12px;font-weight:600;color:var(--text2);transition:all .2s;user-select:none;}
-  .tstat-chip.sel-green{border-color:var(--accent);background:rgba(35,134,54,.15);color:#3fb950;}
-  .tstat-chip.sel-red{border-color:var(--danger);background:rgba(218,54,51,.15);color:#f85149;}
-  .tstat-chip.sel-yellow{border-color:var(--warn);background:rgba(210,153,34,.15);color:#e3b341;}
-  .tstat-chip.sel-blue{border-color:var(--accent2);background:rgba(31,111,235,.15);color:#58a6ff;}
+  /* ── TASK CHIPS ── */
+  .tstat-chip{display:inline-flex;align-items:center;gap:5px;padding:8px 14px;border-radius:8px;border:1.5px solid var(--border);background:var(--surface2);cursor:pointer;font-size:12px;font-weight:700;color:var(--text3);transition:all .2s;user-select:none;letter-spacing:-.1px;}
+  .tstat-chip:hover{border-color:var(--border2);color:var(--text2);}
+  .tstat-chip.sel-green{border-color:var(--accent);background:var(--accent-dim);color:#34d399;}
+  .tstat-chip.sel-red{border-color:var(--danger);background:var(--danger-dim);color:#fb7185;}
+  .tstat-chip.sel-yellow{border-color:var(--warn);background:var(--warn-dim);color:#fbbf24;}
+  .tstat-chip.sel-blue{border-color:var(--accent2);background:var(--accent2-dim);color:#a5b4fc;}
+
+  /* ── MISC ── */
+  .dmg-tag{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:#fbbf24;margin-bottom:6px;}
+  .comment-tag{display:block;background:var(--surface2);border-radius:8px;padding:8px 12px;font-size:13px;color:var(--text2);margin-bottom:6px;border-left:2px solid var(--border2);line-height:1.55;}
+  .section-divider{height:1px;background:linear-gradient(90deg,transparent,var(--border),transparent);margin:24px 0;}
+  .empty-state{text-align:center;padding:64px 20px;color:var(--text3);}
+  .empty-state .empty-icon{font-size:48px;margin-bottom:14px;opacity:.4;}
+  .empty-state p{font-size:14px;font-weight:600;letter-spacing:-.1px;}
 </style>
 </head>
 <body>
@@ -173,17 +255,18 @@
 <div id="auth-screen" style="display:none">
   <div class="auth-card">
     <div class="auth-logo">
-      <div class="icon">📋</div>
-      <h1>სამუშაოს აღრიცხვა</h1>
-      <p>შესრულებული სამუშაოების სისტემა</p>
+      <div class="icon" style="font-size:22px;font-weight:900;font-family:sans-serif;letter-spacing:-2px;color:white;background:linear-gradient(145deg,#10b981,#6366f1)">✓W</div>
+      <h1>შესრულებული სამუშაო</h1>
+      <p>სამუშაოების აღრიცხვის სისტემა</p>
     </div>
     <div class="tabs">
       <div class="tab active" onclick="switchTab('login')">შესვლა</div>
       <div class="tab" onclick="switchTab('register')">რეგისტრაცია</div>
+      <div class="tab" onclick="switchTab('reset')">პაროლი</div>
     </div>
     <div id="login-form">
       <div class="form-group"><label>ელ-ფოსტა</label><input type="email" id="li-email" placeholder="mail@example.com"></div>
-      <div class="form-group"><label>პაროლი</label><input type="password" id="li-pass" placeholder="••••••••"></div>
+      <div class="form-group"><label>პაროლი</label><input type="password" id="li-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
       <div id="li-err" class="error-msg"></div>
       <button class="btn btn-primary btn-full" style="margin-top:16px" onclick="doLogin()">შესვლა</button>
     </div>
@@ -191,10 +274,17 @@
       <div class="form-group"><label>სახელი და გვარი</label><input type="text" id="rg-name" placeholder="გიორგი მაისურაძე"></div>
       <div class="form-group"><label>ელ-ფოსტა</label><input type="email" id="rg-email" placeholder="mail@example.com"></div>
       <div class="form-group"><label>პაროლი (მინ. 6 სიმბოლო)</label><input type="password" id="rg-pass" placeholder="••••••••"></div>
-      <p style="font-size:12px;color:var(--text3);background:var(--surface2);border-radius:6px;padding:10px;margin-bottom:4px">⚠️ რეგისტრაციის შემდეგ ადმინი მიანიჭებს თქვენს ანგარიშს როლს</p>
+      <p style="font-size:12px;color:var(--text3);background:var(--surface2);border-radius:8px;padding:10px 12px;margin-bottom:4px;line-height:1.6">📧 რეგისტრაციის შემდეგ მეილზე გაიგზავნება დადასტურების ბმული. შემდეგ ადმინი მიანიჭებს როლს.</p>
       <div id="rg-err" class="error-msg"></div>
       <div id="rg-ok" class="success-msg"></div>
       <button class="btn btn-primary btn-full" style="margin-top:16px" onclick="doRegister()">რეგისტრაცია</button>
+    </div>
+    <div id="reset-form" style="display:none">
+      <p style="font-size:13px;color:var(--text2);margin-bottom:18px;line-height:1.6">მიუთითეთ თქვენი ელ-ფოსტა და გამოგიგზავნით პაროლის განახლების ბმულს.</p>
+      <div class="form-group"><label>ელ-ფოსტა</label><input type="email" id="rs-email" placeholder="mail@example.com"></div>
+      <div id="rs-err" class="error-msg"></div>
+      <div id="rs-ok" class="success-msg"></div>
+      <button class="btn btn-primary btn-full" style="margin-top:16px" onclick="doReset()">📧 ბმულის გაგზავნა</button>
     </div>
   </div>
 </div>
@@ -214,7 +304,7 @@
 <div id="app">
   <div class="topbar">
     <div class="topbar-left">
-      <div class="topbar-logo">📋 WorkTrack</div>
+      <div class="topbar-logo">✓ <span>შესრულებული სამუშაო</span></div>
       <span class="role-badge" id="role-badge"></span>
     </div>
     <div class="topbar-right">
@@ -508,10 +598,12 @@
 <!-- FIREBASE SDK -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged }
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, sendEmailVerification, sendPasswordResetEmail }
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getFirestore, collection, doc, setDoc, getDoc, getDocs, addDoc, updateDoc, onSnapshot, query, orderBy, serverTimestamp }
+import { getFirestore, collection, doc, setDoc, getDoc, getDocs, addDoc, updateDoc, deleteDoc, onSnapshot, query, orderBy, serverTimestamp }
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getMessaging, getToken, onMessage }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBiKjEDDug9McKWuLr6tLusSO5Kwf5m3RE",
@@ -526,6 +618,8 @@ const firebaseConfig = {
 const fireApp = initializeApp(firebaseConfig);
 const auth = getAuth(fireApp);
 const db = getFirestore(fireApp);
+let messaging = null;
+try { messaging = getMessaging(fireApp); } catch(e) { /* not supported */ }
 
 // ---- GLOBALS ----
 let currentUser = null;
@@ -585,8 +679,10 @@ window.doRegister = async function() {
       uid: cred.user.uid, name, email, role: 'pending',
       createdAt: serverTimestamp()
     });
+    // Send verification email
+    await sendEmailVerification(cred.user);
     await signOut(auth);
-    ok.textContent = '✓ დარეგისტრირდით! ადმინი მიანიჭებს როლს.';
+    ok.textContent = '✓ დარეგისტრირდით! შეამოწმეთ ელ-ფოსტა და დაადასტურეთ. შემდეგ ადმინი მიანიჭებს როლს.';
     ['rg-name','rg-email','rg-pass'].forEach(id => document.getElementById(id).value = '');
   } catch(e) {
     if (e.code === 'auth/email-already-in-use') err.textContent = 'ეს ელ-ფოსტა უკვე რეგისტრირებულია';
@@ -609,7 +705,22 @@ window.doLogin = async function() {
   }
 };
 
-// ---- LOGOUT ----
+// ---- RESET PASSWORD ----
+window.doReset = async function() {
+  const email = document.getElementById('rs-email').value.trim().toLowerCase();
+  const err = document.getElementById('rs-err');
+  const ok = document.getElementById('rs-ok');
+  err.textContent = ''; ok.textContent = '';
+  if (!email) { err.textContent = 'ელ-ფოსტა სავალდებულოა'; return; }
+  try {
+    await sendPasswordResetEmail(auth, email);
+    ok.textContent = '✓ პაროლის განახლების ბმული გაიგზავნა! შეამოწმეთ ელ-ფოსტა.';
+    document.getElementById('rs-email').value = '';
+  } catch(e) {
+    if (e.code === 'auth/user-not-found') err.textContent = 'ეს ელ-ფოსტა რეგისტრირებული არ არის';
+    else err.textContent = e.message;
+  }
+};
 window.doLogout = async function() {
   await signOut(auth);
   location.reload();
@@ -620,8 +731,8 @@ function launchApp(userData) {
   document.getElementById('auth-screen').style.display = 'none';
   showApp();
   document.getElementById('ui-name').textContent = userData.name;
-  const rl = { admin:'ადმინი', supervisor:'სუპერვაიზერი', worker:'შემსრულებელი', pending:'მოლოდინში' };
-  const rc = { admin:'role-admin', supervisor:'role-supervisor', worker:'role-worker', pending:'role-pending' };
+  const rl = { admin:'ადმინი', supervisor:'სუპერვაიზერი', worker:'შემსრულებელი', nightwatch:'ღამის მორიგე', pending:'მოლოდინში' };
+  const rc = { admin:'role-admin', supervisor:'role-supervisor', worker:'role-worker', nightwatch:'role-nightwatch', pending:'role-pending' };
   const b = document.getElementById('role-badge');
   b.textContent = rl[userData.role] || userData.role;
   b.className = 'role-badge ' + (rc[userData.role] || 'role-pending');
@@ -637,6 +748,7 @@ function buildNav(role, userData) {
   nav.innerHTML = '';
   const map = {
     worker: [['sec-submit','📤 გაგზავნა'],['sec-myworks','📁 ჩემი'],['sec-tasks','📬 დავალებები']],
+    nightwatch: [['sec-submit','📤 გაგზავნა'],['sec-myworks','📁 ჩემი']],
     supervisor: [['sec-submit','📤 გაგზავნა'],['sec-myworks','📁 ჩემი'],['sec-tasks','📬 დავალებები'],['sec-review','🔍 შემოწმება'],['sec-redirect','📨 გადამისამართება'],['sec-redirects-all','📋 ყველა გადამ.']],
     admin: [['sec-dashboard','📊 Dashboard'],['sec-users','👥 მომხმარებლები'],['sec-redirects-all','📨 გადამისამართებები'],['sec-preview','👁 Preview'],['sec-export','📥 ექსპორტი']]
   };
@@ -651,6 +763,7 @@ function buildNav(role, userData) {
   });
   showSection(items[0][0]);
   if (role === 'worker') { listenMyWorks(); listenUsers(); listenMyTasks(); listenMyNotifications(); }
+  if (role === 'nightwatch') { listenMyWorks(); listenUsers(); listenMyNotifications(); }
   if (role === 'supervisor') { listenMyWorks(); listenAllWorks('supervisor'); listenUsers(); listenRedirectHistory(); listenAllRedirects(); listenMyTasks(); listenMyNotifications(); }
   if (role === 'admin') { listenAllWorks('admin'); listenUsers(); listenAllRedirects(); }
 }
@@ -794,14 +907,17 @@ window.submitWork = async function() {
   try {
     await addDoc(collection(db, 'works'), {
       workerId: currentUser.uid,
-      workerName: userData.name,
+      workerName: userData.displayName || userData.name,
       workerEmail: userData.email,
       location: loc, category: cat, date, time,
       damage: dmg, result: res, comment,
       images: imgs,
-      status: 'pending',
+      status: userData.role === 'nightwatch' ? 'approved' : 'pending',
+      workerRole: userData.role,
       submittedAt: serverTimestamp(),
-      checkerComment: '', checkedBy: '', checkedAt: null
+      checkerComment: userData.role === 'nightwatch' ? 'ღამის მორიგე — ავტო-დამტკიცება' : '',
+      checkedBy: userData.role === 'nightwatch' ? 'სისტემა' : '',
+      checkedAt: userData.role === 'nightwatch' ? serverTimestamp() : null
     });
     // reset
     document.getElementById('w-loc').value = '';
@@ -851,7 +967,8 @@ function renderAdminStats() {
     {n:w.filter(x=>x.result==='შესრულდა').length,l:'შესრულდა',c:'#3fb950'},
     {n:w.filter(x=>x.result==='ვერ შესრულდა').length,l:'ვერ შესრულდა',c:'#f85149'},
     {n:w.filter(x=>x.result==='დროებით გაკეთდა').length,l:'დროებით',c:'#e3b341'},
-    {n:allUsers.filter(u=>u.role==='worker').length,l:'შემსრულებელი',c:'#bc8cff'},
+    {n:allUsers.filter(u=>u.role==='worker').length,l:'შემსრულებელი',c:'#a5b4fc'},
+    {n:allUsers.filter(u=>u.role==='nightwatch').length,l:'ღამის მორიგე',c:'#c4b5fd'},
   ];
   const el = document.getElementById('adm-stats');
   if (el) el.innerHTML = stats.map(s => `<div class="stat-card"><div class="stat-num" style="color:${s.c}">${s.n}</div><div class="stat-label">${s.l}</div></div>`).join('');
@@ -869,7 +986,7 @@ function renderAdminWorks() {
   if (wf !== 'all') list = list.filter(w => w.workerId === wf);
   const tb = document.getElementById('adm-tbody');
   if (!tb) return;
-  if (!list.length) { tb.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text3);padding:30px">სამუშაოები არ მოიძებნა</td></tr>'; return; }
+  if (!list.length) { tb.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--text3);padding:30px">სამუშაოები არ მოიძებნა</td></tr>'; return; }
   tb.innerHTML = list.map(w => `<tr>
     <td><strong>${e(w.location||'')}</strong></td>
     <td style="font-size:12px">${e(w.category||'')}</td>
@@ -877,7 +994,11 @@ function renderAdminWorks() {
     <td>${rBadge(w.result)}</td>
     <td>${sBadge(w.status)}</td>
     <td style="font-size:12px;color:var(--text2);white-space:nowrap">${w.date||''}<br><span style="color:var(--text3)">${w.time||''}</span></td>
-    <td><button class="btn btn-ghost btn-sm" onclick="openModal('${w.id}','admin')">👁</button></td>
+    <td style="white-space:nowrap">
+      <button class="btn btn-ghost btn-sm" onclick="openModal('${w.id}','admin')" title="დეტალები">👁</button>
+      <button class="btn btn-ghost btn-sm" onclick="openEditWork('${w.id}')" title="რედაქტირება" style="margin-left:4px">✏️</button>
+      <button class="btn btn-sm" onclick="admDeleteWork('${w.id}')" title="წაშლა" style="background:rgba(244,63,94,.1);color:#fb7185;border:1px solid rgba(244,63,94,.2);margin-left:4px">🗑</button>
+    </td>
   </tr>`).join('');
 }
 
@@ -902,6 +1023,7 @@ function renderUsers() {
           <option value="pending" ${u.role==='pending'?'selected':''}>⏳ მოლოდინში</option>
           <option value="worker" ${u.role==='worker'?'selected':''}>👷 შემსრულებელი</option>
           <option value="supervisor" ${u.role==='supervisor'?'selected':''}>🔍 სუპერვაიზერი</option>
+          <option value="nightwatch" ${u.role==='nightwatch'?'selected':''}>🌙 ღამის მორიგე</option>
         </select>`}
     </td>
     <td style="font-size:12px;color:var(--text3)">${u.createdAt?.toDate ? u.createdAt.toDate().toISOString().slice(0,10) : ''}</td>
@@ -911,12 +1033,12 @@ function renderUsers() {
 }
 
 function populateWorkerSelects() {
-  const workers = allUsers.filter(u => u.role === 'worker');
+  const workers = allUsers.filter(u => u.role === 'worker' || u.role === 'nightwatch');
   ['af-wk','ex-wk'].forEach(id => {
     const sel = document.getElementById(id);
     if (!sel) return;
     sel.innerHTML = '<option value="all">ყველა შემსრულებელი</option>';
-    workers.forEach(u => sel.innerHTML += `<option value="${u.id}">${e(u.name)}</option>`);
+    workers.forEach(u => sel.innerHTML += `<option value="${u.id}">${e(u.displayName||u.name)}</option>`);
   });
 }
 
@@ -938,31 +1060,69 @@ window.saveDisplayName = async function(uid) {
 };
 
 window.delUser = async function(id) {
-  if (!confirm('წაშლა?')) return;
-  // Note: deletes Firestore doc only, not Auth user
-  const { deleteDoc } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
-  await deleteDoc(doc(db, 'users', id));
-  notify('წაიშალა', 'info');
+  if (!confirm('მომხმარებლის წაშლა?')) return;
+  try {
+    await deleteDoc(doc(db, 'users', id));
+    notify('წაიშალა', 'info');
+  } catch(err) { notify('შეცდომა: ' + err.message, 'error'); }
 };
 
 // ---- WORK CARD ----
+// Avatar color palette — consistent per name
+function avatarColor(name) {
+  const colors = [
+    ['#6366f1','#4f46e5'],['#10b981','#059669'],['#f59e0b','#d97706'],
+    ['#f43f5e','#e11d48'],['#38bdf8','#0284c7'],['#a78bfa','#7c3aed'],
+    ['#fb923c','#ea580c'],['#34d399','#059669'],['#f472b6','#db2777'],
+    ['#4ade80','#16a34a'],['#60a5fa','#2563eb'],['#fbbf24','#b45309'],
+  ];
+  let hash = 0;
+  for (let i = 0; i < (name||'').length; i++) hash = (hash * 31 + name.charCodeAt(i)) & 0xffff;
+  const [c1, c2] = colors[hash % colors.length];
+  return `background:linear-gradient(135deg,${c1},${c2})`;
+}
+function avatarInitials(name) {
+  const parts = (name||'').trim().split(' ');
+  if (parts.length >= 2) return (parts[0][0]||'') + (parts[1][0]||'');
+  return (name||'').slice(0,2).toUpperCase();
+}
+
 window.wCard = function(w, viewAs) {
-  return `<div class="card">
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;margin-bottom:10px">
-      <div>
-        <div class="card-title">📍 ${e(w.location||'')}</div>
-        <div class="card-meta">${e(w.category||'')} · ${w.date||''}${w.time?' · '+w.time:''} · ${e(w.workerName||'')}</div>
+  const stripeClass = w.result === 'შესრულდა' ? 'wcard-stripe-green'
+    : w.result === 'ვერ შესრულდა' ? 'wcard-stripe-red'
+    : w.result === 'დროებით გაკეთდა' ? 'wcard-stripe-yellow'
+    : 'wcard-stripe-blue';
+
+  const workerName = w.workerName || '';
+  const initials = avatarInitials(workerName);
+  const avStyle = avatarColor(workerName);
+
+  return `<div class="wcard">
+    <div class="wcard-stripe ${stripeClass}"></div>
+    <div class="wcard-body">
+      <div class="wcard-top">
+        <div class="wcard-info">
+          <div class="wcard-location">${e(w.location||'')}</div>
+          <div class="wcard-row">
+            <div class="wcard-worker">
+              <div class="wcard-avatar" style="${avStyle}">${initials}</div>
+              <span>${e(workerName)}</span>
+            </div>
+            <span class="wcard-cat">${e(w.category||'')}</span>
+            <span class="wcard-date">${w.date||''}${w.time ? ' · '+w.time : ''}</span>
+          </div>
+        </div>
+        <div class="wcard-badges">${rBadge(w.result)} ${sBadge(w.status)}</div>
       </div>
-      <div style="display:flex;gap:6px;flex-wrap:wrap">${rBadge(w.result)} ${sBadge(w.status)}</div>
+      ${w.damage ? `<div class="wcard-detail dmg">⚠️ ${e(w.damage)}</div>` : ''}
+      ${w.comment ? `<div class="wcard-detail">💬 ${e(w.comment)}</div>` : ''}
+      ${w.checkerComment ? `<div class="wcard-detail" style="border-left-color:var(--accent2);color:var(--text2)">🔍 ${e(w.checkerComment)}</div>` : ''}
     </div>
-    ${w.damage ? `<div style="font-size:12px;color:var(--text2);margin-bottom:6px">⚠️ ${e(w.damage)}</div>` : ''}
-    ${w.comment ? `<div style="font-size:13px;color:var(--text2)">💬 ${e(w.comment)}</div>` : ''}
-    ${w.checkerComment ? `<div class="comment-block">🔍 ${e(w.checkerComment)}</div>` : ''}
-    <div class="card-footer">
+    <div class="wcard-footer">
       <button class="btn btn-ghost btn-sm" onclick="openModal('${w.id}','${viewAs}')">👁 დეტალები</button>
       ${viewAs==='supervisor'&&w.status==='pending' ? `
-        <button class="btn btn-sm" style="background:rgba(35,134,54,.15);color:#3fb950;border:1px solid rgba(35,134,54,.3)" onclick="quickAct('${w.id}','approved')">✓ დამტკიცება</button>
-        <button class="btn btn-sm" style="background:rgba(218,54,51,.15);color:#f85149;border:1px solid rgba(218,54,51,.3)" onclick="openReject('${w.id}')">✕ უარყოფა</button>
+        <button class="btn btn-sm" style="background:rgba(16,185,129,.12);color:#34d399;border:1px solid rgba(16,185,129,.22);font-weight:700" onclick="quickAct('${w.id}','approved')">✓ დამტკიცება</button>
+        <button class="btn btn-sm" style="background:rgba(244,63,94,.12);color:#fb7185;border:1px solid rgba(244,63,94,.22);font-weight:700" onclick="openReject('${w.id}')">✕ უარყოფა</button>
       ` : ''}
     </div>
   </div>`;
@@ -1003,6 +1163,8 @@ window.openModal = function(wid, viewAs) {
   }
   if (viewAs === 'admin') {
     footer = `<button class="btn btn-ghost btn-sm" onclick="closeModal()">დახურვა</button><span style="flex:1"></span>
+      <button class="btn btn-sm" onclick="closeModal();openEditWork('${wid}')" style="background:rgba(99,102,241,.12);color:#a5b4fc;border:1px solid rgba(99,102,241,.25)">✏️ რედაქტირება</button>
+      <button class="btn btn-sm" onclick="closeModal();admDeleteWork('${wid}')" style="background:rgba(244,63,94,.1);color:#fb7185;border:1px solid rgba(244,63,94,.2)">🗑 წაშლა</button>
       ${w.status!=='approved' ? `<button class="btn btn-primary btn-sm" onclick="admAct('${wid}','approved')">✓ დამტკიცება</button>` : ''}
       ${w.status!=='rejected' ? `<button class="btn btn-danger btn-sm" onclick="admAct('${wid}','rejected')">✕ უარყოფა</button>` : ''}`;
   }
@@ -1058,6 +1220,89 @@ window.admAct = async function(wid, status) {
   notify(status === 'approved' ? '✓ დამტკიცდა!' : 'უარყოფილია', status === 'approved' ? 'success' : 'error');
 };
 
+window.admDeleteWork = async function(wid) {
+  if (!confirm('ნამდვილად წაიშალოს ეს სამუშაო? ეს მოქმედება შეუქცევადია.')) return;
+  try {
+    await deleteDoc(doc(db, 'works', wid));
+    notify('✓ სამუშაო წაიშალა', 'info');
+  } catch(err) { notify('შეცდომა: ' + err.message, 'error'); }
+};
+
+window.openEditWork = function(wid) {
+  const w = allWorks.find(x => x.id === wid);
+  if (!w) return;
+  document.getElementById('m-title').textContent = '✏️ რედაქტირება — ' + e(w.location||'');
+  document.getElementById('m-body').innerHTML = `
+    <div class="form-group">
+      <label>ობიექტის დასახელება</label>
+      <input type="text" id="ed-loc" value="${e(w.location||'')}">
+    </div>
+    <div class="form-group">
+      <label>კატეგორია</label>
+      <select id="ed-cat">
+        <option ${w.category==='რესტორნები'?'selected':''}>რესტორნები</option>
+        <option ${w.category==='გარეტერიტორია'?'selected':''}>გარეტერიტორია</option>
+        <option ${w.category==='ოთახები'?'selected':''}>ოთახები</option>
+        <option ${w.category==='სხვა'?'selected':''}>სხვა</option>
+      </select>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="form-group"><label>თარიღი</label><input type="date" id="ed-date" value="${e(w.date||'')}"></div>
+      <div class="form-group"><label>დრო</label><input type="time" id="ed-time" value="${e(w.time||'')}"></div>
+    </div>
+    <div class="form-group">
+      <label>შედეგი</label>
+      <select id="ed-res">
+        <option ${w.result==='შესრულდა'?'selected':''}>შესრულდა</option>
+        <option ${w.result==='ვერ შესრულდა'?'selected':''}>ვერ შესრულდა</option>
+        <option ${w.result==='დროებით გაკეთდა'?'selected':''}>დროებით გაკეთდა</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>სტატუსი</label>
+      <select id="ed-status">
+        <option value="pending" ${w.status==='pending'?'selected':''}>⏳ მოლოდინში</option>
+        <option value="approved" ${w.status==='approved'?'selected':''}>✓ დამტკიცებული</option>
+        <option value="rejected" ${w.status==='rejected'?'selected':''}>✕ უარყოფილი</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>⚠️ დაზიანება</label>
+      <textarea id="ed-dmg" style="min-height:70px">${e(w.damage||'')}</textarea>
+    </div>
+    <div class="form-group">
+      <label>💬 კომენტარი</label>
+      <textarea id="ed-comment" style="min-height:70px">${e(w.comment||'')}</textarea>
+    </div>
+  `;
+  document.getElementById('m-footer').innerHTML = `
+    <button class="btn btn-ghost btn-sm" onclick="closeModal()">გაუქმება</button>
+    <span style="flex:1"></span>
+    <button class="btn btn-primary btn-sm" onclick="saveEditWork('${wid}')">💾 შენახვა</button>
+  `;
+  document.getElementById('modal-ov').classList.add('open');
+};
+
+window.saveEditWork = async function(wid) {
+  const loc = document.getElementById('ed-loc').value.trim();
+  const cat = document.getElementById('ed-cat').value;
+  const date = document.getElementById('ed-date').value;
+  const time = document.getElementById('ed-time').value;
+  const res = document.getElementById('ed-res').value;
+  const status = document.getElementById('ed-status').value;
+  const dmg = document.getElementById('ed-dmg').value.trim();
+  const comment = document.getElementById('ed-comment').value.trim();
+  if (!loc) { notify('ობიექტი სავალდებულოა', 'error'); return; }
+  try {
+    await updateDoc(doc(db, 'works', wid), {
+      location: loc, category: cat, date, time,
+      result: res, status, damage: dmg, comment
+    });
+    window.closeModal();
+    notify('✓ ცვლილებები შენახულია', 'success');
+  } catch(err) { notify('შეცდომა: ' + err.message, 'error'); }
+};
+
 // ---- EXPORT ----
 window.exportExcel = function() {
   const sf = document.getElementById('ex-st')?.value || 'all';
@@ -1098,14 +1343,17 @@ window.renderAdminWorks = renderAdminWorks;
 
 // ---- HELPERS ----
 window.switchTab = function(t) {
-  document.querySelectorAll('.tab').forEach((el, i) => el.classList.toggle('active', (i===0&&t==='login')||(i===1&&t==='register')));
+  document.querySelectorAll('.tab').forEach((el, i) => {
+    el.classList.toggle('active', (i===0&&t==='login')||(i===1&&t==='register')||(i===2&&t==='reset'));
+  });
   document.getElementById('login-form').style.display = t==='login' ? '' : 'none';
   document.getElementById('register-form').style.display = t==='register' ? '' : 'none';
+  document.getElementById('reset-form').style.display = t==='reset' ? '' : 'none';
 };
 
 function sBadge(s) { const m={pending:['s-pending','⏳ მოლოდინში'],approved:['s-approved','✓ დამტკიცებული'],rejected:['s-rejected','✕ უარყოფილი'],redirected:['s-redirected','📨 გადამისამართდა']};const[c,l]=m[s]||['s-pending',s];return `<span class="status ${c}">${l}</span>`; }
 function rBadge(r) { const m={'შესრულდა':['r-done','✅ შესრულდა'],'ვერ შესრულდა':['r-failed','❌ ვერ შესრულდა'],'დროებით გაკეთდა':['r-temp','🔧 დროებით']};const[c,l]=m[r]||['',''];return r?`<span class="status ${c}">${l}</span>`:''; }
-function empty(icon, msg) { return `<div style="text-align:center;padding:60px 20px;color:var(--text3)"><div style="font-size:48px;margin-bottom:12px">${icon}</div><p>${msg}</p></div>`; }
+function empty(icon, msg) { return `<div class="empty-state"><div class="empty-icon">${icon}</div><p>${msg}</p></div>`; }
 function e(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function notify(msg, type='info') { const el=document.getElementById('notification');el.textContent=msg;el.className=`show notif-${type}`;clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('show'),3000); }
 
@@ -1268,12 +1516,12 @@ function renderRedirectSection() {
 function renderRdPeopleChips() {
   const c = document.getElementById('rd-people-chips');
   if (!c) return;
-  const people = allUsers.filter(u => (u.role === 'worker' || u.role === 'supervisor') && u.id !== currentUser?.uid);
+  const people = allUsers.filter(u => (u.role === 'worker' || u.role === 'supervisor' || u.role === 'nightwatch') && u.id !== currentUser?.uid);
   if (!people.length) {
     c.innerHTML = '<p style="font-size:13px;color:var(--text3)">რეგისტრირებული მომხმარებლები არ მოიძებნა</p>';
     return;
   }
-  const roleIcon = { worker:'👷', supervisor:'🔍' };
+  const roleIcon = { worker:'👷', supervisor:'🔍', nightwatch:'🌙' };
   c.innerHTML = people.map(u => {
     const label = u.displayName || u.name || '';
     return `<label class="chip ${rdSelectedPeople.includes(label)?'sel-blue':''}" style="margin-bottom:4px" onclick="toggleRdPerson('${e(label)}')">
@@ -1317,20 +1565,34 @@ window.submitRedirect = async function() {
       createdAt: serverTimestamp()
     });
 
-    // Create a notification for each assigned person (match by displayName or name)
+    // Create a notification for each assigned person + send FCM push
     for (const personName of rdSelectedPeople) {
       const matchedUser = allUsers.find(u => (u.displayName || u.name) === personName);
       if (matchedUser) {
+        const notifBody = `${udata.name}: ${loc} — ${desc.slice(0,60)}${desc.length>60?'...':''}`;
+        // 1. Firestore notification (in-app)
         await addDoc(collection(db, 'notifications'), {
           toUid: matchedUser.id,
           toName: personName,
           fromName: udata.name,
           redirectId: rdRef.id,
           title: '📨 ახალი დავალება',
-          body: `${udata.name}: ${loc} — ${desc.slice(0,60)}${desc.length>60?'...':''}`,
+          body: notifBody,
           read: false,
           createdAt: serverTimestamp()
         });
+        // 2. FCM push (background/phone) — writes to pushQueue collection
+        // Firebase Cloud Function reads this and sends FCM push
+        if (matchedUser.fcmToken) {
+          await addDoc(collection(db, 'pushQueue'), {
+            token: matchedUser.fcmToken,
+            title: '📨 ახალი დავალება',
+            body: notifBody,
+            toUid: matchedUser.id,
+            createdAt: serverTimestamp(),
+            sent: false
+          });
+        }
       }
     }
 
@@ -1383,13 +1645,63 @@ function listenRedirectHistory() {
 
 // ---- END REDIRECT ----
 
+// ---- FCM PUSH SETUP ----
+// VAPID key — Firebase Console → Project Settings → Cloud Messaging → Web Push certificates
+// შეცვალე შენი VAPID key-ით!
+const VAPID_KEY = 'BEl62iUYgUivxIkv69yViEuiBIa40HI80NM9be27bVBtMfXMDfWf5YXGgaVBwcQSMX94z6d9XcFHNrXIRkTIR-g';
+
+async function initFCM() {
+  if (!messaging) return;
+  if (!('serviceWorker' in navigator)) return;
+  try {
+    const swReg = await navigator.serviceWorker.register('./firebase-messaging-sw.js');
+    const token = await getToken(messaging, {
+      vapidKey: VAPID_KEY,
+      serviceWorkerRegistration: swReg
+    });
+    if (token && currentUser) {
+      await updateDoc(doc(db, 'users', currentUser.uid), { fcmToken: token });
+    }
+    // Foreground messages (app open)
+    onMessage(messaging, payload => {
+      const { title, body } = payload.notification || {};
+      playNotifSound();
+      notify(`${title||'📨'}: ${body||''}`, 'info');
+      showWebNotification(title || '📨 შესრულებული სამუშაო', body || '');
+    });
+  } catch(err) {
+    console.warn('FCM init:', err.message);
+  }
+}
+
 // ---- NOTIFICATIONS ----
+let _prevNotifIds = new Set();
+let _notifFirstLoad = true;
+
 function listenMyNotifications() {
+  requestNotifPermission().then(() => {
+    if (Notification.permission === 'granted') initFCM();
+  });
+
   const q = query(collection(db, 'notifications'), orderBy('createdAt', 'desc'));
   onSnapshot(q, snap => {
-    myNotifications = snap.docs
+    const fresh = snap.docs
       .map(d => ({ id: d.id, ...d.data() }))
       .filter(n => n.toUid === currentUser.uid);
+
+    if (_notifFirstLoad) {
+      fresh.forEach(n => _prevNotifIds.add(n.id));
+      _notifFirstLoad = false;
+    } else {
+      const newOnes = fresh.filter(n => !n.read && !_prevNotifIds.has(n.id));
+      newOnes.forEach(n => {
+        playNotifSound();
+        showWebNotification(n.title || '📨 შესრულებული სამუშაო', n.body || '');
+      });
+      fresh.forEach(n => _prevNotifIds.add(n.id));
+    }
+
+    myNotifications = fresh;
     renderNotifBell();
     renderNotifList();
   });
