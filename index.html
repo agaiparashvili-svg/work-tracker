@@ -388,7 +388,7 @@
             ondragover="handleDragOver(event)" ondrop="handleDrop(event)" ondragleave="this.classList.remove('over')">
             <div style="font-size:36px">📷</div>
             <p>დააჭირეთ ან გადმოიტანეთ ფოტოები</p>
-            <p style="font-size:11px;margin-top:4px;color:var(--text3)">JPG, PNG · მაქს. 2MB (Firebase ლიმიტი)</p>
+            <p style="font-size:11px;margin-top:4px;color:var(--text3)">JPG, PNG · მაქს. 10MB თითო სურათი</p>
           </div>
           <input type="file" id="fi" accept="image/*" multiple style="display:none" onchange="handleFiles(this.files)">
           <div class="preview-grid" id="prev-grid"></div>
@@ -604,6 +604,8 @@ import { getFirestore, collection, doc, setDoc, getDoc, getDocs, addDoc, updateD
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { getMessaging, getToken, onMessage }
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging.js";
+import { getStorage, ref, uploadBytes, getDownloadURL }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBiKjEDDug9McKWuLr6tLusSO5Kwf5m3RE",
@@ -618,6 +620,7 @@ const firebaseConfig = {
 const fireApp = initializeApp(firebaseConfig);
 const auth = getAuth(fireApp);
 const db = getFirestore(fireApp);
+const storage = getStorage(fireApp);
 let messaging = null;
 try { messaging = getMessaging(fireApp); } catch(e) { /* not supported */ }
 
@@ -893,18 +896,23 @@ window.handleDrop = function(e) { e.preventDefault(); document.getElementById('d
 window.handleFiles = function(files) {
   Array.from(files).forEach(f => {
     if (!f.type.startsWith('image/')) { notify('მხოლოდ სურათები!', 'error'); return; }
-    if (f.size > 2 * 1024 * 1024) { notify('ფოტო ძალიან დიდია (მაქს. 2MB)', 'error'); return; }
-    const r = new FileReader();
-    r.onload = e => { imgs.push({ name: f.name, data: e.target.result }); renderPrev(); };
-    r.readAsDataURL(f);
+    if (f.size > 10 * 1024 * 1024) { notify('ფოტო ძალიან დიდია (მაქს. 10MB)', 'error'); return; }
+    // Store file object + local preview URL
+    const previewUrl = URL.createObjectURL(f);
+    imgs.push({ file: f, name: f.name, previewUrl });
+    renderPrev();
   });
 };
 function renderPrev() {
   document.getElementById('prev-grid').innerHTML = imgs.map((im, i) =>
-    `<div class="preview-item"><img src="${im.data}"><button class="del-img" onclick="rmImg(${i})">✕</button></div>`
+    `<div class="preview-item"><img src="${im.previewUrl}"><button class="del-img" onclick="rmImg(${i})">✕</button></div>`
   ).join('');
 }
-window.rmImg = function(i) { imgs.splice(i, 1); renderPrev(); };
+window.rmImg = function(i) {
+  URL.revokeObjectURL(imgs[i].previewUrl);
+  imgs.splice(i, 1);
+  renderPrev();
+};
 
 // ---- CHIPS ----
 window.selChip = function(group, input, cls) {
@@ -935,13 +943,23 @@ window.submitWork = async function() {
   const userData = snap.data();
 
   try {
+    // Upload images to Firebase Storage
+    notify('⏳ სურათები იტვირთება...', 'info');
+    const imageUrls = [];
+    for (const img of imgs) {
+      const storageRef = ref(storage, `works/${currentUser.uid}/${Date.now()}_${img.name}`);
+      await uploadBytes(storageRef, img.file);
+      const url = await getDownloadURL(storageRef);
+      imageUrls.push({ name: img.name, url });
+    }
+
     await addDoc(collection(db, 'works'), {
       workerId: currentUser.uid,
       workerName: userData.displayName || userData.name,
       workerEmail: userData.email,
       location: loc, category: cat, date, time,
       damage: dmg, result: res, comment,
-      images: imgs,
+      images: imageUrls,
       status: userData.role === 'nightwatch' ? 'approved' : 'pending',
       workerRole: userData.role,
       submittedAt: serverTimestamp(),
@@ -960,6 +978,7 @@ window.submitWork = async function() {
       el.classList.remove('sel-blue','sel-green','sel-red','sel-yellow')
     );
     chipState.cat = null; chipState.res = null;
+    imgs.forEach(im => URL.revokeObjectURL(im.previewUrl));
     imgs = []; renderPrev();
     notify('✓ სამუშაო გაიგზავნა!', 'success');
   } catch(e) {
@@ -1180,7 +1199,7 @@ window.openModal = function(wid, viewAs) {
       <div class="detail-row"><span class="detail-label">👤 გადაამისამართა</span><span>${e(w.redirectedBy||'')}</span></div>
     ` : ''}
   `;
-  if (w.images?.length) html += `<div class="preview-grid" style="margin-top:12px">${w.images.map(im => `<div class="preview-item"><img src="${im.data}"></div>`).join('')}</div>`;
+  if (w.images?.length) html += `<div class="preview-grid" style="margin-top:12px">${w.images.map(im => `<div class="preview-item"><img src="${im.url || im.data || ''}" loading="lazy"></div>`).join('')}</div>`;
   if (w.checkerComment) html += `<div class="comment-block" style="margin-top:12px">🔍 ${e(w.checkerComment)}</div>`;
   if (w.checkedBy) html += `<p class="text-sm" style="margin-top:8px">შეამოწმა: ${e(w.checkedBy)}</p>`;
   document.getElementById('m-body').innerHTML = html;
