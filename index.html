@@ -147,7 +147,8 @@
   /* ── STATS ── */
   .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(115px,1fr));gap:8px;margin-bottom:20px;}
   .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px 12px;text-align:center;position:relative;overflow:hidden;transition:all .2s;cursor:default;}
-  .stat-card:hover{transform:translateY(-2px);border-color:var(--border2);box-shadow:0 6px 20px rgba(0,0,0,.3);}
+  .stat-card[onclick]:hover{transform:translateY(-2px);border-color:var(--accent2);box-shadow:0 6px 20px rgba(99,102,241,.2);}
+  .stat-card:not([onclick]):hover{transform:translateY(-2px);border-color:var(--border2);box-shadow:0 6px 20px rgba(0,0,0,.3);}
   .stat-card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:currentColor;opacity:.25;}
   .stat-num{font-size:26px;font-weight:800;letter-spacing:-1px;line-height:1;}
   .stat-label{font-size:10px;color:var(--text3);margin-top:6px;font-weight:600;letter-spacing:.3px;text-transform:uppercase;}
@@ -1008,20 +1009,45 @@ function renderReview() {
 function renderAdminStats() {
   const w = allWorks;
   const stats = [
-    {n:w.length,l:'სულ სამუშაო',c:'#58a6ff'},
-    {n:w.filter(x=>x.status==='pending').length,l:'მოლოდინში',c:'#e3b341'},
-    {n:w.filter(x=>x.status==='approved').length,l:'დამტკიცებული',c:'#3fb950'},
-    {n:w.filter(x=>x.status==='rejected').length,l:'უარყოფილი',c:'#f85149'},
-    {n:w.filter(x=>x.status==='redirected').length,l:'გადამისამართდა',c:'#58a6ff'},
-    {n:w.filter(x=>x.result==='შესრულდა').length,l:'შესრულდა',c:'#3fb950'},
-    {n:w.filter(x=>x.result==='ვერ შესრულდა').length,l:'ვერ შესრულდა',c:'#f85149'},
-    {n:w.filter(x=>x.result==='დროებით გაკეთდა').length,l:'დროებით',c:'#e3b341'},
-    {n:allUsers.filter(u=>u.role==='worker').length,l:'შემსრულებელი',c:'#a5b4fc'},
-    {n:allUsers.filter(u=>u.role==='nightwatch').length,l:'ღამის მორიგე',c:'#c4b5fd'},
+    {n:w.length, l:'სულ სამუშაო', c:'#58a6ff', st:'all', res:'all'},
+    {n:w.filter(x=>x.status==='pending').length, l:'მოლოდინში', c:'#e3b341', st:'pending', res:'all'},
+    {n:w.filter(x=>x.status==='approved').length, l:'დამტკიცებული', c:'#3fb950', st:'approved', res:'all'},
+    {n:w.filter(x=>x.status==='rejected').length, l:'უარყოფილი', c:'#f85149', st:'rejected', res:'all'},
+    {n:w.filter(x=>x.status==='redirected').length, l:'გადამისამართდა', c:'#58a6ff', st:'redirected', res:'all'},
+    {n:w.filter(x=>x.result==='შესრულდა').length, l:'შესრულდა', c:'#3fb950', st:'all', res:'შესრულდა'},
+    {n:w.filter(x=>x.result==='ვერ შესრულდა').length, l:'ვერ შესრულდა', c:'#f85149', st:'all', res:'ვერ შესრულდა'},
+    {n:w.filter(x=>x.result==='დროებით გაკეთდა').length, l:'დროებით', c:'#e3b341', st:'all', res:'დროებით გაკეთდა'},
+    {n:allUsers.filter(u=>u.role==='worker').length, l:'შემსრულებელი', c:'#a5b4fc', st:null, res:null},
+    {n:allUsers.filter(u=>u.role==='nightwatch').length, l:'ღამის მორიგე', c:'#c4b5fd', st:null, res:null},
   ];
   const el = document.getElementById('adm-stats');
-  if (el) el.innerHTML = stats.map(s => `<div class="stat-card"><div class="stat-num" style="color:${s.c}">${s.n}</div><div class="stat-label">${s.l}</div></div>`).join('');
+  if (!el) return;
+  el.innerHTML = stats.map(s => {
+    const clickable = s.st !== null;
+    const cursor = clickable ? 'cursor:pointer' : 'cursor:default';
+    const title = clickable ? `title="დააჭირე გასაფილტრად"` : '';
+    return `<div class="stat-card" style="${cursor}" ${title} onclick="${clickable ? `filterBystat('${s.st}','${s.res}')` : ''}">
+      <div class="stat-num" style="color:${s.c}">${s.n}</div>
+      <div class="stat-label">${s.l}</div>
+      ${clickable ? `<div style="font-size:9px;color:var(--text3);margin-top:4px;opacity:.6">დააჭირე</div>` : ''}
+    </div>`;
+  }).join('');
 }
+
+window.filterBystat = function(st, res) {
+  // Set filter dropdowns
+  const stSel = document.getElementById('af-st');
+  const resSel = document.getElementById('af-res');
+  if (stSel) stSel.value = st;
+  if (resSel) resSel.value = res;
+  // Re-render table
+  renderAdminWorks();
+  // Scroll down to table
+  document.querySelector('#sec-dashboard .card')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  // Visual feedback — highlight active stat card
+  document.querySelectorAll('#adm-stats .stat-card').forEach(c => c.style.outline = '');
+  event.currentTarget.style.outline = '2px solid var(--accent2)';
+};
 
 function renderAdminWorks() {
   const sf = document.getElementById('af-st')?.value || 'all';
