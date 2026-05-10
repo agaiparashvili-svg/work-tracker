@@ -9,29 +9,29 @@
   @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Georgian:wght@300;400;500;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap');
 
   :root {
-    --bg:#07090f;
-    --surface:#0d1117;
-    --surface2:#111827;
-    --surface3:#1a2235;
-    --border:#1f2d42;
-    --border2:#2a3d57;
-    --accent:#10b981;
-    --accent-dim:rgba(16,185,129,.12);
-    --accent2:#6366f1;
-    --accent2-dim:rgba(99,102,241,.12);
-    --warn:#f59e0b;
-    --warn-dim:rgba(245,158,11,.1);
-    --danger:#f43f5e;
-    --danger-dim:rgba(244,63,94,.1);
-    --purple:#a78bfa;
-    --sky:#38bdf8;
-    --text:#e8edf5;
-    --text2:#6b7fa3;
-    --text3:#3a4d6a;
+    --bg:#ffffff;
+    --surface:#f8fafc;
+    --surface2:#f1f5f9;
+    --surface3:#e2e8f0;
+    --border:#cbd5e1;
+    --border2:#94a3b8;
+    --accent:#059669;
+    --accent-dim:rgba(5,150,105,.1);
+    --accent2:#4f46e5;
+    --accent2-dim:rgba(79,70,229,.1);
+    --warn:#d97706;
+    --warn-dim:rgba(217,119,6,.1);
+    --danger:#dc2626;
+    --danger-dim:rgba(220,38,38,.1);
+    --purple:#7c3aed;
+    --sky:#0284c7;
+    --text:#0f172a;
+    --text2:#475569;
+    --text3:#94a3b8;
     --radius:10px;
     --radius-lg:14px;
     --radius-xl:20px;
-    --shadow:0 24px 64px rgba(0,0,0,.7);
+    --shadow:0 8px 32px rgba(0,0,0,.12);
     --font-body:'Noto Sans Georgian',sans-serif;
   }
   *{margin:0;padding:0;box-sizing:border-box;}
@@ -40,8 +40,8 @@
   /* ── AUTH ── */
   #auth-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px;
     background:
-      radial-gradient(ellipse 60% 50% at 15% 15%,rgba(99,102,241,.07) 0%,transparent 100%),
-      radial-gradient(ellipse 50% 40% at 85% 85%,rgba(16,185,129,.05) 0%,transparent 100%),
+      radial-gradient(ellipse 60% 50% at 15% 15%,rgba(79,70,229,.06) 0%,transparent 100%),
+      radial-gradient(ellipse 50% 40% at 85% 85%,rgba(5,150,105,.04) 0%,transparent 100%),
       var(--bg);}
   .auth-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-xl);padding:44px;width:100%;max-width:420px;box-shadow:var(--shadow);}
   .auth-logo{text-align:center;margin-bottom:36px;}
@@ -57,7 +57,7 @@
   label{display:block;font-size:11px;color:var(--text2);margin-bottom:7px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;}
   input,select,textarea{width:100%;padding:11px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-family:inherit;font-size:14px;transition:all .2s;-webkit-appearance:none;}
   input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent2);background:var(--surface3);box-shadow:0 0 0 3px rgba(99,102,241,.1);}
-  select option{background:var(--surface2);}
+  select option{background:#f1f5f9;color:#0f172a;}
   textarea{resize:vertical;min-height:80px;line-height:1.6;}
 
   /* ── CHIPS ── */
@@ -85,22 +85,22 @@
 
   /* ── TOPBAR ── */
   #app{display:none;flex-direction:column;min-height:100vh;}
-  .topbar{background:rgba(13,17,23,.96);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:0 20px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+  .topbar{background:rgba(248,250,252,.97);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid var(--border);box-shadow:0 1px 8px rgba(0,0,0,.06);padding:0 20px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
   .topbar-left{display:flex;align-items:center;gap:14px;}
   .topbar-logo{font-size:15px;font-weight:800;letter-spacing:-.5px;color:var(--text);display:flex;align-items:center;gap:8px;}
-  .topbar-logo span{background:linear-gradient(135deg,#10b981,#6366f1);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+  .topbar-logo span{background:linear-gradient(135deg,#059669,#4f46e5);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
   .role-badge{padding:3px 9px;border-radius:6px;font-size:10px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;}
-  .role-admin{background:rgba(244,63,94,.12);color:#fda4af;border:1px solid rgba(244,63,94,.25);}
-  .role-supervisor{background:rgba(245,158,11,.12);color:#fcd34d;border:1px solid rgba(245,158,11,.25);}
-  .role-worker{background:rgba(16,185,129,.12);color:#6ee7b7;border:1px solid rgba(16,185,129,.25);}
-  .role-pending{background:rgba(107,127,163,.1);color:#6b7fa3;border:1px solid rgba(107,127,163,.2);}
-  .role-nightwatch{background:rgba(167,139,250,.12);color:#c4b5fd;border:1px solid rgba(167,139,250,.25);}
+  .role-admin{background:rgba(220,38,38,.1);color:#dc2626;border:1px solid rgba(220,38,38,.25);}
+  .role-supervisor{background:rgba(217,119,6,.1);color:#b45309;border:1px solid rgba(217,119,6,.25);}
+  .role-worker{background:rgba(5,150,105,.1);color:#065f46;border:1px solid rgba(5,150,105,.25);}
+  .role-pending{background:rgba(100,116,139,.1);color:#475569;border:1px solid rgba(100,116,139,.2);}
+  .role-nightwatch{background:rgba(124,58,237,.1);color:#5b21b6;border:1px solid rgba(124,58,237,.25);}
   .topbar-right{display:flex;align-items:center;gap:8px;}
   .user-info{color:var(--text2);font-size:13px;font-weight:500;}
   @media(max-width:480px){.user-info{display:none;}}
 
   /* ── NAV ── */
-  .nav{background:rgba(13,17,23,.9);border-bottom:1px solid var(--border);display:flex;overflow-x:auto;padding:0 12px;-ms-overflow-style:none;scrollbar-width:none;}
+  .nav{background:rgba(241,245,249,.95);border-bottom:1px solid var(--border);display:flex;overflow-x:auto;padding:0 12px;-ms-overflow-style:none;scrollbar-width:none;}
   .nav::-webkit-scrollbar{display:none;}
   .nav-item{padding:13px 15px;cursor:pointer;color:var(--text3);white-space:nowrap;font-size:13px;border-bottom:2px solid transparent;transition:all .2s;font-weight:600;letter-spacing:-.1px;}
   .nav-item.active{color:var(--accent);border-color:var(--accent);}
@@ -159,13 +159,13 @@
 
   /* ── STATUS BADGES ── */
   .status{padding:3px 10px;border-radius:6px;font-size:10px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;display:inline-flex;align-items:center;gap:4px;}
-  .s-pending{background:rgba(245,158,11,.1);color:#fbbf24;border:1px solid rgba(245,158,11,.2);}
-  .s-approved{background:rgba(16,185,129,.1);color:#34d399;border:1px solid rgba(16,185,129,.2);}
-  .s-rejected{background:rgba(244,63,94,.1);color:#fb7185;border:1px solid rgba(244,63,94,.2);}
-  .s-redirected{background:rgba(99,102,241,.1);color:#a5b4fc;border:1px solid rgba(99,102,241,.2);}
-  .r-done{background:rgba(16,185,129,.09);color:#34d399;border:1px solid rgba(16,185,129,.18);}
-  .r-failed{background:rgba(244,63,94,.09);color:#fb7185;border:1px solid rgba(244,63,94,.18);}
-  .r-temp{background:rgba(245,158,11,.09);color:#fbbf24;border:1px solid rgba(245,158,11,.18);}
+  .s-pending{background:rgba(217,119,6,.1);color:#92400e;border:1px solid rgba(217,119,6,.3);}
+  .s-approved{background:rgba(5,150,105,.1);color:#065f46;border:1px solid rgba(5,150,105,.3);}
+  .s-rejected{background:rgba(220,38,38,.1);color:#991b1b;border:1px solid rgba(220,38,38,.3);}
+  .s-redirected{background:rgba(79,70,229,.1);color:#3730a3;border:1px solid rgba(79,70,229,.3);}
+  .r-done{background:rgba(5,150,105,.09);color:#065f46;border:1px solid rgba(5,150,105,.25);}
+  .r-failed{background:rgba(220,38,38,.09);color:#991b1b;border:1px solid rgba(220,38,38,.25);}
+  .r-temp{background:rgba(217,119,6,.09);color:#92400e;border:1px solid rgba(217,119,6,.25);}
 
   /* ── TABLE ── */
   .table-wrap{overflow-x:auto;border-radius:var(--radius);overflow:hidden;border:1px solid var(--border);}
@@ -204,7 +204,7 @@
   #loading-screen{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;gap:18px;}
   .spinner{width:36px;height:36px;border:2.5px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;}
   @keyframes spin{to{transform:rotate(360deg);}}
-  #loading-screen p{color:var(--text3);font-size:13px;font-weight:600;letter-spacing:.3px;}
+  #loading-screen p{color:var(--text2);font-size:13px;font-weight:600;letter-spacing:.3px;}
 
   /* ── TOAST ── */
   #notification{position:fixed;bottom:24px;right:24px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:13px 18px;font-size:13px;z-index:999;transform:translateY(110px);opacity:0;transition:all .32s cubic-bezier(.34,1.56,.64,1);max-width:320px;box-shadow:var(--shadow);font-weight:600;}
@@ -221,7 +221,7 @@
   .notif-list{overflow-y:auto;flex:1;}
   .notif-item{padding:13px 16px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .15s;}
   .notif-item:hover{background:var(--surface2);}
-  .notif-item.unread{background:rgba(99,102,241,.05);border-left:2px solid var(--accent2);}
+  .notif-item.unread{background:rgba(79,70,229,.06);border-left:2px solid var(--accent2);}
   .notif-item .ni-title{font-size:13px;font-weight:700;margin-bottom:3px;}
   .notif-item .ni-body{font-size:12px;color:var(--text2);line-height:1.5;}
   .notif-item .ni-time{font-size:11px;color:var(--text3);margin-top:3px;}
@@ -242,6 +242,45 @@
   .empty-state{text-align:center;padding:64px 20px;color:var(--text3);}
   .empty-state .empty-icon{font-size:48px;margin-bottom:14px;opacity:.4;}
   .empty-state p{font-size:14px;font-weight:600;letter-spacing:-.1px;}
+
+  /* ── MOBILE IMPROVEMENTS ── */
+  @media(max-width:600px){
+    .content{padding:12px 10px;}
+    .card{padding:14px;}
+    .wcard-body{padding:12px 14px 10px 18px;}
+    .wcard-footer{padding:8px 14px 12px 18px;}
+    .wcard-location{font-size:14px;white-space:normal;}
+    .wcard-badges{flex-direction:row;flex-wrap:wrap;}
+    .section-header{flex-direction:column;align-items:flex-start;gap:8px;}
+    .section-header h2{font-size:17px;}
+    .stats-grid{grid-template-columns:repeat(3,1fr);gap:6px;}
+    .stat-card{padding:12px 8px;}
+    .stat-num{font-size:22px;}
+    .stat-label{font-size:9px;}
+    .modal{padding:18px 14px;}
+    .modal h3{font-size:15px;}
+    .table-wrap{font-size:12px;}
+    th,td{padding:8px 8px;}
+    .topbar{padding:0 12px;height:52px;}
+    .topbar-logo{font-size:13px;}
+    .nav-item{padding:11px 10px;font-size:12px;}
+    .filter-row{gap:6px;}
+    .filter-row select{font-size:11px;padding:5px 8px;}
+    .chip{padding:7px 12px;font-size:12px;}
+    .btn{padding:9px 14px;font-size:12px;}
+    .btn-sm{padding:5px 10px;font-size:11px;}
+    .auth-card{padding:24px 18px;}
+    .form-row{grid-template-columns:1fr;}
+    .wcard-row{gap:6px;}
+    .detail-label{min-width:110px;font-size:10px;}
+    #notif-panel{width:calc(100vw - 24px);right:12px;}
+    .modal-footer{justify-content:stretch;}
+    .modal-footer .btn{flex:1;justify-content:center;}
+  }
+  @media(max-width:400px){
+    .stats-grid{grid-template-columns:repeat(2,1fr);}
+    .nav-item{padding:10px 8px;font-size:11px;}
+  }
 </style>
 </head>
 <body>
@@ -425,119 +464,6 @@
         </div>
       </div>
       <div id="review-list"></div>
-    </div>
-
-    <!-- REDIRECT SECTION -->
-    <div class="section" id="sec-redirect">
-      <div class="section-header"><h2>📨 გადამისამართება</h2></div>
-      <div class="card">
-        <p style="color:var(--text2);margin-bottom:20px;font-size:13px">შექმენი ახალი დავალება და მიანიჭე პასუხისმგებელი პირი</p>
-
-        <div class="form-group">
-          <label>ობიექტის დასახელება *</label>
-          <input type="text" id="rd-loc" placeholder="მაგ: მარანი N3, ბაღი, სასტუმრო...">
-        </div>
-
-        <div class="form-group">
-          <label>კატეგორია *</label>
-          <div class="chip-group">
-            <label class="chip" id="rdc-0"><input type="radio" name="rd-cat" value="რესტორნები" onchange="selChip('rdcat',this,'sel-blue')"><span>🍽 რესტორნები</span></label>
-            <label class="chip" id="rdc-1"><input type="radio" name="rd-cat" value="გარეტერიტორია" onchange="selChip('rdcat',this,'sel-blue')"><span>🌿 გარეტერიტორია</span></label>
-            <label class="chip" id="rdc-2"><input type="radio" name="rd-cat" value="ოთახები" onchange="selChip('rdcat',this,'sel-blue')"><span>🛏 ოთახები</span></label>
-            <label class="chip" id="rdc-3"><input type="radio" name="rd-cat" value="სხვა" onchange="selChip('rdcat',this,'sel-blue')"><span>📦 სხვა</span></label>
-          </div>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group"><label>თარიღი *</label><input type="date" id="rd-date"></div>
-          <div class="form-group"><label>დრო *</label><input type="time" id="rd-time"></div>
-        </div>
-
-        <div class="form-group">
-          <label>📝 დავალების აღწერა *</label>
-          <textarea id="rd-desc" placeholder="დეტალურად აღწერეთ რა უნდა გაკეთდეს..."></textarea>
-        </div>
-
-        <div class="form-group">
-          <label>👤 პასუხისმგებელი პირი * <span style="color:var(--text3);font-weight:400">(შეიძლება რამდენიმე)</span></label>
-          <div class="chip-group" id="rd-people-chips" style="max-height:280px;overflow-y:auto;padding:4px 0"></div>
-        </div>
-
-        <div class="form-group">
-          <label>💬 შენიშვნა <span style="color:var(--text3);font-weight:400">(სურვილისამებრ)</span></label>
-          <textarea id="rd-note" placeholder="დამატებითი ინფორმაცია..." style="min-height:70px"></textarea>
-        </div>
-
-        <button class="btn btn-primary btn-full" onclick="submitRedirect()">📨 გადამისამართება</button>
-      </div>
-
-      <div class="section-header" style="margin-top:24px"><h3 style="font-size:16px;font-weight:700">გაგზავნილი დავალებები</h3></div>
-      <div id="rd-history-list"></div>
-    </div>
-
-    <!-- DASHBOARD -->
-    <div class="section" id="sec-dashboard">
-      <div class="section-header"><h2>Dashboard</h2></div>
-      <div class="stats-grid" id="adm-stats"></div>
-      <div class="card">
-        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px">
-          <strong>ყველა სამუშაო</strong>
-          <div class="filter-row" style="margin:0">
-            <select id="af-st" onchange="renderAdminWorks()">
-              <option value="all">ყველა სტატუსი</option>
-              <option value="pending">მოლოდინში</option>
-              <option value="approved">დამტკიცებული</option>
-              <option value="rejected">უარყოფილი</option>
-              <option value="redirected">გადამისამართდა</option>
-            </select>
-            <select id="af-res" onchange="renderAdminWorks()">
-              <option value="all">ყველა შედეგი</option>
-              <option value="შესრულდა">შესრულდა</option>
-              <option value="ვერ შესრულდა">ვერ შესრულდა</option>
-              <option value="დროებით გაკეთდა">დროებით გაკეთდა</option>
-            </select>
-            <select id="af-cat" onchange="renderAdminWorks()">
-              <option value="all">ყველა კატეგ.</option>
-              <option>რესტორნები</option><option>გარეტერიტორია</option><option>ოთახები</option><option>სხვა</option>
-            </select>
-            <select id="af-wk" onchange="renderAdminWorks()"><option value="all">ყველა შემსრულებელი</option></select>
-          </div>
-        </div>
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>ობიექტი</th><th>კატეგ.</th><th>შემსრულებელი</th><th>შედეგი</th><th>სტატუსი</th><th>თარიღი/დრო</th><th></th></tr></thead>
-            <tbody id="adm-tbody"></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
-    <!-- USERS -->
-    <div class="section" id="sec-users">
-      <div class="section-header"><h2>მომხმარებლები</h2></div>
-      <div class="card">
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>სახელი</th><th>ელ-ფოსტა</th><th>როლი</th><th>რეგ. თარიღი</th><th></th></tr></thead>
-            <tbody id="users-tbody"></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
-    <!-- ALL REDIRECTS (admin + supervisor view) -->
-    <div class="section" id="sec-redirects-all">
-      <div class="section-header"><h2>📨 ყველა გადამისამართება</h2></div>
-      <div class="filter-row">
-        <select id="arf-sv" onchange="renderAllRedirectsPanel()">
-          <option value="all">ყველა სუპერვაიზერი</option>
-        </select>
-        <select id="arf-cat" onchange="renderAllRedirectsPanel()">
-          <option value="all">ყველა კატეგ.</option>
-          <option>რესტორნები</option><option>გარეტერიტორია</option><option>ოთახები</option><option>სხვა</option>
-        </select>
-      </div>
-      <div id="all-redirects-list"></div>
     </div>
 
     <!-- ADMIN PREVIEW -->
@@ -783,8 +709,8 @@ function buildNav(role, userData) {
   const map = {
     worker: [['sec-submit','📤 გაგზავნა'],['sec-myworks','📁 ჩემი'],['sec-tasks','📬 დავალებები']],
     nightwatch: [['sec-submit','📤 გაგზავნა'],['sec-myworks','📁 ჩემი']],
-    supervisor: [['sec-submit','📤 გაგზავნა'],['sec-myworks','📁 ჩემი'],['sec-tasks','📬 დავალებები'],['sec-review','🔍 შემოწმება'],['sec-redirect','📨 გადამისამართება'],['sec-redirects-all','📋 ყველა გადამ.']],
-    admin: [['sec-dashboard','📊 Dashboard'],['sec-users','👥 მომხმარებლები'],['sec-redirects-all','📨 გადამისამართებები'],['sec-preview','👁 Preview'],['sec-export','📥 ექსპორტი']]
+    supervisor: [['sec-submit','📤 გაგზავნა'],['sec-myworks','📁 ჩემი'],['sec-tasks','📬 დავალებები'],['sec-review','🔍 შემოწმება'],],
+    admin: [['sec-dashboard','📊 Dashboard'],['sec-users','👥 მომხმარებლები'],['sec-preview','👁 Preview'],['sec-export','📥 ექსპორტი']]
   };
   const items = map[role] || [];
   if (!items.length) { showSection('sec-pending'); return; }
@@ -798,8 +724,8 @@ function buildNav(role, userData) {
   showSection(items[0][0]);
   if (role === 'worker') { listenMyWorks(); listenUsers(); listenMyTasks(); listenMyNotifications(); }
   if (role === 'nightwatch') { listenMyWorks(); listenUsers(); listenMyNotifications(); }
-  if (role === 'supervisor') { listenMyWorks(); listenAllWorks('supervisor'); listenUsers(); listenRedirectHistory(); listenAllRedirects(); listenMyTasks(); listenMyNotifications(); }
-  if (role === 'admin') { listenAllWorks('admin'); listenUsers(); listenAllRedirects(); }
+  if (role === 'supervisor') { listenMyWorks(); listenAllWorks('supervisor'); listenUsers(); listenMyTasks(); listenMyNotifications(); }
+  if (role === 'admin') { listenAllWorks('admin'); listenUsers(); }
 }
 
 function activateSection(id, el) {
@@ -810,8 +736,6 @@ function activateSection(id, el) {
   if (id === 'sec-review') renderReview();
   if (id === 'sec-myworks') renderMyWorks();
   if (id === 'sec-submit') renderAssigneeChips();
-  if (id === 'sec-redirect') renderRedirectSection();
-  if (id === 'sec-redirects-all') renderAllRedirectsPanel();
   if (id === 'sec-preview') renderPreviewSection();
   if (id === 'sec-dashboard') { renderAdminStats(); renderAdminWorks(); }
   if (id === 'sec-users') renderUsers();
@@ -839,14 +763,6 @@ function listenAllWorks(role) {
     myOwnWorks = allWorks.filter(w => w.workerId === currentUser.uid);
     if (role === 'supervisor') { renderReview(); renderMyWorks(); }
     if (role === 'admin') { renderAdminStats(); renderAdminWorks(); }
-  });
-}
-
-function listenAllRedirects() {
-  const q = query(collection(db, 'redirects'), orderBy('createdAt', 'desc'));
-  onSnapshot(q, snap => {
-    allRedirects = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    renderAllRedirectsPanel();
   });
 }
 
@@ -1445,61 +1361,6 @@ onAuthStateChanged(auth, async (user) => {
   }
 });
 
-// ---- ALL REDIRECTS PANEL ----
-function renderAllRedirectsPanel() {
-  const el = document.getElementById('all-redirects-list');
-  if (!el) return;
-
-  // Populate supervisor filter
-  const svSel = document.getElementById('arf-sv');
-  if (svSel) {
-    const supervisors = [...new Map(allRedirects.map(r => [r.supervisorId, {id:r.supervisorId,name:r.supervisorName}])).values()];
-    const curVal = svSel.value;
-    svSel.innerHTML = '<option value="all">ყველა სუპერვაიზერი</option>' +
-      supervisors.map(s => `<option value="${s.id}">${e(s.name||'')}</option>`).join('');
-    svSel.value = curVal;
-  }
-
-  const svf = document.getElementById('arf-sv')?.value || 'all';
-  const catf = document.getElementById('arf-cat')?.value || 'all';
-  let list = [...allRedirects];
-  if (svf !== 'all') list = list.filter(r => r.supervisorId === svf);
-  if (catf !== 'all') list = list.filter(r => r.category === catf);
-
-  if (!list.length) { el.innerHTML = empty('📭', 'გადამისამართებები არ მოიძებნა'); return; }
-
-  // Group by supervisor
-  const grouped = {};
-  list.forEach(r => {
-    const key = r.supervisorId || 'unknown';
-    if (!grouped[key]) grouped[key] = { name: r.supervisorName || '?', items: [] };
-    grouped[key].items.push(r);
-  });
-
-  el.innerHTML = Object.values(grouped).map(g => `
-    <div style="margin-bottom:24px">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
-        <span style="font-size:13px;font-weight:700;color:var(--warn)">👤 ${e(g.name)}</span>
-        <span style="font-size:11px;color:var(--text3);background:var(--surface2);padding:2px 8px;border-radius:20px">${g.items.length} დავალება</span>
-      </div>
-      ${g.items.map(r => `
-        <div class="card" style="margin-left:16px;border-left:3px solid var(--warn)">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;margin-bottom:8px">
-            <div>
-              <div class="card-title">📍 ${e(r.location||'')}</div>
-              <div class="card-meta">${e(r.category||'')} · ${r.date||''}${r.time?' · '+r.time:''}</div>
-            </div>
-            <span class="status s-redirected">📨 გაგზავნილი</span>
-          </div>
-          <div style="font-size:13px;color:var(--text2);margin-bottom:8px">${e(r.description||'')}</div>
-          <div style="font-size:12px;color:var(--text2)">👥 პასუხისმგებელი: <strong>${(r.assignedTo||[]).map(n=>e(n)).join(', ')}</strong></div>
-          ${r.note ? `<div style="font-size:12px;color:var(--text3);margin-top:4px">💬 ${e(r.note)}</div>` : ''}
-        </div>
-      `).join('')}
-    </div>
-  `).join('');
-}
-window.renderAllRedirectsPanel = renderAllRedirectsPanel;
 
 // ---- ADMIN PREVIEW ----
 function renderPreviewSection() {
@@ -1560,165 +1421,6 @@ window.renderPreviewForUser = function(uid) {
 
 // ---- END PREVIEW ----
 
-// ---- REDIRECT SECTION ----
-// REDIRECT_PEOPLE now comes dynamically from allUsers (worker + supervisor roles)
-// No hardcoded list needed
-
-let rdSelectedPeople = [];
-chipState['rdcat'] = null;
-
-function renderRedirectSection() {
-  rdSelectedPeople = [];
-  chipState['rdcat'] = null;
-  document.querySelectorAll('[id^="rdc-"]').forEach(el =>
-    el.classList.remove('sel-blue','sel-green','sel-red','sel-yellow')
-  );
-  document.querySelectorAll('input[name="rd-cat"]').forEach(el => el.checked = false);
-  const loc = document.getElementById('rd-loc');
-  const desc = document.getElementById('rd-desc');
-  const note = document.getElementById('rd-note');
-  if (loc) loc.value = '';
-  if (desc) desc.value = '';
-  if (note) note.value = '';
-  const d = document.getElementById('rd-date');
-  const t = document.getElementById('rd-time');
-  if (d) d.valueAsDate = new Date();
-  if (t) { const n = new Date(); t.value = n.getHours().toString().padStart(2,'0')+':'+n.getMinutes().toString().padStart(2,'0'); }
-  renderRdPeopleChips();
-  listenRedirectHistory();
-}
-
-function renderRdPeopleChips() {
-  const c = document.getElementById('rd-people-chips');
-  if (!c) return;
-  const people = allUsers.filter(u => (u.role === 'worker' || u.role === 'supervisor' || u.role === 'nightwatch') && u.id !== currentUser?.uid);
-  if (!people.length) {
-    c.innerHTML = '<p style="font-size:13px;color:var(--text3)">რეგისტრირებული მომხმარებლები არ მოიძებნა</p>';
-    return;
-  }
-  const roleIcon = { worker:'👷', supervisor:'🔍', nightwatch:'🌙' };
-  c.innerHTML = people.map(u => {
-    const label = u.displayName || u.name || '';
-    return `<label class="chip ${rdSelectedPeople.includes(label)?'sel-blue':''}" style="margin-bottom:4px" onclick="toggleRdPerson('${e(label)}')">
-      <span>${roleIcon[u.role]||'👤'} ${e(label)}</span>
-    </label>`;
-  }).join('');
-}
-
-window.toggleRdPerson = function(name) {
-  const idx = rdSelectedPeople.indexOf(name);
-  if (idx === -1) rdSelectedPeople.push(name);
-  else rdSelectedPeople.splice(idx, 1);
-  renderRdPeopleChips();
-};
-
-window.submitRedirect = async function() {
-  const loc = document.getElementById('rd-loc').value.trim();
-  const date = document.getElementById('rd-date').value;
-  const time = document.getElementById('rd-time').value;
-  const desc = document.getElementById('rd-desc').value.trim();
-  const note = document.getElementById('rd-note').value.trim();
-  const cat = chipState['rdcat'];
-  if (!loc) { notify('ობიექტის დასახელება სავალდებულოა', 'error'); return; }
-  if (!date || !time) { notify('თარიღი და დრო სავალდებულოა', 'error'); return; }
-  if (!cat) { notify('კატეგორია სავალდებულოა', 'error'); return; }
-  if (!desc) { notify('დავალების აღწერა სავალდებულოა', 'error'); return; }
-  if (!rdSelectedPeople.length) { notify('პასუხისმგებელი პირი სავალდებულოა', 'error'); return; }
-
-  const snap = await getDoc(doc(db, 'users', currentUser.uid));
-  const udata = snap.data();
-
-  try {
-    const rdRef = await addDoc(collection(db, 'redirects'), {
-      supervisorId: currentUser.uid,
-      supervisorName: udata.name,
-      location: loc, category: cat, date, time,
-      description: desc, note,
-      assignedTo: rdSelectedPeople,
-      taskStatus: {}, // { personName: { status, comment, updatedAt } }
-      status: 'active',
-      createdAt: serverTimestamp()
-    });
-
-    // Create a notification for each assigned person + send FCM push
-    for (const personName of rdSelectedPeople) {
-      const matchedUser = allUsers.find(u => (u.displayName || u.name) === personName);
-      if (matchedUser) {
-        const notifBody = `${udata.name}: ${loc} — ${desc.slice(0,60)}${desc.length>60?'...':''}`;
-        // 1. Firestore notification (in-app)
-        await addDoc(collection(db, 'notifications'), {
-          toUid: matchedUser.id,
-          toName: personName,
-          fromName: udata.name,
-          redirectId: rdRef.id,
-          title: '📨 ახალი დავალება',
-          body: notifBody,
-          read: false,
-          createdAt: serverTimestamp()
-        });
-        // 2. FCM push (background/phone) — writes to pushQueue collection
-        // Firebase Cloud Function reads this and sends FCM push
-        if (matchedUser.fcmToken) {
-          await addDoc(collection(db, 'pushQueue'), {
-            token: matchedUser.fcmToken,
-            title: '📨 ახალი დავალება',
-            body: notifBody,
-            toUid: matchedUser.id,
-            createdAt: serverTimestamp(),
-            sent: false
-          });
-        }
-      }
-    }
-
-    notify('✓ დავალება გაიგზავნა!', 'success');
-    renderRedirectSection();
-  } catch(err) {
-    notify('შეცდომა: ' + err.message, 'error');
-  }
-};
-
-let rdUnsubscribe = null;
-function listenRedirectHistory() {
-  if (rdUnsubscribe) rdUnsubscribe();
-  const q = query(collection(db, 'redirects'), orderBy('createdAt', 'desc'));
-  rdUnsubscribe = onSnapshot(q, snap => {
-    const list = snap.docs
-      .map(d => ({ id: d.id, ...d.data() }))
-      .filter(r => r.supervisorId === currentUser.uid);
-    const el = document.getElementById('rd-history-list');
-    if (!el) return;
-    if (!list.length) { el.innerHTML = empty('📭', 'ჯერ გაგზავნილი დავალებები არ არის'); return; }
-    el.innerHTML = list.map(r => {
-      const taskMap = r.taskStatus || {};
-      const statusRows = Object.entries(taskMap).map(([name, ts]) => {
-        const stLabels = { in_progress:'🔄 მიმდინარე', done:'✅ შესრულდა', failed:'❌ ვერ შესრულდა', temp:'🔧 დროებით', new:'🆕 ახალი' };
-        const stClasses = { done:'s-approved', failed:'s-rejected', in_progress:'s-pending', temp:'s-pending', new:'s-redirected' };
-        return `<div style="display:flex;align-items:center;gap:8px;font-size:12px;margin-top:6px">
-          <span style="color:var(--text2)">👤 ${e(name)}:</span>
-          <span class="status ${stClasses[ts.status]||'s-pending'}" style="font-size:10px">${stLabels[ts.status]||ts.status}</span>
-          ${ts.comment ? `<span style="color:var(--text3)">— ${e(ts.comment.slice(0,40))}</span>` : ''}
-        </div>`;
-      }).join('');
-      return `
-      <div class="card">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;margin-bottom:8px">
-          <div>
-            <div class="card-title">📍 ${e(r.location||'')}</div>
-            <div class="card-meta">${e(r.category||'')} · ${r.date||''}${r.time?' · '+r.time:''}</div>
-          </div>
-          <span class="status s-redirected">📨 გაგზავნილი</span>
-        </div>
-        <div style="font-size:13px;color:var(--text2);margin-bottom:6px">${e(r.description||'')}</div>
-        <div style="font-size:12px;color:var(--text2)">👥 პასუხისმგებელი: <strong>${(r.assignedTo||[]).map(n=>e(n)).join(', ')}</strong></div>
-        ${r.note ? `<div style="font-size:12px;color:var(--text3);margin-top:4px">💬 ${e(r.note)}</div>` : ''}
-        ${statusRows ? `<div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border)">${statusRows}</div>` : ''}
-      </div>
-    `}).join('');
-  });
-}
-
-// ---- END REDIRECT ----
 
 // ---- WEB NOTIFICATIONS + SOUND ----
 function playNotifSound() {
