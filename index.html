@@ -482,6 +482,55 @@
       <div id="preview-content"></div>
     </div>
 
+    <!-- DASHBOARD -->
+    <div class="section" id="sec-dashboard">
+      <div class="section-header"><h2>Dashboard</h2></div>
+      <div class="stats-grid" id="adm-stats"></div>
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px">
+          <strong>ყველა სამუშაო</strong>
+          <div class="filter-row" style="margin:0">
+            <select id="af-st" onchange="renderAdminWorks()">
+              <option value="all">ყველა სტატუსი</option>
+              <option value="pending">მოლოდინში</option>
+              <option value="approved">დამტკიცებული</option>
+              <option value="rejected">უარყოფილი</option>
+            </select>
+            <select id="af-res" onchange="renderAdminWorks()">
+              <option value="all">ყველა შედეგი</option>
+              <option value="შესრულდა">შესრულდა</option>
+              <option value="ვერ შესრულდა">ვერ შესრულდა</option>
+              <option value="დროებით გაკეთდა">დროებით გაკეთდა</option>
+            </select>
+            <select id="af-cat" onchange="renderAdminWorks()">
+              <option value="all">ყველა კატეგ.</option>
+              <option>რესტორნები</option><option>გარეტერიტორია</option><option>ოთახები</option><option>სხვა</option>
+            </select>
+            <select id="af-wk" onchange="renderAdminWorks()"><option value="all">ყველა შემსრულებელი</option></select>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>ობიექტი</th><th>კატეგ.</th><th>შემსრულებელი</th><th>შედეგი</th><th>სტატუსი</th><th>თარიღი/დრო</th><th></th></tr></thead>
+            <tbody id="adm-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- USERS -->
+    <div class="section" id="sec-users">
+      <div class="section-header"><h2>მომხმარებლები</h2></div>
+      <div class="card">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>სახელი</th><th>ელ-ფოსტა</th><th>როლი</th><th>რეგ. თარიღი</th><th></th></tr></thead>
+            <tbody id="users-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
     <!-- EXPORT -->
     <div class="section" id="sec-export">
       <div class="section-header"><h2>Excel ექსპორტი</h2></div>
