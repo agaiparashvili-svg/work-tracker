@@ -1391,9 +1391,9 @@ window.saveEditWork = async function(wid) {
 // ---- EMAIL REPORT ----
 // EmailJS config — emailjs.com-ზე უფასო account შექმენი
 // და შეცვალე ეს 3 მნიშვნელობა:
-const EMAILJS_PUBLIC_KEY  = 'gMuchMs4-Nz5YFLch';
-const EMAILJS_SERVICE_ID  = 'service_ctzmx7h';
-const EMAILJS_TEMPLATE_ID = 'template_1njv6c9';
+const EMAILJS_PUBLIC_KEY  = 'ᲨᲔᲜᲘ_PUBLIC_KEY';
+const EMAILJS_SERVICE_ID  = 'ᲨᲔᲜᲘ_SERVICE_ID';
+const EMAILJS_TEMPLATE_ID = 'ᲨᲔᲜᲘ_TEMPLATE_ID';
 
 // Period selector
 document.addEventListener('change', ev => {
@@ -1405,15 +1405,24 @@ document.addEventListener('change', ev => {
 
 function getDateRange(period) {
   const now = new Date();
-  const todayStr = now.toISOString().slice(0,10);
-  const yesterday = new Date(now - 86400000).toISOString().slice(0,10);
-  if (period === 'today')     return { from: `${todayStr}T00:00`, to: now.toISOString() };
-  if (period === 'morning')   return { from: `${todayStr}T00:00`, to: `${todayStr}T09:30` };
-  if (period === 'evening')   return { from: `${todayStr}T09:30`, to: `${todayStr}T18:00` };
-  if (period === 'yesterday') return { from: `${yesterday}T00:00`, to: `${yesterday}T23:59` };
+  // Tbilisi = UTC+4
+  const tbOffset = 4 * 60 * 60 * 1000;
+  const tbNow = new Date(now.getTime() + tbOffset);
+  const todayStr = tbNow.toISOString().slice(0, 10);
+  const yesterdayStr = new Date(tbNow.getTime() - 86400000).toISOString().slice(0, 10);
+
+  // Convert Tbilisi local time to UTC Date object
+  function tbToUTC(dateStr, timeStr) {
+    return new Date(`${dateStr}T${timeStr}:00.000+04:00`);
+  }
+
+  if (period === 'today')     return { from: tbToUTC(todayStr,'00:00'), to: now };
+  if (period === 'morning')   return { from: tbToUTC(todayStr,'00:00'), to: tbToUTC(todayStr,'09:30') };
+  if (period === 'evening')   return { from: tbToUTC(todayStr,'09:30'), to: tbToUTC(todayStr,'18:00') };
+  if (period === 'yesterday') return { from: tbToUTC(yesterdayStr,'00:00'), to: tbToUTC(yesterdayStr,'23:59') };
   if (period === 'custom') {
     const d = document.getElementById('em-date')?.value;
-    return d ? { from: `${d}T00:00`, to: `${d}T23:59` } : null;
+    return d ? { from: tbToUTC(d,'00:00'), to: tbToUTC(d,'23:59') } : null;
   }
   return null;
 }
@@ -1500,7 +1509,6 @@ function buildEmailHTML(title, subtitle, works) {
 window.sendEmailReport = async function() {
   const period  = document.getElementById('em-period')?.value || 'today';
   const toEmail = document.getElementById('em-to')?.value?.trim();
-  const statusEl = document.getElementById('em-status');
   const btn = document.getElementById('em-btn');
 
   if (!toEmail) { showEmailStatus('❌ მეილი სავალდებულოა', 'error'); return; }
@@ -1508,33 +1516,62 @@ window.sendEmailReport = async function() {
   const range = getDateRange(period);
   if (!range) { showEmailStatus('❌ თარიღი მიუთითეთ', 'error'); return; }
 
-  // Filter works by date range
-  const from = new Date(range.from);
-  const to   = new Date(range.to);
+  const from = range.from instanceof Date ? range.from : new Date(range.from);
+  const to   = range.to   instanceof Date ? range.to   : new Date(range.to);
+
+  // For 'today' period — also match by date string as fallback
+  const tbNow = new Date(Date.now() + 4*3600000);
+  const todayStr = tbNow.toISOString().slice(0,10);
+
   const filtered = allWorks.filter(w => {
-    if (!w.submittedAt) return false;
-    const d = w.submittedAt.toDate ? w.submittedAt.toDate() : new Date(w.submittedAt);
-    return d >= from && d <= to;
+    // Try by submittedAt timestamp first
+    if (w.submittedAt) {
+      const d = w.submittedAt.toDate ? w.submittedAt.toDate() : new Date(w.submittedAt);
+      if (!isNaN(d)) return d >= from && d <= to;
+    }
+    // Fallback: match by date string
+    if (period === 'today' && w.date) return w.date === todayStr;
+    return false;
   });
 
-  const periodLabels = {
-    today: 'დღეს',
-    morning: '🌅 დილის ცვლა',
-    evening: '🌇 საღამოს ცვლა',
-    yesterday: 'გუშინ',
-    custom: document.getElementById('em-date')?.value || '',
-  };
-  const subtitle = `${periodLabels[period]} · ${filtered.length} სამუშაო`;
-  const htmlContent = buildEmailHTML('📋 სამუშაოს ანგარიში', subtitle, filtered);
+  console.log('Email report:', period, '| allWorks:', allWorks.length, '| filtered:', filtered.length);
 
-  // Check if EmailJS is configured
+  const periodLabels = {
+    today:'დღეს (00:00–ახლა)', morning:'🌅 დილის ცვლა', evening:'🌇 საღამოს ცვლა',
+    yesterday:'გუშინ', custom: document.getElementById('em-date')?.value||''
+  };
+
+  const total = filtered.length;
+  const done  = filtered.filter(w => w.result==='შესრულდა').length;
+  const fail  = filtered.filter(w => w.result==='ვერ შესრულდა').length;
+  const temp  = filtered.filter(w => w.result==='დროებით გაკეთდა').length;
+  const pend  = filtered.filter(w => w.status==='pending').length;
+  const appr  = filtered.filter(w => w.status==='approved').length;
+
+  // Build compact text list (max 30 items to stay under 50kb)
+  const listItems = filtered.slice(0, 30).map((w,i) =>
+    `${i+1}. ${w.location||'—'} | ${w.workerName||'—'} | ${w.result||'—'} | ${w.status==='approved'?'✅':w.status==='rejected'?'❌':'⏳'}`
+  ).join('\n');
+
+  const moreText = filtered.length > 30 ? `\n... და კიდევ ${filtered.length-30} სამუშაო` : '';
+
+  const subject = `📋 სამუშაოს ანგარიში — ${periodLabels[period]} · ${total} სამ.`;
+
+  const message = `📊 სტატისტიკა:
+• სულ სამუშაო: ${total}
+• ✅ შესრულდა: ${done}
+• ❌ ვერ შესრულდა: ${fail}
+• 🔧 დროებით: ${temp}
+• ⏳ მოლოდინში: ${pend}
+• ✓ დამტკიცებული: ${appr}
+
+📋 სამუშაოების სია:
+${listItems}${moreText}
+
+🔗 სრული ანგარიში: agaiparashvili-svg.github.io/work-tracker`;
+
   if (EMAILJS_PUBLIC_KEY === 'ᲨᲔᲜᲘ_PUBLIC_KEY') {
-    // EmailJS not configured — show preview instead
-    showEmailStatus(`✅ მეილი მზადაა გასაგზავნად! ${filtered.length} სამუშაო · EmailJS-ის დასაყენებლად იხ. ინსტრუქცია ქვემოთ`, 'info');
-    // Open email client as fallback
-    const subject = encodeURIComponent(`📋 სამუშაოს ანგარიში — ${subtitle}`);
-    const body = encodeURIComponent(`სამუშაოთა რაოდენობა: ${filtered.length}\nშესრულდა: ${filtered.filter(w=>w.result==='შესრულდა').length}\nვერ შესრულდა: ${filtered.filter(w=>w.result==='ვერ შესრულდა').length}\n\nდეტალური HTML ანგარიში: agaiparashvili-svg.github.io/work-tracker`);
-    window.open(`mailto:${toEmail}?subject=${subject}&body=${body}`);
+    showEmailStatus(`⚠️ EmailJS არ არის კონფიგურირებული — იხ. ინსტრუქცია`, 'error');
     return;
   }
 
@@ -1546,13 +1583,10 @@ window.sendEmailReport = async function() {
     emailjs.init(EMAILJS_PUBLIC_KEY);
     await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
       to_email: toEmail,
-      subject: `📋 სამუშაოს ანგარიში — ${subtitle}`,
-      html_content: htmlContent,
-      total: filtered.length,
-      done: filtered.filter(w=>w.result==='შესრულდა').length,
-      failed: filtered.filter(w=>w.result==='ვერ შესრულდა').length,
+      subject,
+      message,
     });
-    showEmailStatus(`✅ მეილი წარმატებით გაიგზავნა → ${toEmail}`, 'success');
+    showEmailStatus(`✅ მეილი გაიგზავნა → ${toEmail}`, 'success');
   } catch(err) {
     showEmailStatus(`❌ შეცდომა: ${err?.text || err?.message || 'გაგზავნა ვერ მოხერხდა'}`, 'error');
   } finally {
