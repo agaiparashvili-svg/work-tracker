@@ -2,7 +2,7 @@
 <html lang="ka">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>სამუშაოს აღრიცხვა</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Georgian:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -145,12 +145,13 @@
   .card-footer{margin-top:16px;padding-top:12px;border-top:1px solid var(--border);display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
 
   /* ── STATS ── */
-  .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(115px,1fr));gap:8px;margin-bottom:20px;}
-  .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px 12px;text-align:center;position:relative;overflow:hidden;transition:all .2s;cursor:default;}
+  .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:8px;margin-bottom:20px;overflow-x:auto;}
+  .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 10px;text-align:center;position:relative;overflow:hidden;transition:all .2s;cursor:default;min-width:90px;}
   .stat-card[onclick]:hover{transform:translateY(-2px);border-color:var(--accent2);box-shadow:0 6px 20px rgba(99,102,241,.2);}
   .stat-card:not([onclick]):hover{transform:translateY(-2px);border-color:var(--border2);box-shadow:0 6px 20px rgba(0,0,0,.3);}
   .stat-card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:currentColor;opacity:.25;}
-  .stat-num{font-size:26px;font-weight:800;letter-spacing:-1px;line-height:1;}
+  .stat-num{font-size:24px;font-weight:800;letter-spacing:-1px;line-height:1;}
+  .stat-label{font-size:10px;color:var(--text2);margin-top:4px;font-weight:600;}
   .stat-label{font-size:10px;color:var(--text3);margin-top:6px;font-weight:600;letter-spacing:.3px;text-transform:uppercase;}
 
   /* ── FORM ROW ── */
@@ -254,8 +255,8 @@
     .section-header{flex-direction:column;align-items:flex-start;gap:8px;}
     .section-header h2{font-size:17px;}
     .stats-grid{grid-template-columns:repeat(3,1fr);gap:6px;}
-    .stat-card{padding:12px 8px;}
-    .stat-num{font-size:22px;}
+    .stat-card{padding:10px 6px;}
+    .stat-num{font-size:20px;}
     .stat-label{font-size:9px;}
     .modal{padding:18px 14px;}
     .modal h3{font-size:15px;}
@@ -486,32 +487,32 @@
     <div class="section" id="sec-dashboard">
       <div class="section-header"><h2>Dashboard</h2></div>
       <div class="stats-grid" id="adm-stats"></div>
-      <div class="card">
-        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px">
-          <strong>ყველა სამუშაო</strong>
-          <div class="filter-row" style="margin:0">
-            <select id="af-st" onchange="renderAdminWorks()">
-              <option value="all">ყველა სტატუსი</option>
-              <option value="pending">მოლოდინში</option>
-              <option value="approved">დამტკიცებული</option>
-              <option value="rejected">უარყოფილი</option>
-            </select>
-            <select id="af-res" onchange="renderAdminWorks()">
-              <option value="all">ყველა შედეგი</option>
-              <option value="შესრულდა">შესრულდა</option>
-              <option value="ვერ შესრულდა">ვერ შესრულდა</option>
-              <option value="დროებით გაკეთდა">დროებით გაკეთდა</option>
-            </select>
-            <select id="af-cat" onchange="renderAdminWorks()">
-              <option value="all">ყველა კატეგ.</option>
-              <option>რესტორნები</option><option>გარეტერიტორია</option><option>ოთახები</option><option>სხვა</option>
-            </select>
-            <select id="af-wk" onchange="renderAdminWorks()"><option value="all">ყველა შემსრულებელი</option></select>
-          </div>
+      <div class="card" style="padding:14px">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px">
+          <strong style="font-size:14px">ყველა სამუშაო</strong>
         </div>
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>ობიექტი</th><th>კატეგ.</th><th>შემსრულებელი</th><th>შედეგი</th><th>სტატუსი</th><th>თარიღი/დრო</th><th></th></tr></thead>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px">
+          <select id="af-st" onchange="renderAdminWorks()" style="flex:1;min-width:120px;font-size:12px;padding:6px 8px;border-radius:8px">
+            <option value="all">ყველა სტატუსი</option>
+            <option value="pending">მოლოდინში</option>
+            <option value="approved">დამტკიცებული</option>
+            <option value="rejected">უარყოფილი</option>
+          </select>
+          <select id="af-res" onchange="renderAdminWorks()" style="flex:1;min-width:120px;font-size:12px;padding:6px 8px;border-radius:8px">
+            <option value="all">ყველა შედეგი</option>
+            <option value="შესრულდა">შესრულდა</option>
+            <option value="ვერ შესრულდა">ვერ შესრულდა</option>
+            <option value="დროებით გაკეთდა">დროებით</option>
+          </select>
+          <select id="af-cat" onchange="renderAdminWorks()" style="flex:1;min-width:120px;font-size:12px;padding:6px 8px;border-radius:8px">
+            <option value="all">ყველა კატეგ.</option>
+            <option>რესტორნები</option><option>გარეტერიტორია</option><option>ოთახები</option><option>სხვა</option>
+          </select>
+          <select id="af-wk" onchange="renderAdminWorks()" style="flex:1;min-width:140px;font-size:12px;padding:6px 8px;border-radius:8px"><option value="all">ყველა შემსრულებელი</option></select>
+        </div>
+        <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;">
+          <table style="min-width:580px">
+            <thead><tr><th>ობიექტი</th><th>კატეგ.</th><th>შემსრულებელი</th><th>შედეგი</th><th>სტატუსი</th><th>თარიღი</th><th></th></tr></thead>
             <tbody id="adm-tbody"></tbody>
           </table>
         </div>
