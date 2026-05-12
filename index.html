@@ -510,9 +510,10 @@
           </select>
           <select id="af-wk" onchange="renderAdminWorks()" style="flex:1;min-width:140px;font-size:12px;padding:6px 8px;border-radius:8px"><option value="all">ყველა შემსრულებელი</option></select>
         </div>
-        <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;">
-          <table style="min-width:580px">
-            <thead><tr><th>ობიექტი</th><th>კატეგ.</th><th>შემსრულებელი</th><th>შედეგი</th><th>სტატუსი</th><th>თარიღი</th><th></th></tr></thead>
+        <p style="font-size:11px;color:var(--text3);margin-bottom:8px;display:none" id="scroll-hint">← გაიწიე მარჯვნივ სრული ცხრილის სანახავად →</p>
+        <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;" id="adm-table-wrap">
+          <table style="min-width:640px">
+            <thead><tr><th>ობიექტი</th><th>კატეგ.</th><th>შემსრულებელი</th><th>შედეგი</th><th>სტატუსი</th><th>თარიღი</th><th style="min-width:100px">მოქმედება</th></tr></thead>
             <tbody id="adm-tbody"></tbody>
           </table>
         </div>
@@ -1028,17 +1029,20 @@ function renderAdminWorks() {
   const tb = document.getElementById('adm-tbody');
   if (!tb) return;
   if (!list.length) { tb.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--text3);padding:30px">სამუშაოები არ მოიძებნა</td></tr>'; return; }
+  // Show scroll hint on mobile
+  const hint = document.getElementById('scroll-hint');
+  if (hint && window.innerWidth < 640) hint.style.display = 'block';
   tb.innerHTML = list.map(w => `<tr>
-    <td><strong>${e(w.location||'')}</strong></td>
+    <td><strong style="font-size:13px">${e(w.location||'')}</strong></td>
     <td style="font-size:12px">${e(w.category||'')}</td>
-    <td>${e(w.workerName||'')}</td>
+    <td style="font-size:13px">${e(w.workerName||'')}</td>
     <td>${rBadge(w.result)}</td>
     <td>${sBadge(w.status)}</td>
     <td style="font-size:12px;color:var(--text2);white-space:nowrap">${w.date||''}<br><span style="color:var(--text3)">${w.time||''}</span></td>
-    <td style="white-space:nowrap">
-      <button class="btn btn-ghost btn-sm" onclick="openModal('${w.id}','admin')" title="დეტალები">👁</button>
-      <button class="btn btn-ghost btn-sm" onclick="openEditWork('${w.id}')" title="რედაქტირება" style="margin-left:4px">✏️</button>
-      <button class="btn btn-sm" onclick="admDeleteWork('${w.id}')" title="წაშლა" style="background:rgba(244,63,94,.1);color:#fb7185;border:1px solid rgba(244,63,94,.2);margin-left:4px">🗑</button>
+    <td style="white-space:nowrap;min-width:100px">
+      <button class="btn btn-ghost btn-sm" onclick="openModal('${w.id}','admin')" title="დეტალები" style="padding:5px 8px">👁</button>
+      <button class="btn btn-ghost btn-sm" onclick="openEditWork('${w.id}')" title="რედაქტირება" style="padding:5px 8px;margin-left:3px">✏️</button>
+      <button class="btn btn-sm" onclick="admDeleteWork('${w.id}')" title="წაშლა" style="background:rgba(220,38,38,.1);color:#dc2626;border:1px solid rgba(220,38,38,.2);margin-left:3px;padding:5px 8px">🗑</button>
     </td>
   </tr>`).join('');
 }
