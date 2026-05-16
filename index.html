@@ -552,12 +552,30 @@
     <div class="section" id="sec-export">
       <div class="section-header"><h2>📥 Excel ექსპორტი</h2></div>
 
+      <!-- AUTO EMAIL INFO + TEST -->
+      <div class="card" style="border-left:4px solid var(--accent2);margin-bottom:16px">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px">
+          <div>
+            <div style="font-weight:800;font-size:15px;margin-bottom:6px">🕐 ავტომატური მეილი</div>
+            <div style="font-size:13px;color:var(--text2);line-height:1.7">
+              სისტემა ყოველდღე გზავნის შეჯამებას:<br>
+              <strong>🌅 09:30</strong> — ღამის ცვლა (00:00–09:30)<br>
+              <strong>🌇 18:00</strong> — დღის ცვლა (09:30–18:00)<br>
+              <span style="background:rgba(79,70,229,.1);color:var(--accent2);padding:2px 8px;border-radius:20px;font-size:11px;font-weight:700;display:inline-block;margin-top:4px">a.gaiparashvili@lopotaresort.com</span>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-end">
+            <button class="btn btn-sm" onclick="sendTestEmail()" id="test-email-btn"
+              style="background:rgba(79,70,229,.1);color:#3730a3;border:1.5px solid rgba(79,70,229,.3);font-weight:700;white-space:nowrap">
+              📧 საცდელი მეილი
+            </button>
+            <div id="test-email-status" style="display:none;font-size:12px;font-weight:600;text-align:right"></div>
+          </div>
+        </div>
+      </div>
       <!-- EXCEL EXPORT CARD -->
       <div class="card">
-        <p style="color:var(--text2);font-size:13px;margin-bottom:18px;line-height:1.6">
-          🕐 <strong>ავტომატური მეილი:</strong> სისტემა ყოველდღე <strong>09:30</strong> და <strong>18:00</strong> საათზე ავტომატურად გზავნის შეჯამებას 
-          <span style="background:rgba(79,70,229,.1);color:var(--accent2);padding:2px 8px;border-radius:20px;font-size:11px;font-weight:700">a.gaiparashvili@lopotaresort.com</span>-ზე
-        </p>
+        <div style="font-weight:700;margin-bottom:16px">📊 Excel ჩამოტვირთვა</div>
         <div class="form-row">
           <div class="form-group"><label>სტატუსი</label>
             <select id="ex-st"><option value="all">ყველა</option><option value="approved">დამტკიცებული</option><option value="rejected">უარყოფილი</option><option value="pending">მოლოდინში</option></select>
@@ -1442,6 +1460,34 @@ window.saveEditWork = async function(wid) {
     window.closeModal();
     notify('✓ ცვლილებები შენახულია', 'success');
   } catch(err) { notify('შეცდომა: ' + err.message, 'error'); }
+};
+
+// ---- TEST EMAIL ----
+window.sendTestEmail = async function() {
+  const btn = document.getElementById('test-email-btn');
+  const statusEl = document.getElementById('test-email-status');
+  btn.disabled = true;
+  btn.textContent = '⏳ იგზავნება...';
+  statusEl.style.display = 'block';
+  statusEl.textContent = '';
+
+  try {
+    // Write to emailQueue collection — Cloud Function reads and sends
+    await addDoc(collection(db, 'emailQueue'), {
+      type: 'test',
+      requestedBy: currentUser.uid,
+      requestedAt: serverTimestamp(),
+      sent: false
+    });
+    statusEl.textContent = '✅ მოთხოვნა გაიგზავნა — მეილი 1-2 წუთში მოვა';
+    statusEl.style.color = 'var(--good)';
+  } catch(err) {
+    statusEl.textContent = '❌ შეცდომა: ' + err.message;
+    statusEl.style.color = 'var(--bad)';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '📧 საცდელი მეილი';
+  }
 };
 
 // ---- EXPORT EXCEL ----
