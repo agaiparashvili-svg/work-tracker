@@ -2,158 +2,304 @@
 <html lang="ka">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>აუზების რეპორტი</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Georgian:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-<style>
-:root{--bg:#f0f7ff;--surface:#fff;--surface2:#e8f4fd;--surface3:#d1eaf8;--border:#b8d9f0;--border2:#7bb8e0;--accent:#0077b6;--accent2:#00b4d8;--good:#059669;--good-dim:rgba(5,150,105,.1);--bad:#dc2626;--bad-dim:rgba(220,38,38,.1);--warn:#d97706;--warn-dim:rgba(217,119,6,.1);--text:#0a2540;--text2:#3a5a7a;--text3:#7a9ab5;--radius:12px;--radius-lg:16px;--shadow:0 4px 24px rgba(0,119,182,.1);--shadow-lg:0 8px 40px rgba(0,119,182,.18);}
-*{margin:0;padding:0;box-sizing:border-box;}
-body{font-family:'Noto Sans Georgian',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;}
-#loading-screen{position:fixed;inset:0;background:linear-gradient(135deg,#0077b6,#00b4d8);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;gap:20px;}
-#loading-screen .logo{font-size:56px;}
-#loading-screen p{color:white;font-size:15px;font-weight:600;}
-.spinner{width:36px;height:36px;border:3px solid rgba(255,255,255,.3);border-top-color:white;border-radius:50%;animation:spin .8s linear infinite;}
-@keyframes spin{to{transform:rotate(360deg);}}
-#auth-screen{display:none;align-items:center;justify-content:center;min-height:100vh;padding:20px;background:linear-gradient(160deg,#0077b6 0%,#00b4d8 60%,#48cae4 100%);}
-.auth-card{background:white;border-radius:24px;padding:40px 36px;width:100%;max-width:400px;box-shadow:var(--shadow-lg);}
-.auth-logo{text-align:center;margin-bottom:32px;}
-.auth-logo .icon{font-size:52px;display:block;margin-bottom:12px;}
-.auth-logo h1{font-size:22px;font-weight:800;color:var(--accent);letter-spacing:-.5px;}
-.auth-logo p{color:var(--text3);font-size:13px;margin-top:4px;}
-.tabs{display:flex;background:var(--surface2);border-radius:10px;padding:3px;margin-bottom:24px;}
-.tab{flex:1;padding:9px;text-align:center;border-radius:8px;cursor:pointer;color:var(--text3);font-size:13px;font-weight:600;transition:all .2s;}
-.tab.active{background:white;color:var(--accent);box-shadow:0 2px 8px rgba(0,119,182,.15);}
-.form-group{margin-bottom:16px;}
-label{display:block;font-size:11px;color:var(--text2);margin-bottom:6px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;}
-input,select,textarea{width:100%;padding:11px 14px;background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--radius);color:var(--text);font-family:inherit;font-size:14px;transition:all .2s;-webkit-appearance:none;}
-input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);background:white;box-shadow:0 0 0 3px rgba(0,119,182,.1);}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:11px 20px;border:none;border-radius:var(--radius);cursor:pointer;font-family:inherit;font-size:14px;font-weight:700;transition:all .2s;}
-.btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:white;box-shadow:0 4px 16px rgba(0,119,182,.3);}
-.btn-primary:hover{transform:translateY(-1px);box-shadow:0 6px 22px rgba(0,119,182,.4);}
-.btn-ghost{background:transparent;color:rgba(255,255,255,.9);border:1.5px solid rgba(255,255,255,.35);}
-.btn-ghost:hover{background:rgba(255,255,255,.15);}
-.btn-danger{background:linear-gradient(135deg,#dc2626,#b91c1c);color:white;}
-.btn-sm{padding:6px 12px;font-size:12px;}
-.btn-full{width:100%;}
-.error-msg{color:var(--bad);font-size:12px;margin-top:6px;font-weight:600;}
-.success-msg{color:var(--good);font-size:12px;margin-top:6px;font-weight:600;}
-#app{display:none;flex-direction:column;min-height:100vh;}
-.topbar{background:linear-gradient(135deg,#0077b6,#0096c7);padding:0 20px;height:58px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 16px rgba(0,119,182,.3);}
-.topbar-left{display:flex;align-items:center;gap:12px;}
-.topbar-logo{font-size:15px;font-weight:800;color:white;display:flex;align-items:center;gap:8px;}
-.role-badge{padding:3px 10px;border-radius:6px;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;background:rgba(255,255,255,.2);color:white;}
-.topbar-right{display:flex;align-items:center;gap:8px;}
-.user-info{color:rgba(255,255,255,.85);font-size:13px;font-weight:500;}
-@media(max-width:480px){.user-info{display:none;}}
-.nav{background:white;border-bottom:2px solid var(--surface3);display:flex;overflow-x:auto;padding:0 16px;-ms-overflow-style:none;scrollbar-width:none;box-shadow:0 2px 8px rgba(0,119,182,.06);}
-.nav::-webkit-scrollbar{display:none;}
-.nav-item{padding:14px 16px;cursor:pointer;color:var(--text3);white-space:nowrap;font-size:13px;border-bottom:3px solid transparent;margin-bottom:-2px;transition:all .2s;font-weight:600;}
-.nav-item.active{color:var(--accent);border-color:var(--accent);}
-.nav-item:hover{color:var(--text2);}
-.content{padding:24px 16px;max-width:960px;margin:0 auto;width:100%;}
-.section{display:none;animation:fadeIn .25s ease;}
-.section.active{display:block;}
-@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px;}
-.section-header h2{font-size:20px;font-weight:800;letter-spacing:-.5px;}
-.card{background:white;border:1.5px solid var(--border);border-radius:var(--radius-lg);padding:22px;margin-bottom:16px;box-shadow:var(--shadow);}
-.shift-row{display:flex;gap:10px;}
-.shift-btn{display:flex;align-items:center;gap:10px;padding:14px 20px;border-radius:var(--radius-lg);border:2px solid var(--border);background:white;cursor:pointer;transition:all .2s;font-family:inherit;font-size:14px;font-weight:700;color:var(--text2);flex:1;justify-content:center;}
-.shift-btn.active{border-color:var(--accent);background:rgba(0,119,182,.06);color:var(--accent);}
-.pool-card{background:white;border:1.5px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;margin-bottom:12px;box-shadow:var(--shadow);}
-.pool-card-header{background:linear-gradient(135deg,rgba(0,119,182,.07),rgba(0,180,216,.07));padding:13px 18px;display:flex;align-items:center;justify-content:space-between;border-bottom:1.5px solid var(--border);cursor:pointer;user-select:none;}
-.pool-card-header:hover{background:linear-gradient(135deg,rgba(0,119,182,.13),rgba(0,180,216,.13));}
-.pool-name{font-size:15px;font-weight:800;color:var(--accent);}
-.pool-checkbox{width:20px;height:20px;accent-color:var(--accent);cursor:pointer;flex-shrink:0;}
-.pool-body{display:none;}
-.pool-body.enabled{display:block;}
-.pool-card.checked .pool-card-header{background:linear-gradient(135deg,rgba(5,150,105,.1),rgba(0,180,216,.1));border-bottom-color:var(--good);}
-.pool-card.checked .pool-name{color:var(--good);}
-.pool-disabled-hint{font-size:11px;color:var(--text3);font-style:italic;padding:8px 18px;}
-.pool-body{padding:16px 18px;}
-.pool-measurements{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
-.measure-field{display:flex;flex-direction:column;gap:5px;}
-.measure-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);}
-.measure-input{padding:9px 12px;border:1.5px solid var(--border);border-radius:9px;font-family:inherit;font-size:15px;font-weight:700;color:var(--text);background:var(--surface2);transition:all .2s;width:100%;}
-.measure-input:focus{outline:none;border-color:var(--accent);background:white;box-shadow:0 0 0 3px rgba(0,119,182,.1);}
-.ph-ok{border-color:var(--good)!important;background:var(--good-dim)!important;color:var(--good)!important;}
-.ph-warn{border-color:var(--warn)!important;background:var(--warn-dim)!important;color:var(--warn)!important;}
-.ph-bad{border-color:var(--bad)!important;background:var(--bad-dim)!important;color:var(--bad)!important;}
-.pool-checks{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;}
-.check-section-label{font-size:10px;font-weight:700;color:var(--text3);width:100%;text-transform:uppercase;letter-spacing:.5px;}
-.check-btn{display:flex;align-items:center;gap:6px;padding:7px 14px;border-radius:20px;border:1.5px solid var(--border);background:white;cursor:pointer;font-size:12px;font-weight:700;color:var(--text3);transition:all .2s;font-family:inherit;}
-.check-btn.yes{border-color:var(--good);background:var(--good-dim);color:var(--good);}
-.check-btn.no{border-color:var(--bad);background:var(--bad-dim);color:var(--bad);}
-.chem-section-label{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;}
-.chem-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
-.chem-field{display:flex;flex-direction:column;gap:5px;}
-.chem-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--text3);}
-.chem-input{padding:9px 10px;border:1.5px solid var(--border);border-radius:9px;font-family:inherit;font-size:14px;font-weight:700;color:var(--text);background:var(--surface2);transition:all .2s;width:100%;text-align:center;}
-.chem-input:focus{outline:none;border-color:var(--accent2);background:white;}
-.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:20px;}
-.stat-card{background:white;border:1.5px solid var(--border);border-radius:var(--radius-lg);padding:16px;text-align:center;box-shadow:var(--shadow);}
-.stat-num{font-size:28px;font-weight:800;line-height:1;}
-.stat-label{font-size:10px;color:var(--text3);margin-top:5px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;}
-.filter-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
-.filter-row select,.filter-row input{width:auto;font-size:12px;padding:7px 11px;border-radius:9px;}
-.report-card{background:white;border:1.5px solid var(--border);border-radius:var(--radius-lg);margin-bottom:12px;overflow:hidden;box-shadow:var(--shadow);transition:border-color .2s;}
-.report-card:hover{border-color:var(--accent2);}
-.report-header{padding:14px 18px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;cursor:pointer;background:linear-gradient(135deg,rgba(0,119,182,.04),rgba(0,180,216,.04));}
-.report-meta{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
-.report-date{font-size:14px;font-weight:800;color:var(--text);}
-.report-operator{font-size:12px;color:var(--text2);background:var(--surface2);padding:3px 10px;border-radius:20px;font-weight:600;}
-.shift-tag{padding:3px 10px;border-radius:6px;font-size:11px;font-weight:800;text-transform:uppercase;}
-.shift-morning{background:rgba(245,158,11,.12);color:#92400e;}
-.shift-evening{background:rgba(99,102,241,.12);color:#3730a3;}
-.summary-badge{padding:3px 10px;border-radius:6px;font-size:11px;font-weight:700;}
-.report-body{padding:0 18px;max-height:0;overflow:hidden;transition:max-height .4s ease;}
-.report-body.open{max-height:3000px;padding:0 18px 18px;}
-.pool-row{padding:12px;background:var(--surface2);border-radius:10px;margin-bottom:8px;border:1.5px solid var(--border);}
-.pool-row-name{font-size:13px;font-weight:800;color:var(--accent);margin-bottom:8px;}
-.pool-row-data{display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:8px;}
-.data-item .data-key{color:var(--text3);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;}
-.data-item .data-val{color:var(--text);font-weight:700;margin-top:2px;font-size:13px;}
-.pending-screen{text-align:center;padding:80px 20px;}
-.pending-screen .icon{font-size:56px;margin-bottom:16px;}
-.pending-screen h2{font-size:20px;font-weight:800;margin-bottom:8px;}
-.pending-screen p{color:var(--text2);line-height:1.7;}
-.table-wrap{overflow-x:auto;border-radius:var(--radius);border:1.5px solid var(--border);overflow:hidden;}
-table{width:100%;border-collapse:collapse;font-size:13px;}
-th{text-align:left;padding:10px 14px;background:var(--surface2);color:var(--text3);font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:.8px;border-bottom:1.5px solid var(--border);}
-td{padding:11px 14px;border-bottom:1.5px solid var(--surface3);vertical-align:middle;}
-tr:last-child td{border-bottom:none;}
-tr:hover td{background:rgba(0,119,182,.025);}
-.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
-#toast{position:fixed;bottom:24px;right:24px;padding:13px 20px;border-radius:12px;font-size:13px;font-weight:700;z-index:999;transform:translateY(80px);opacity:0;transition:all .3s cubic-bezier(.34,1.56,.64,1);max-width:320px;box-shadow:var(--shadow-lg);}
-#toast.show{transform:translateY(0);opacity:1;}
-#toast.success{background:#059669;color:white;}
-#toast.error{background:#dc2626;color:white;}
-#toast.info{background:var(--accent);color:white;}
-@media(max-width:600px){
-  .content{padding:12px 10px;}
-  .pool-measurements{grid-template-columns:1fr 1fr;}
-  .chem-grid{grid-template-columns:1fr 1fr 1fr;}
-  .stats-grid{grid-template-columns:repeat(3,1fr);}
-  .shift-row{flex-direction:column;}
-  .pool-row-data{grid-template-columns:repeat(3,1fr);}
-  .form-row{grid-template-columns:1fr;}
-  .report-header{flex-direction:column;align-items:flex-start;}
-}
-</style>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>სამუშაოს აღრიცხვა</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Georgian:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Georgian:wght@300;400;500;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap');
+
+  :root {
+    --bg:#ffffff;
+    --surface:#f8fafc;
+    --surface2:#f1f5f9;
+    --surface3:#e2e8f0;
+    --border:#cbd5e1;
+    --border2:#94a3b8;
+    --accent:#059669;
+    --accent-dim:rgba(5,150,105,.1);
+    --accent2:#4f46e5;
+    --accent2-dim:rgba(79,70,229,.1);
+    --warn:#d97706;
+    --warn-dim:rgba(217,119,6,.1);
+    --danger:#dc2626;
+    --danger-dim:rgba(220,38,38,.1);
+    --purple:#7c3aed;
+    --sky:#0284c7;
+    --text:#0f172a;
+    --text2:#475569;
+    --text3:#94a3b8;
+    --radius:10px;
+    --radius-lg:14px;
+    --radius-xl:20px;
+    --shadow:0 8px 32px rgba(0,0,0,.12);
+    --font-body:'Noto Sans Georgian',sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;-webkit-font-smoothing:antialiased;}
+
+  /* ── AUTH ── */
+  #auth-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px;
+    background:
+      radial-gradient(ellipse 60% 50% at 15% 15%,rgba(79,70,229,.06) 0%,transparent 100%),
+      radial-gradient(ellipse 50% 40% at 85% 85%,rgba(5,150,105,.04) 0%,transparent 100%),
+      var(--bg);}
+  .auth-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-xl);padding:44px;width:100%;max-width:420px;box-shadow:var(--shadow);}
+  .auth-logo{text-align:center;margin-bottom:36px;}
+  .auth-logo .icon{width:58px;height:58px;background:linear-gradient(145deg,#10b981,#059669);border-radius:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;font-size:26px;box-shadow:0 8px 28px rgba(16,185,129,.25);}
+  .auth-logo h1{font-size:21px;font-weight:700;letter-spacing:-.4px;color:var(--text);}
+  .auth-logo p{color:var(--text3);font-size:13px;margin-top:5px;}
+  .tabs{display:flex;background:var(--surface2);border-radius:var(--radius);padding:3px;margin-bottom:28px;border:1px solid var(--border);}
+  .tab{flex:1;padding:9px;text-align:center;border-radius:8px;cursor:pointer;color:var(--text3);font-size:13px;font-weight:600;transition:all .22s;}
+  .tab.active{background:var(--surface3);color:var(--text);box-shadow:0 2px 8px rgba(0,0,0,.35);}
+
+  /* ── FORMS ── */
+  .form-group{margin-bottom:18px;}
+  label{display:block;font-size:11px;color:var(--text2);margin-bottom:7px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;}
+  input,select,textarea{width:100%;padding:11px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-family:inherit;font-size:14px;transition:all .2s;-webkit-appearance:none;}
+  input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent2);background:var(--surface3);box-shadow:0 0 0 3px rgba(99,102,241,.1);}
+  select option{background:#f1f5f9;color:#0f172a;}
+  textarea{resize:vertical;min-height:80px;line-height:1.6;}
+
+  /* ── CHIPS ── */
+  .chip-group{display:flex;flex-wrap:wrap;gap:8px;}
+  .chip{display:flex;align-items:center;gap:6px;padding:8px 16px;border-radius:24px;border:1.5px solid var(--border);background:var(--surface2);cursor:pointer;font-size:13px;font-weight:500;color:var(--text3);transition:all .2s;user-select:none;}
+  .chip:hover{border-color:var(--border2);color:var(--text2);}
+  .chip.sel-blue{border-color:var(--accent2);background:var(--accent2-dim);color:#a5b4fc;}
+  .chip.sel-green{border-color:var(--accent);background:var(--accent-dim);color:#6ee7b7;}
+  .chip.sel-red{border-color:var(--danger);background:var(--danger-dim);color:#fda4af;}
+  .chip.sel-yellow{border-color:var(--warn);background:var(--warn-dim);color:#fcd34d;}
+  .chip input{display:none;}
+
+  /* ── BUTTONS ── */
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:10px 20px;border:none;border-radius:var(--radius);cursor:pointer;font-family:inherit;font-size:13px;font-weight:700;transition:all .2s;letter-spacing:-.1px;}
+  .btn-primary{background:linear-gradient(135deg,#10b981,#059669);color:white;box-shadow:0 4px 16px rgba(16,185,129,.28);}
+  .btn-primary:hover{transform:translateY(-1px);box-shadow:0 6px 22px rgba(16,185,129,.38);}
+  .btn-danger{background:linear-gradient(135deg,#f43f5e,#e11d48);color:white;box-shadow:0 4px 16px rgba(244,63,94,.22);}
+  .btn-danger:hover{transform:translateY(-1px);}
+  .btn-ghost{background:transparent;color:var(--text2);border:1px solid var(--border);}
+  .btn-ghost:hover{background:var(--surface2);color:var(--text);border-color:var(--border2);}
+  .btn-sm{padding:6px 12px;font-size:12px;}
+  .btn-full{width:100%;}
+  .error-msg{color:#fda4af;font-size:12px;margin-top:8px;}
+  .success-msg{color:#6ee7b7;font-size:12px;margin-top:8px;}
+
+  /* ── TOPBAR ── */
+  #app{display:none;flex-direction:column;min-height:100vh;}
+  .topbar{background:rgba(248,250,252,.97);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid var(--border);box-shadow:0 1px 8px rgba(0,0,0,.06);padding:0 20px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+  .topbar-left{display:flex;align-items:center;gap:14px;}
+  .topbar-logo{font-size:15px;font-weight:800;letter-spacing:-.5px;color:var(--text);display:flex;align-items:center;gap:8px;}
+  .topbar-logo span{background:linear-gradient(135deg,#059669,#4f46e5);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+  .role-badge{padding:3px 9px;border-radius:6px;font-size:10px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;}
+  .role-admin{background:rgba(220,38,38,.1);color:#dc2626;border:1px solid rgba(220,38,38,.25);}
+  .role-supervisor{background:rgba(217,119,6,.1);color:#b45309;border:1px solid rgba(217,119,6,.25);}
+  .role-worker{background:rgba(5,150,105,.1);color:#065f46;border:1px solid rgba(5,150,105,.25);}
+  .role-pending{background:rgba(100,116,139,.1);color:#475569;border:1px solid rgba(100,116,139,.2);}
+  .role-nightwatch{background:rgba(124,58,237,.1);color:#5b21b6;border:1px solid rgba(124,58,237,.25);}
+  .topbar-right{display:flex;align-items:center;gap:8px;}
+  .user-info{color:var(--text2);font-size:13px;font-weight:500;}
+  @media(max-width:480px){.user-info{display:none;}}
+
+  /* ── NAV ── */
+  .nav{background:rgba(241,245,249,.95);border-bottom:1px solid var(--border);display:flex;overflow-x:auto;padding:0 12px;-ms-overflow-style:none;scrollbar-width:none;}
+  .nav::-webkit-scrollbar{display:none;}
+  .nav-item{padding:13px 15px;cursor:pointer;color:var(--text3);white-space:nowrap;font-size:13px;border-bottom:2px solid transparent;transition:all .2s;font-weight:600;letter-spacing:-.1px;}
+  .nav-item.active{color:var(--accent);border-color:var(--accent);}
+  .nav-item:hover{color:var(--text2);}
+
+  /* ── CONTENT ── */
+  .content{padding:24px 16px;max-width:960px;margin:0 auto;width:100%;}
+  .section{display:none;}.section.active{display:block;animation:fadeIn .25s ease;}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+  .section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:12px;}
+  .section-header h2{font-size:19px;font-weight:800;letter-spacing:-.5px;color:var(--text);}
+
+  /* ── WORK CARD (main list item) ── */
+  .wcard{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:0;margin-bottom:10px;transition:all .22s;overflow:hidden;position:relative;}
+  .wcard:hover{border-color:var(--border2);box-shadow:0 6px 28px rgba(0,0,0,.4);transform:translateY(-1px);}
+  .wcard-stripe{width:3px;position:absolute;top:0;bottom:0;left:0;border-radius:2px 0 0 2px;}
+  .wcard-stripe-green{background:linear-gradient(180deg,#10b981,#059669);}
+  .wcard-stripe-red{background:linear-gradient(180deg,#f43f5e,#e11d48);}
+  .wcard-stripe-yellow{background:linear-gradient(180deg,#f59e0b,#d97706);}
+  .wcard-stripe-blue{background:linear-gradient(180deg,#6366f1,#4f46e5);}
+  .wcard-body{padding:16px 18px 16px 22px;}
+  .wcard-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:10px;}
+  .wcard-info{flex:1;min-width:0;}
+  .wcard-location{font-size:15px;font-weight:700;color:var(--text);letter-spacing:-.3px;margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .wcard-location::before{content:'📍 ';}
+  .wcard-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+  /* Avatar for worker name */
+  .wcard-avatar{width:22px;height:22px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex-shrink:0;color:white;letter-spacing:0;}
+  .wcard-worker{display:inline-flex;align-items:center;gap:6px;background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:3px 10px 3px 4px;font-size:12px;font-weight:600;color:var(--text2);}
+  .wcard-cat{font-size:11px;color:var(--text3);background:var(--surface2);border:1px solid var(--border);padding:3px 9px;border-radius:6px;font-weight:600;letter-spacing:.2px;}
+  .wcard-date{font-size:11px;color:var(--text3);font-weight:500;}
+  .wcard-badges{display:flex;gap:5px;flex-wrap:wrap;flex-shrink:0;align-items:flex-start;}
+  .wcard-detail{margin:8px 0 0;padding:8px 10px;background:var(--surface2);border-radius:8px;font-size:12px;color:var(--text2);line-height:1.55;border-left:2px solid var(--border2);}
+  .wcard-detail.dmg{border-left-color:var(--warn);color:#fcd34d;background:rgba(245,158,11,.06);}
+  .wcard-footer{padding:10px 18px 14px 22px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+
+  /* ── GENERIC CARD (forms, info blocks) ── */
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:22px;margin-bottom:14px;transition:border-color .2s;}
+  .card:hover{border-color:var(--border2);}
+  .card-title{font-size:15px;font-weight:700;margin-bottom:5px;}
+  .card-meta{font-size:12px;color:var(--text3);margin-bottom:10px;}
+  .card-footer{margin-top:16px;padding-top:12px;border-top:1px solid var(--border);display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+
+  /* ── STATS ── */
+  .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:8px;margin-bottom:20px;overflow-x:auto;}
+  .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 10px;text-align:center;position:relative;overflow:hidden;transition:all .2s;cursor:default;min-width:90px;}
+  .stat-card[onclick]:hover{transform:translateY(-2px);border-color:var(--accent2);box-shadow:0 6px 20px rgba(99,102,241,.2);}
+  .stat-card:not([onclick]):hover{transform:translateY(-2px);border-color:var(--border2);box-shadow:0 6px 20px rgba(0,0,0,.3);}
+  .stat-card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:currentColor;opacity:.25;}
+  .stat-num{font-size:24px;font-weight:800;letter-spacing:-1px;line-height:1;}
+  .stat-label{font-size:10px;color:var(--text2);margin-top:4px;font-weight:600;}
+  .stat-label{font-size:10px;color:var(--text3);margin-top:6px;font-weight:600;letter-spacing:.3px;text-transform:uppercase;}
+
+  /* ── FORM ROW ── */
+  .form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  @media(max-width:560px){.form-row{grid-template-columns:1fr;}}
+
+  /* ── STATUS BADGES ── */
+  .status{padding:3px 10px;border-radius:6px;font-size:10px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;display:inline-flex;align-items:center;gap:4px;}
+  .s-pending{background:rgba(217,119,6,.1);color:#92400e;border:1px solid rgba(217,119,6,.3);}
+  .s-approved{background:rgba(5,150,105,.1);color:#065f46;border:1px solid rgba(5,150,105,.3);}
+  .s-rejected{background:rgba(220,38,38,.1);color:#991b1b;border:1px solid rgba(220,38,38,.3);}
+  .s-redirected{background:rgba(79,70,229,.1);color:#3730a3;border:1px solid rgba(79,70,229,.3);}
+  .r-done{background:rgba(5,150,105,.09);color:#065f46;border:1px solid rgba(5,150,105,.25);}
+  .r-failed{background:rgba(220,38,38,.09);color:#991b1b;border:1px solid rgba(220,38,38,.25);}
+  .r-temp{background:rgba(217,119,6,.09);color:#92400e;border:1px solid rgba(217,119,6,.25);}
+
+  /* ── TABLE ── */
+  .table-wrap{overflow-x:auto;border-radius:var(--radius);overflow:hidden;border:1px solid var(--border);}
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  th{text-align:left;padding:10px 14px;background:var(--surface2);color:var(--text3);font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:.8px;border-bottom:1px solid var(--border);}
+  td{padding:12px 14px;border-bottom:1px solid var(--border);vertical-align:middle;}
+  tr:last-child td{border-bottom:none;}
+  tr:hover td{background:rgba(99,102,241,.025);}
+
+  /* ── FILE UPLOAD ── */
+  .file-area{border:2px dashed var(--border);border-radius:var(--radius-lg);padding:28px;text-align:center;cursor:pointer;transition:all .2s;background:var(--surface2);}
+  .file-area:hover,.file-area.over{border-color:var(--accent2);background:rgba(99,102,241,.04);}
+  .file-area p{color:var(--text2);font-size:13px;margin-top:10px;}
+  .preview-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:8px;margin-top:12px;}
+  .preview-item{position:relative;border-radius:10px;overflow:hidden;background:var(--surface3);aspect-ratio:1;}
+  .preview-item img{width:100%;height:100%;object-fit:cover;}
+  .preview-item .del-img{position:absolute;top:5px;right:5px;background:rgba(0,0,0,.75);border:none;color:white;border-radius:50%;width:22px;height:22px;cursor:pointer;font-size:11px;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);}
+
+  /* ── MODAL ── */
+  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.82);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);z-index:200;align-items:center;justify-content:center;padding:16px;}
+  .modal-overlay.open{display:flex;}
+  .modal{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-xl);padding:28px;width:100%;max-width:560px;max-height:92vh;overflow-y:auto;box-shadow:var(--shadow);}
+  .modal h3{font-size:17px;font-weight:800;margin-bottom:22px;letter-spacing:-.4px;}
+  .modal-footer{display:flex;gap:8px;justify-content:flex-end;margin-top:22px;flex-wrap:wrap;}
+
+  /* ── DETAIL ROWS ── */
+  .detail-row{display:flex;gap:10px;margin-bottom:11px;font-size:13px;align-items:flex-start;}
+  .detail-label{color:var(--text3);min-width:150px;flex-shrink:0;font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.4px;padding-top:1px;}
+  .divider{height:1px;background:var(--border);margin:18px 0;}
+  .comment-block{background:var(--surface2);border-radius:10px;padding:12px 14px;margin-top:10px;font-size:13px;color:var(--text2);border-left:3px solid var(--accent2);line-height:1.6;}
+  .filter-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
+  .filter-row select{width:auto;font-size:12px;padding:7px 11px;}
+  .text-sm{font-size:12px;color:var(--text2);}
+
+  /* ── LOADING ── */
+  #loading-screen{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;gap:18px;}
+  .spinner{width:36px;height:36px;border:2.5px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  #loading-screen p{color:var(--text2);font-size:13px;font-weight:600;letter-spacing:.3px;}
+
+  /* ── TOAST ── */
+  #notification{position:fixed;bottom:24px;right:24px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:13px 18px;font-size:13px;z-index:999;transform:translateY(110px);opacity:0;transition:all .32s cubic-bezier(.34,1.56,.64,1);max-width:320px;box-shadow:var(--shadow);font-weight:600;}
+  #notification.show{transform:translateY(0);opacity:1;}
+  #notification.notif-success{border-color:rgba(16,185,129,.35);color:#34d399;background:rgba(16,185,129,.07);}
+  #notification.notif-error{border-color:rgba(244,63,94,.35);color:#fb7185;background:rgba(244,63,94,.07);}
+  #notification.notif-info{border-color:rgba(99,102,241,.35);color:#a5b4fc;background:rgba(99,102,241,.07);}
+
+  /* ── NOTIF PANEL ── */
+  #notif-panel{position:fixed;top:60px;right:16px;width:340px;max-height:480px;background:var(--surface);border:1px solid var(--border);border-radius:16px;z-index:300;box-shadow:var(--shadow);overflow:hidden;display:none;flex-direction:column;}
+  #notif-panel.open{display:flex;}
+  .notif-header{padding:13px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+  .notif-header strong{font-size:13px;font-weight:700;}
+  .notif-list{overflow-y:auto;flex:1;}
+  .notif-item{padding:13px 16px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .15s;}
+  .notif-item:hover{background:var(--surface2);}
+  .notif-item.unread{background:rgba(79,70,229,.06);border-left:2px solid var(--accent2);}
+  .notif-item .ni-title{font-size:13px;font-weight:700;margin-bottom:3px;}
+  .notif-item .ni-body{font-size:12px;color:var(--text2);line-height:1.5;}
+  .notif-item .ni-time{font-size:11px;color:var(--text3);margin-top:3px;}
+  .notif-dot{width:7px;height:7px;border-radius:50%;background:var(--accent2);flex-shrink:0;box-shadow:0 0 5px var(--accent2);}
+
+  /* ── TASK CHIPS ── */
+  .tstat-chip{display:inline-flex;align-items:center;gap:5px;padding:8px 14px;border-radius:8px;border:1.5px solid var(--border);background:var(--surface2);cursor:pointer;font-size:12px;font-weight:700;color:var(--text3);transition:all .2s;user-select:none;letter-spacing:-.1px;}
+  .tstat-chip:hover{border-color:var(--border2);color:var(--text2);}
+  .tstat-chip.sel-green{border-color:var(--accent);background:var(--accent-dim);color:#34d399;}
+  .tstat-chip.sel-red{border-color:var(--danger);background:var(--danger-dim);color:#fb7185;}
+  .tstat-chip.sel-yellow{border-color:var(--warn);background:var(--warn-dim);color:#fbbf24;}
+  .tstat-chip.sel-blue{border-color:var(--accent2);background:var(--accent2-dim);color:#a5b4fc;}
+
+  /* ── MISC ── */
+  .dmg-tag{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:#fbbf24;margin-bottom:6px;}
+  .comment-tag{display:block;background:var(--surface2);border-radius:8px;padding:8px 12px;font-size:13px;color:var(--text2);margin-bottom:6px;border-left:2px solid var(--border2);line-height:1.55;}
+  .section-divider{height:1px;background:linear-gradient(90deg,transparent,var(--border),transparent);margin:24px 0;}
+  .empty-state{text-align:center;padding:64px 20px;color:var(--text3);}
+  .empty-state .empty-icon{font-size:48px;margin-bottom:14px;opacity:.4;}
+  .empty-state p{font-size:14px;font-weight:600;letter-spacing:-.1px;}
+
+  /* ── MOBILE IMPROVEMENTS ── */
+  @media(max-width:600px){
+    .content{padding:12px 10px;}
+    .card{padding:14px;}
+    .wcard-body{padding:12px 14px 10px 18px;}
+    .wcard-footer{padding:8px 14px 12px 18px;}
+    .wcard-location{font-size:14px;white-space:normal;}
+    .wcard-badges{flex-direction:row;flex-wrap:wrap;}
+    .section-header{flex-direction:column;align-items:flex-start;gap:8px;}
+    .section-header h2{font-size:17px;}
+    .stats-grid{grid-template-columns:repeat(3,1fr);gap:6px;}
+    .stat-card{padding:10px 6px;}
+    .stat-num{font-size:20px;}
+    .stat-label{font-size:9px;}
+    .modal{padding:18px 14px;}
+    .modal h3{font-size:15px;}
+    .table-wrap{font-size:12px;}
+    th,td{padding:8px 8px;}
+    .topbar{padding:0 12px;height:52px;}
+    .topbar-logo{font-size:13px;}
+    .nav-item{padding:11px 10px;font-size:12px;}
+    .filter-row{gap:6px;}
+    .filter-row select{font-size:11px;padding:5px 8px;}
+    .chip{padding:7px 12px;font-size:12px;}
+    .btn{padding:9px 14px;font-size:12px;}
+    .btn-sm{padding:5px 10px;font-size:11px;}
+    .auth-card{padding:24px 18px;}
+    .form-row{grid-template-columns:1fr;}
+    .wcard-row{gap:6px;}
+    .detail-label{min-width:110px;font-size:10px;}
+    #notif-panel{width:calc(100vw - 24px);right:12px;}
+    .modal-footer{justify-content:stretch;}
+    .modal-footer .btn{flex:1;justify-content:center;}
+  }
+  @media(max-width:400px){
+    .stats-grid{grid-template-columns:repeat(2,1fr);}
+    .nav-item{padding:10px 8px;font-size:11px;}
+  }
+</style>
 </head>
 <body>
+
+<!-- LOADING -->
 <div id="loading-screen">
-  <div class="logo">🏊</div>
   <div class="spinner"></div>
   <p>იტვირთება...</p>
 </div>
-<div id="auth-screen">
+
+<!-- AUTH -->
+<div id="auth-screen" style="display:none">
   <div class="auth-card">
     <div class="auth-logo">
-      <span class="icon">🏊</span>
-      <h1>აუზების რეპორტი</h1>
-      <p>ყოველდღიური მონიტორინგის სისტემა</p>
+      <div class="icon" style="font-size:22px;font-weight:900;font-family:sans-serif;letter-spacing:-2px;color:white;background:linear-gradient(145deg,#10b981,#6366f1)">✓W</div>
+      <h1>შესრულებული სამუშაო</h1>
+      <p>სამუშაოების აღრიცხვის სისტემა</p>
     </div>
     <div class="tabs">
       <div class="tab active" onclick="switchTab('login')">შესვლა</div>
@@ -161,682 +307,1921 @@ tr:hover td{background:rgba(0,119,182,.025);}
       <div class="tab" onclick="switchTab('reset')">პაროლი</div>
     </div>
     <div id="login-form">
-      <div class="form-group"><label>ელ-ფოსტა</label><input type="email" id="li-email" placeholder="mail@example.com" onkeydown="if(event.key==='Enter')doLogin()"></div>
+      <div class="form-group"><label>ელ-ფოსტა</label><input type="email" id="li-email" placeholder="mail@example.com"></div>
       <div class="form-group"><label>პაროლი</label><input type="password" id="li-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
       <div id="li-err" class="error-msg"></div>
       <button class="btn btn-primary btn-full" style="margin-top:16px" onclick="doLogin()">შესვლა</button>
-      <div style="text-align:center;margin-top:14px"><a href="#" onclick="switchTab('reset');return false" style="font-size:12px;color:var(--text3)">პაროლი დაგავიწყდა?</a></div>
     </div>
     <div id="register-form" style="display:none">
       <div class="form-group"><label>სახელი და გვარი</label><input type="text" id="rg-name" placeholder="გიორგი მაისურაძე"></div>
       <div class="form-group"><label>ელ-ფოსტა</label><input type="email" id="rg-email" placeholder="mail@example.com"></div>
-      <div class="form-group"><label>პაროლი</label><input type="password" id="rg-pass" placeholder="••••••••"></div>
-      <div id="rg-err" class="error-msg"></div><div id="rg-ok" class="success-msg"></div>
+      <div class="form-group"><label>პაროლი (მინ. 6 სიმბოლო)</label><input type="password" id="rg-pass" placeholder="••••••••"></div>
+      <p style="font-size:12px;color:var(--text3);background:var(--surface2);border-radius:8px;padding:10px 12px;margin-bottom:4px;line-height:1.6">📧 რეგისტრაციის შემდეგ მეილზე გაიგზავნება დადასტურების ბმული. შემდეგ ადმინი მიანიჭებს როლს.</p>
+      <div id="rg-err" class="error-msg"></div>
+      <div id="rg-ok" class="success-msg"></div>
       <button class="btn btn-primary btn-full" style="margin-top:16px" onclick="doRegister()">რეგისტრაცია</button>
     </div>
     <div id="reset-form" style="display:none">
-      <p style="font-size:13px;color:var(--text2);margin-bottom:16px;line-height:1.6">მიუთითეთ ელ-ფოსტა — გამოგიგზავნით პაროლის განახლების ბმულს.</p>
+      <p style="font-size:13px;color:var(--text2);margin-bottom:18px;line-height:1.6">მიუთითეთ თქვენი ელ-ფოსტა და გამოგიგზავნით პაროლის განახლების ბმულს.</p>
       <div class="form-group"><label>ელ-ფოსტა</label><input type="email" id="rs-email" placeholder="mail@example.com"></div>
-      <div id="rs-err" class="error-msg"></div><div id="rs-ok" class="success-msg"></div>
-      <button class="btn btn-primary btn-full" style="margin-top:16px" onclick="doReset()">📧 გაგზავნა</button>
+      <div id="rs-err" class="error-msg"></div>
+      <div id="rs-ok" class="success-msg"></div>
+      <button class="btn btn-primary btn-full" style="margin-top:16px" onclick="doReset()">📧 ბმულის გაგზავნა</button>
     </div>
   </div>
 </div>
+
+<!-- NOTIFICATION PANEL -->
+<div id="notif-panel">
+  <div class="notif-header">
+    <strong>🔔 შეტყობინებები</strong>
+    <button class="btn btn-ghost btn-sm" onclick="markAllRead()" style="font-size:11px;padding:4px 8px">ყველა წაკითხული</button>
+  </div>
+  <div class="notif-list" id="notif-list">
+    <div style="text-align:center;padding:30px;color:var(--text3);font-size:13px">შეტყობინებები არ არის</div>
+  </div>
+</div>
+
+<!-- APP -->
 <div id="app">
   <div class="topbar">
     <div class="topbar-left">
-      <div class="topbar-logo">🏊 <span style="font-size:14px">აუზების რეპორტი</span></div>
+      <div class="topbar-logo">✓ <span>შესრულებული სამუშაო</span></div>
       <span class="role-badge" id="role-badge"></span>
     </div>
     <div class="topbar-right">
       <span class="user-info" id="ui-name"></span>
+      <button class="btn btn-ghost btn-sm" id="notif-bell" onclick="openNotifPanel()" style="position:relative;display:none">
+        🔔 <span id="notif-count" style="display:none;position:absolute;top:-4px;right:-4px;background:var(--danger);color:white;border-radius:50%;width:17px;height:17px;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;line-height:1"></span>
+      </button>
       <button class="btn btn-ghost btn-sm" onclick="doLogout()">გასვლა</button>
     </div>
   </div>
   <div class="nav" id="main-nav"></div>
   <div class="content">
+
+    <!-- PENDING -->
     <div class="section active" id="sec-pending">
-      <div class="pending-screen">
-        <div class="icon">⏳</div>
-        <h2>მოლოდინში</h2>
-        <p>თქვენს ანგარიშს ჯერ არ მიუნიჭებია როლი.<br>გთხოვეთ ადმინს გააქტიუროს.</p>
+      <div style="text-align:center;padding:80px 20px">
+        <div style="font-size:52px;margin-bottom:16px">⏳</div>
+        <h2 style="margin-bottom:10px">მოლოდინში</h2>
+        <p style="color:var(--text2);line-height:1.7">თქვენს ანგარიშს ჯერ არ მიუნიჭებია როლი.<br>გთხოვეთ ადმინს გააქტიუროს თქვენი ანგარიში.</p>
       </div>
     </div>
+
+    <!-- MY TASKS (received redirects) -->
+    <div class="section" id="sec-tasks">
+      <div class="section-header">
+        <h2>📬 ჩემი დავალებები</h2>
+        <div class="filter-row" style="margin:0">
+          <select id="tf-st" onchange="renderMyTasks()">
+            <option value="all">ყველა</option>
+            <option value="new">🆕 ახალი</option>
+            <option value="in_progress">🔄 მიმდინარე</option>
+            <option value="done">✅ შესრულდა</option>
+            <option value="failed">❌ ვერ შესრულდა</option>
+            <option value="temp">🔧 დროებით</option>
+          </select>
+        </div>
+      </div>
+      <div id="tasks-list"></div>
+    </div>
+
+    <!-- SUBMIT -->
     <div class="section" id="sec-submit">
-      <div class="section-header"><h2>📋 რეპორტის შევსება</h2></div>
+      <div class="section-header"><h2>სამუშაოს გაგზავნა</h2></div>
       <div class="card">
-        <div class="form-row" style="margin-bottom:16px">
-          <div class="form-group"><label>📅 თარიღი</label><input type="date" id="rep-date"></div>
-          <div class="form-group"><label>👤 ოპერატორი</label><input type="text" id="rep-operator" readonly style="background:var(--surface3)"></div>
+        <div class="form-group">
+          <label>ობიექტის დასახელება *</label>
+          <input type="text" id="w-loc" placeholder="მაგ: მარანი N3, ბაღი, სასტუმრო...">
         </div>
         <div class="form-group">
-          <label>🕐 ცვლა</label>
-          <div class="shift-row">
-            <button class="shift-btn" id="sh-morning" onclick="selectShift('morning')">🌅 დილის ცვლა</button>
-            <button class="shift-btn" id="sh-evening" onclick="selectShift('evening')">🌙 საღამოს ცვლა</button>
+          <label>კატეგორია *</label>
+          <div class="chip-group">
+            <label class="chip" id="cc-0"><input type="radio" name="w-cat" value="რესტორნები" onchange="selChip('cat',this,'sel-blue')"><span>🍽 რესტორნები</span></label>
+            <label class="chip" id="cc-1"><input type="radio" name="w-cat" value="გარეტერიტორია" onchange="selChip('cat',this,'sel-blue')"><span>🌿 გარეტერიტორია</span></label>
+            <label class="chip" id="cc-2"><input type="radio" name="w-cat" value="ოთახები" onchange="selChip('cat',this,'sel-blue')"><span>🛏 ოთახები</span></label>
+            <label class="chip" id="cc-3"><input type="radio" name="w-cat" value="სხვა" onchange="selChip('cat',this,'sel-blue')"><span>📦 სხვა</span></label>
           </div>
         </div>
+        <div class="form-row">
+          <div class="form-group"><label>სამუშაოს თარიღი *</label><input type="date" id="w-date"></div>
+          <div class="form-group"><label>დრო *</label><input type="time" id="w-time"></div>
+        </div>
+        <div class="form-group">
+          <label>⚠️ დაზიანება / პრობლემა</label>
+          <textarea id="w-dmg" placeholder="რა სახის დაზიანება იყო? (სურვილისამებრ)" style="min-height:80px"></textarea>
+        </div>
+        <div class="form-group">
+          <label>✅ შესრულების შედეგი *</label>
+          <div class="chip-group">
+            <label class="chip" id="rc-0"><input type="radio" name="w-res" value="შესრულდა" onchange="selChip('res',this,'sel-green')"><span>✅ შესრულდა</span></label>
+            <label class="chip" id="rc-1"><input type="radio" name="w-res" value="ვერ შესრულდა" onchange="selChip('res',this,'sel-red')"><span>❌ ვერ შესრულდა</span></label>
+            <label class="chip" id="rc-2"><input type="radio" name="w-res" value="დროებით გაკეთდა" onchange="selChip('res',this,'sel-yellow')"><span>🔧 დროებით გაკეთდა</span></label>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>💬 კომენტარი <span style="color:var(--text3);font-weight:400">(სურვილისამებრ)</span></label>
+          <textarea id="w-comment" placeholder="დამატებითი კომენტარი..." style="min-height:70px"></textarea>
+        </div>
+        <div class="form-group">
+          <label>📷 ფოტო მასალა</label>
+          <div class="file-area" id="drop-zone" onclick="document.getElementById('fi').click()"
+            ondragover="handleDragOver(event)" ondrop="handleDrop(event)" ondragleave="this.classList.remove('over')">
+            <div style="font-size:36px">📷</div>
+            <p>დააჭირეთ ან გადმოიტანეთ ფოტოები</p>
+            <p style="font-size:11px;margin-top:4px;color:var(--text3)">JPG, PNG · მაქს. 10MB თითო სურათი</p>
+          </div>
+          <input type="file" id="fi" accept="image/*" multiple style="display:none" onchange="handleFiles(this.files)">
+          <div class="preview-grid" id="prev-grid"></div>
+        </div>
+        <button class="btn btn-primary btn-full" onclick="submitWork()">📤 სამუშაოს გაგზავნა</button>
       </div>
-      <div id="pools-form"></div>
-      <div class="card" style="margin-top:12px">
-        <div class="form-group" style="margin-bottom:0">
-          <label>💬 კომენტარი</label>
-          <textarea id="rep-comment" placeholder="დამატებითი შენიშვნა ან კომენტარი..." rows="3" style="resize:vertical;min-height:80px"></textarea>
+    </div>
+
+    <!-- MY WORKS -->
+    <div class="section" id="sec-myworks">
+      <div class="section-header"><h2>ჩემი სამუშაოები</h2></div>
+      <div id="my-list"></div>
+    </div>
+
+    <!-- REVIEW -->
+    <div class="section" id="sec-review">
+      <div class="section-header">
+        <h2>სუპერვაიზერის პანელი</h2>
+        <div class="filter-row" style="margin:0">
+          <select id="f-status" onchange="renderReview()">
+            <option value="all">ყველა სტატუსი</option>
+            <option value="pending">მოლოდინში</option>
+            <option value="approved">დამტკიცებული</option>
+            <option value="rejected">უარყოფილი</option>
+            <option value="redirected">გადამისამართდა</option>
+          </select>
+          <select id="f-res" onchange="renderReview()">
+            <option value="all">ყველა შედეგი</option>
+            <option value="შესრულდა">შესრულდა</option>
+            <option value="ვერ შესრულდა">ვერ შესრულდა</option>
+            <option value="დროებით გაკეთდა">დროებით გაკეთდა</option>
+          </select>
         </div>
       </div>
-      <button class="btn btn-primary btn-full" style="margin-top:8px;padding:15px;font-size:15px" onclick="submitReport()">📤 რეპორტის გაგზავნა</button>
+      <div id="review-list"></div>
     </div>
-    <div class="section" id="sec-myreports">
-      <div class="section-header"><h2>📁 ჩემი რეპორტები</h2></div>
-      <div class="filter-row">
-        <select id="mrf-shift" onchange="renderMyReports()">
-          <option value="all">ყველა ცვლა</option>
-          <option value="morning">🌅 დილა</option>
-          <option value="evening">🌙 საღამო</option>
-        </select>
+
+    <!-- ADMIN PREVIEW -->
+    <div class="section" id="sec-preview">
+      <div class="section-header"><h2>👁 როლის Preview</h2></div>
+      <div class="card" style="margin-bottom:16px">
+        <p style="color:var(--text2);font-size:13px;margin-bottom:16px">შეარჩიეთ მომხმარებელი რათა ნახოთ მისი სამუშაო გვერდი</p>
+        <div class="form-group">
+          <label>მომხმარებლის არჩევა</label>
+          <select id="preview-user-select" onchange="renderPreviewForUser(this.value)">
+            <option value="">— აირჩიეთ —</option>
+          </select>
+        </div>
       </div>
-      <div id="my-reports-list"></div>
+      <div id="preview-banner" style="display:none;background:rgba(31,111,235,.1);border:1px solid var(--accent2);border-radius:8px;padding:12px 16px;margin-bottom:16px;font-size:13px;color:#58a6ff"></div>
+      <div id="preview-content"></div>
     </div>
-    <div class="section" id="sec-allreports">
-      <div class="section-header"><h2>📊 ყველა რეპორტი</h2></div>
+
+    <!-- DASHBOARD -->
+    <div class="section" id="sec-dashboard">
+      <div class="section-header"><h2>Dashboard</h2></div>
       <div class="stats-grid" id="adm-stats"></div>
-      <div class="filter-row">
-        <select id="arf-shift" onchange="renderAllReports()"><option value="all">ყველა ცვლა</option><option value="morning">🌅 დილა</option><option value="evening">🌙 საღამო</option></select>
-        <select id="arf-op" onchange="renderAllReports()"><option value="all">ყველა ოპერატორი</option></select>
-        <input type="date" id="arf-from" onchange="renderAllReports()" style="width:auto;font-size:12px;padding:7px 10px;border-radius:9px">
-        <input type="date" id="arf-to" onchange="renderAllReports()" style="width:auto;font-size:12px;padding:7px 10px;border-radius:9px">
+      <div class="card" style="padding:14px">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px">
+          <strong style="font-size:14px">ყველა სამუშაო</strong>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px">
+          <select id="af-st" onchange="renderAdminWorks()" style="flex:1;min-width:120px;font-size:12px;padding:6px 8px;border-radius:8px">
+            <option value="all">ყველა სტატუსი</option>
+            <option value="pending">მოლოდინში</option>
+            <option value="approved">დამტკიცებული</option>
+            <option value="rejected">უარყოფილი</option>
+          </select>
+          <select id="af-res" onchange="renderAdminWorks()" style="flex:1;min-width:120px;font-size:12px;padding:6px 8px;border-radius:8px">
+            <option value="all">ყველა შედეგი</option>
+            <option value="შესრულდა">შესრულდა</option>
+            <option value="ვერ შესრულდა">ვერ შესრულდა</option>
+            <option value="დროებით გაკეთდა">დროებით</option>
+          </select>
+          <select id="af-cat" onchange="renderAdminWorks()" style="flex:1;min-width:120px;font-size:12px;padding:6px 8px;border-radius:8px">
+            <option value="all">ყველა კატეგ.</option>
+            <option>რესტორნები</option><option>გარეტერიტორია</option><option>ოთახები</option><option>სხვა</option>
+          </select>
+          <select id="af-wk" onchange="renderAdminWorks()" style="flex:1;min-width:140px;font-size:12px;padding:6px 8px;border-radius:8px"><option value="all">ყველა შემსრულებელი</option></select>
+        </div>
+        <!-- Batch action bar -->
+        <div id="batch-bar" style="display:none;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 12px;background:rgba(79,70,229,.06);border:1px solid rgba(79,70,229,.2);border-radius:10px;margin-bottom:10px">
+          <span id="batch-count" style="font-size:13px;font-weight:700;color:var(--accent2)">0 მონიშნული</span>
+          <span style="flex:1"></span>
+          <button class="btn btn-sm" onclick="batchAct('approved')" style="background:rgba(5,150,105,.12);color:#065f46;border:1px solid rgba(5,150,105,.3);font-weight:700">✅ მონიშნულების დამტკიცება</button>
+          <button class="btn btn-sm" onclick="batchAct('rejected')" style="background:rgba(220,38,38,.1);color:#991b1b;border:1px solid rgba(220,38,38,.25);font-weight:700">❌ მონიშნულების უარყოფა</button>
+          <button class="btn btn-ghost btn-sm" onclick="clearSelection()">გაუქმება</button>
+        </div>
+        <p style="font-size:11px;color:var(--text3);margin-bottom:8px;display:none" id="scroll-hint">← გაიწიე მარჯვნივ სრული ცხრილის სანახავად →</p>
+        <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;" id="adm-table-wrap">
+          <table style="min-width:660px">
+            <thead><tr>
+              <th style="width:36px;padding:10px 8px">
+                <input type="checkbox" id="select-all-cb" onclick="toggleSelectAll(this)" style="width:16px;height:16px;cursor:pointer;accent-color:var(--accent2)">
+              </th>
+              <th>ობიექტი</th><th>კატეგ.</th><th>შემსრულებელი</th><th>შედეგი</th><th>სტატუსი</th><th>თარიღი</th><th style="min-width:100px">მოქმედება</th>
+            </tr></thead>
+            <tbody id="adm-tbody"></tbody>
+          </table>
+        </div>
       </div>
-      <div id="all-reports-list"></div>
     </div>
+
+    <!-- USERS -->
     <div class="section" id="sec-users">
-      <div class="section-header"><h2>👥 მომხმარებლები</h2></div>
-      <div class="card"><div class="table-wrap"><table>
-        <thead><tr><th>სახელი</th><th>ელ-ფოსტა</th><th>როლი</th><th>რეგ.</th><th></th></tr></thead>
-        <tbody id="users-tbody"></tbody>
-      </table></div></div>
-    </div>
-    <div class="section" id="sec-export">
-      <div class="section-header"><h2>📥 Excel ექსპორტი</h2></div>
+      <div class="section-header"><h2>მომხმარებლები</h2></div>
       <div class="card">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>სახელი</th><th>ელ-ფოსტა</th><th>როლი</th><th>რეგ. თარიღი</th><th></th></tr></thead>
+            <tbody id="users-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- EXPORT -->
+    <div class="section" id="sec-export">
+      <div class="section-header"><h2>📥 ექსპორტი და მეილი</h2></div>
+
+      <!-- EMAIL SEND CARD -->
+      <div class="card" style="border-left:4px solid var(--accent2)">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+          <span style="font-size:24px">📧</span>
+          <div>
+            <div style="font-weight:800;font-size:15px">რეპორტის გაგზავნა მეილზე</div>
+            <div style="font-size:12px;color:var(--text2)">დღევანდელი სამუშაოების შეჯამება პირდაპირ მეილზე</div>
+          </div>
+        </div>
+        <div class="form-row" style="margin-bottom:12px">
+          <div class="form-group">
+            <label>📅 პერიოდი</label>
+            <select id="em-period">
+              <option value="today">დღეს (00:00 – ახლა)</option>
+              <option value="morning">🌅 დილის ცვლა (00:00 – 09:30)</option>
+              <option value="evening">🌇 საღამოს ცვლა (09:30 – 18:00)</option>
+              <option value="yesterday">გუშინ</option>
+              <option value="custom">კონკრეტული თარიღი</option>
+            </select>
+          </div>
+          <div class="form-group" id="em-date-wrap" style="display:none">
+            <label>📅 თარიღი</label>
+            <input type="date" id="em-date">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>📨 მეილის მისამართი</label>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <input type="email" id="em-to" placeholder="example@email.com" style="flex:1;min-width:200px" value="a.gaiparashvili@lopotaresort.com">
+            <button class="btn btn-primary" onclick="sendEmailReport()" id="em-btn" style="white-space:nowrap">
+              📧 გაგზავნა
+            </button>
+          </div>
+        </div>
+        <div id="em-status" style="display:none;margin-top:10px;padding:10px 14px;border-radius:8px;font-size:13px;font-weight:600"></div>
+      </div>
+
+      <!-- EXCEL EXPORT CARD -->
+      <div class="card">
+        <div style="font-weight:700;margin-bottom:16px">📊 Excel ჩამოტვირთვა</div>
         <div class="form-row">
-          <div class="form-group"><label>ოპერატორი</label><select id="ex-op"><option value="all">ყველა</option></select></div>
-          <div class="form-group"><label>ცვლა</label><select id="ex-shift"><option value="all">ყველა</option><option value="morning">🌅 დილა</option><option value="evening">🌙 საღამო</option></select></div>
+          <div class="form-group"><label>სტატუსი</label>
+            <select id="ex-st"><option value="all">ყველა</option><option value="approved">დამტკიცებული</option><option value="rejected">უარყოფილი</option><option value="pending">მოლოდინში</option></select>
+          </div>
+          <div class="form-group"><label>შედეგი</label>
+            <select id="ex-res"><option value="all">ყველა</option><option value="შესრულდა">შესრულდა</option><option value="ვერ შესრულდა">ვერ შესრულდა</option><option value="დროებით გაკეთდა">დროებით გაკეთდა</option></select>
+          </div>
         </div>
         <div class="form-row">
-          <div class="form-group"><label>თარიღი დან</label><input type="date" id="ex-from"></div>
-          <div class="form-group"><label>თარიღი მდე</label><input type="date" id="ex-to"></div>
+          <div class="form-group"><label>შემსრულებელი</label><select id="ex-wk"><option value="all">ყველა</option></select></div>
+          <div class="form-group"><label>კატეგორია</label>
+            <select id="ex-cat"><option value="all">ყველა</option><option>რესტორნები</option><option>გარეტერიტორია</option><option>ოთახები</option><option>სხვა</option></select>
+          </div>
         </div>
-        <button class="btn btn-primary" onclick="exportExcel()">📊 Excel ჩამოტვირთვა</button>
-        <button class="btn btn-ghost" style="background:linear-gradient(135deg,#059669,#10b981);color:white;margin-top:10px;width:100%" onclick="sendTestEmail()">📧 სატესტო მეილის გაგზავნა</button>
+        <div class="form-row">
+          <div class="form-group"><label>თარიღი — დან</label><input type="date" id="ex-from"></div>
+          <div class="form-group"><label>თარიღი — მდე</label><input type="date" id="ex-to"></div>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+          <button class="btn btn-primary" style="max-width:260px" onclick="exportExcel()">📊 Excel ჩამოტვირთვა</button>
+          <button class="btn btn-sm" onclick="exportAndEmail()" style="background:rgba(79,70,229,.1);color:#3730a3;border:1.5px solid rgba(79,70,229,.3);font-weight:700;white-space:nowrap">📧 ჩამოტვირთვა + მეილი</button>
+        </div>
+        <div style="margin-top:10px">
+          <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text2)">📨 მეილის მისამართი</label>
+          <input type="email" id="ex-email" value="a.gaiparashvili@lopotaresort.com" style="margin-top:6px;max-width:340px">
+        </div>
+        <div id="ex-email-status" style="display:none;margin-top:8px;padding:9px 12px;border-radius:8px;font-size:13px;font-weight:600"></div>
       </div>
     </div>
   </div>
 </div>
-<div id="toast"></div>
-<script type="module">
-import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import{getAuth,createUserWithEmailAndPassword,signInWithEmailAndPassword,signOut,onAuthStateChanged,sendEmailVerification,sendPasswordResetEmail}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import{getFirestore,collection,doc,setDoc,getDoc,addDoc,updateDoc,deleteDoc,onSnapshot,query,orderBy,serverTimestamp}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// FIREBASE CONFIG — შეცვალე შენი PROJECT-ის მონაცემებით
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-const firebaseConfig={
-  apiKey:"AIzaSyCbN82LelJ26PtYAe2jDUKRElaHL8m83us",
-  authDomain:"pool-tracker-82049.firebaseapp.com",
-  projectId:"pool-tracker-82049",
-  storageBucket:"pool-tracker-82049.firebasestorage.app",
-  messagingSenderId:"47823218482",
-  appId:"1:47823218482:web:4bb87a006a3965a50bd92b"
+<!-- MAIN MODAL -->
+<div class="modal-overlay" id="modal-ov">
+  <div class="modal">
+    <h3 id="m-title"></h3>
+    <div id="m-body"></div>
+    <div class="modal-footer" id="m-footer"></div>
+  </div>
+</div>
+
+<div id="notification"></div>
+
+<!-- FIREBASE SDK -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, sendEmailVerification, sendPasswordResetEmail }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, collection, doc, setDoc, getDoc, getDocs, addDoc, updateDoc, deleteDoc, onSnapshot, query, orderBy, serverTimestamp }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getMessaging, getToken, onMessage }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging.js";
+import { getStorage, ref, uploadBytes, getDownloadURL }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBiKjEDDug9McKWuLr6tLusSO5Kwf5m3RE",
+  authDomain: "work-tracker-7aa42.firebaseapp.com",
+  projectId: "work-tracker-7aa42",
+  storageBucket: "work-tracker-7aa42.firebasestorage.app",
+  messagingSenderId: "639886380518",
+  appId: "1:639886380518:web:f8168469540549f9859a27",
+  measurementId: "G-3D4ES1PLMJ"
 };
 
-const fireApp=initializeApp(firebaseConfig);
-const auth=getAuth(fireApp);
-const db=getFirestore(fireApp);
+const fireApp = initializeApp(firebaseConfig);
+const auth = getAuth(fireApp);
+const db = getFirestore(fireApp);
+const storage = getStorage(fireApp);
+let messaging = null;
+try { messaging = getMessaging(fireApp); } catch(e) { /* not supported */ }
 
-const POOLS=[
-  'დახურული აუზი','დახურულის შიდა ჯაკუზი','დახურულის გარე ჯაკუზი',
-  'პირველი აუზი','მეცხრეს აუზი','მეცხრეს ჯაკუზი','მეცხრეს საბავშო',
-  'ოლიმპიური აუზი','13 აუზი','13ის ჯაკუზი 1','13ის ჯაკუზი 2','13ის საბავშო',
-  '15 აუზი','16 აუზი','აკვაპარკი დიდი','აკვაპარკი საბავშო','იკე'
-];
-const CHEMICALS=['ქლორი (კგ)','pH+ (კგ)','pH- (კგ)','ალგეციდი (კგ)','ქლორი ტაბლეტი (კგ)'];
+// ---- GLOBALS ----
+let currentUser = null;
+let currentRole = null;
+let allWorks = [];
+let myOwnWorks = []; // only current user's submitted works
+let allUsers = [];
+let allRedirects = []; // all redirects from all supervisors
+let myTasks = []; // redirects assigned to current user (by name)
+let myNotifications = []; // unread notification docs
+let imgs = [];
+const chipState = { cat: null, res: null };
+let assignedTo = []; // multi-select assignees
+let adminPreviewRole = null; // for admin preview mode
 
-let currentUser=null,currentRole=null,allReports=[],myReports=[],allUsers=[],selectedShift=null;
-const checkState={};
+// ---- LOADING ----
+function hideLoading() { document.getElementById('loading-screen').style.display = 'none'; }
+function showAuth() { document.getElementById('auth-screen').style.display = 'flex'; }
+function showApp() { document.getElementById('app').style.display = 'flex'; }
 
-function hideLoading(){document.getElementById('loading-screen').style.display='none';}
-function showAuth(){document.getElementById('auth-screen').style.display='flex';}
-function showApp(){document.getElementById('app').style.display='flex';}
-
-onAuthStateChanged(auth,async(user)=>{
-  if(user){
-    currentUser=user;
-    const snap=await getDoc(doc(db,'pool_users',user.uid));
-    if(snap.exists()){const d=snap.data();currentRole=d.role;hideLoading();launchApp(d);}
-    else{await signOut(auth);hideLoading();showAuth();}
-  }else{currentUser=null;currentRole=null;hideLoading();showAuth();}
-});
-
-// Seed admin account
-onAuthStateChanged(auth,async(user)=>{
-  if(user&&user.email==='admin@pool.ge'){
-    const snap=await getDoc(doc(db,'pool_users',user.uid));
-    if(!snap.exists())await setDoc(doc(db,'pool_users',user.uid),{uid:user.uid,name:'ადმინი',email:user.email,role:'admin',createdAt:serverTimestamp()});
+// ---- AUTH STATE ----
+onAuthStateChanged(auth, async (user) => {
+  if (user) {
+    currentUser = user;
+    const snap = await getDoc(doc(db, 'users', user.uid));
+    if (snap.exists()) {
+      const data = snap.data();
+      currentRole = data.role;
+      hideLoading();
+      launchApp(data);
+    } else {
+      await signOut(auth);
+      hideLoading();
+      showAuth();
+    }
+  } else {
+    currentUser = null;
+    currentRole = null;
+    hideLoading();
+    showAuth();
   }
 });
 
-window.doRegister=async function(){
-  const name=document.getElementById('rg-name').value.trim();
-  const email=document.getElementById('rg-email').value.trim().toLowerCase();
-  const pass=document.getElementById('rg-pass').value;
-  const err=document.getElementById('rg-err'),ok=document.getElementById('rg-ok');
-  err.textContent='';ok.textContent='';
-  if(!name||!email||!pass){err.textContent='ყველა ველი სავალდებულოა';return;}
-  if(pass.length<6){err.textContent='პაროლი მინიმუმ 6 სიმბოლო';return;}
-  try{
-    const cred=await createUserWithEmailAndPassword(auth,email,pass);
-    await setDoc(doc(db,'pool_users',cred.user.uid),{uid:cred.user.uid,name,email,role:'pending',createdAt:serverTimestamp()});
+// ---- REGISTER ----
+window.doRegister = async function() {
+  const name = document.getElementById('rg-name').value.trim();
+  const email = document.getElementById('rg-email').value.trim().toLowerCase();
+  const pass = document.getElementById('rg-pass').value;
+  const err = document.getElementById('rg-err');
+  const ok = document.getElementById('rg-ok');
+  err.textContent = ''; ok.textContent = '';
+  if (!name || !email || !pass) { err.textContent = 'ყველა ველი სავალდებულოა'; return; }
+  if (pass.length < 6) { err.textContent = 'პაროლი მინიმუმ 6 სიმბოლო'; return; }
+  try {
+    const cred = await createUserWithEmailAndPassword(auth, email, pass);
+    await setDoc(doc(db, 'users', cred.user.uid), {
+      uid: cred.user.uid, name, email, role: 'pending',
+      createdAt: serverTimestamp()
+    });
+    // Send verification email
     await sendEmailVerification(cred.user);
     await signOut(auth);
-    ok.textContent='✓ დარეგისტრირდით! შეამოწმეთ ელ-ფოსტა.';
-    ['rg-name','rg-email','rg-pass'].forEach(id=>document.getElementById(id).value='');
-  }catch(e){err.textContent=e.code==='auth/email-already-in-use'?'ელ-ფოსტა უკვე გამოყენებულია':e.message;}
+    ok.textContent = '✓ დარეგისტრირდით! შეამოწმეთ ელ-ფოსტა და დაადასტურეთ. შემდეგ ადმინი მიანიჭებს როლს.';
+    ['rg-name','rg-email','rg-pass'].forEach(id => document.getElementById(id).value = '');
+  } catch(e) {
+    if (e.code === 'auth/email-already-in-use') err.textContent = 'ეს ელ-ფოსტა უკვე რეგისტრირებულია';
+    else err.textContent = e.message;
+  }
 };
 
-window.doLogin=async function(){
-  const email=document.getElementById('li-email').value.trim().toLowerCase();
-  const pass=document.getElementById('li-pass').value;
-  const err=document.getElementById('li-err');err.textContent='';
-  try{await signInWithEmailAndPassword(auth,email,pass);}
-  catch(e){err.textContent='ელ-ფოსტა ან პაროლი არასწორია';}
+// ---- LOGIN ----
+window.doLogin = async function() {
+  const email = document.getElementById('li-email').value.trim().toLowerCase();
+  const pass = document.getElementById('li-pass').value;
+  const err = document.getElementById('li-err');
+  err.textContent = '';
+  try {
+    await signInWithEmailAndPassword(auth, email, pass);
+  } catch(e) {
+    if (e.code === 'auth/invalid-credential' || e.code === 'auth/user-not-found' || e.code === 'auth/wrong-password')
+      err.textContent = 'ელ-ფოსტა ან პაროლი არასწორია';
+    else err.textContent = e.message;
+  }
 };
 
-window.doLogout=async function(){await signOut(auth);location.reload();};
-
-window.doReset=async function(){
-  const email=document.getElementById('rs-email').value.trim().toLowerCase();
-  const err=document.getElementById('rs-err'),ok=document.getElementById('rs-ok');
-  err.textContent='';ok.textContent='';
-  if(!email){err.textContent='ელ-ფოსტა სავალდებულოა';return;}
-  try{await sendPasswordResetEmail(auth,email);ok.textContent='✓ ბმული გაიგზავნა!';}
-  catch(e){err.textContent='ეს ელ-ფოსტა არ არის რეგისტრირებული';}
+// ---- RESET PASSWORD ----
+window.doReset = async function() {
+  const email = document.getElementById('rs-email').value.trim().toLowerCase();
+  const err = document.getElementById('rs-err');
+  const ok = document.getElementById('rs-ok');
+  err.textContent = ''; ok.textContent = '';
+  if (!email) { err.textContent = 'ელ-ფოსტა სავალდებულოა'; return; }
+  try {
+    await sendPasswordResetEmail(auth, email);
+    ok.textContent = '✓ პაროლის განახლების ბმული გაიგზავნა! შეამოწმეთ ელ-ფოსტა.';
+    document.getElementById('rs-email').value = '';
+  } catch(e) {
+    if (e.code === 'auth/user-not-found') err.textContent = 'ეს ელ-ფოსტა რეგისტრირებული არ არის';
+    else err.textContent = e.message;
+  }
+};
+window.doLogout = async function() {
+  await signOut(auth);
+  location.reload();
 };
 
-window.switchTab=function(t){
-  document.querySelectorAll('.tab').forEach((el,i)=>{
-    el.classList.toggle('active',(i===0&&t==='login')||(i===1&&t==='register')||(i===2&&t==='reset'));
-  });
-  ['login-form','register-form','reset-form'].forEach((id,i)=>{
-    document.getElementById(id).style.display=(['login','register','reset'][i]===t)?'':'none';
-  });
-};
-
-function launchApp(userData){
-  document.getElementById('auth-screen').style.display='none';
+// ---- LAUNCH APP ----
+function launchApp(userData) {
+  document.getElementById('auth-screen').style.display = 'none';
   showApp();
-  document.getElementById('ui-name').textContent=userData.name;
-  const rl={admin:'ადმინი',operator:'ოპერატორი',pending:'მოლოდინში'};
-  const b=document.getElementById('role-badge');
-  b.textContent=rl[userData.role]||userData.role;
-  buildNav(userData.role);
-  const d=document.getElementById('rep-date');if(d)d.valueAsDate=new Date();
-  const op=document.getElementById('rep-operator');if(op)op.value=userData.name;
+  document.getElementById('ui-name').textContent = userData.name;
+  const rl = { admin:'ადმინი', supervisor:'სუპერვაიზერი', worker:'შემსრულებელი', nightwatch:'ღამის მორიგე', pending:'მოლოდინში' };
+  const rc = { admin:'role-admin', supervisor:'role-supervisor', worker:'role-worker', nightwatch:'role-nightwatch', pending:'role-pending' };
+  const b = document.getElementById('role-badge');
+  b.textContent = rl[userData.role] || userData.role;
+  b.className = 'role-badge ' + (rc[userData.role] || 'role-pending');
+  buildNav(userData.role, userData);
+  const wd = document.getElementById('w-date');
+  if (wd) wd.valueAsDate = new Date();
+  const wt = document.getElementById('w-time');
+  if (wt) { const n = new Date(); wt.value = n.getHours().toString().padStart(2,'0') + ':' + n.getMinutes().toString().padStart(2,'0'); }
+  if ('Notification' in window && Notification.permission === 'default' && userData.role !== 'admin' && userData.role !== 'pending') {
+    setTimeout(showPermBanner, 1000);
+  }
 }
 
-function buildNav(role){
-  const nav=document.getElementById('main-nav');nav.innerHTML='';
-  const map={
-    operator:[['sec-submit','📋 რეპორტი'],['sec-myreports','📁 ჩემი'],['sec-allreports','📊 ყველა']],
-    admin:[['sec-allreports','📊 ყველა'],['sec-users','👥 მომხმარებლები'],['sec-export','📥 ექსპორტი']],
+function showPermBanner() {
+  if (document.getElementById('perm-banner')) return;
+  const banner = document.createElement('div');
+  banner.id = 'perm-banner';
+  banner.style.cssText = 'background:rgba(99,102,241,.12);border-bottom:1px solid rgba(99,102,241,.3);padding:10px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:13px;flex-wrap:wrap;';
+  banner.innerHTML = `
+    <span style="color:#a5b4fc">🔔 შეტყობინებების მისაღებად დაუშვით წვდომა</span>
+    <div style="display:flex;gap:8px">
+      <button onclick="enableNotifs()" style="background:var(--accent2);color:white;border:none;border-radius:6px;padding:6px 14px;cursor:pointer;font-size:12px;font-weight:700">დაშვება</button>
+      <button onclick="document.getElementById('perm-banner').remove()" style="background:var(--surface3);color:var(--text2);border:none;border-radius:6px;padding:6px 10px;cursor:pointer;font-size:12px">✕</button>
+    </div>`;
+  const nav = document.getElementById('main-nav');
+  if (nav) nav.after(banner);
+}
+
+window.enableNotifs = async function() {
+  await requestNotifPermission();
+  document.getElementById('perm-banner')?.remove();
+  if (Notification.permission === 'granted') {
+    notify('✓ შეტყობინებები ჩართულია!', 'success');
+    playNotifSound();
+    initFCM();
+  } else {
+    notify('შეტყობინებები არ დაშვება', 'error');
+  }
+};
+
+function buildNav(role, userData) {
+  const nav = document.getElementById('main-nav');
+  nav.innerHTML = '';
+  const map = {
+    worker: [['sec-submit','📤 გაგზავნა'],['sec-myworks','📁 ჩემი'],['sec-tasks','📬 დავალებები']],
+    nightwatch: [['sec-submit','📤 გაგზავნა'],['sec-myworks','📁 ჩემი']],
+    supervisor: [['sec-submit','📤 გაგზავნა'],['sec-myworks','📁 ჩემი'],['sec-tasks','📬 დავალებები'],['sec-review','🔍 შემოწმება'],],
+    admin: [['sec-dashboard','📊 Dashboard'],['sec-users','👥 მომხმარებლები'],['sec-preview','👁 Preview'],['sec-export','📥 ექსპორტი']]
   };
-  const items=map[role]||[];
-  if(!items.length){showSection('sec-pending');return;}
-  items.forEach(([id,label],i)=>{
-    const el=document.createElement('div');
-    el.className='nav-item'+(i===0?' active':'');
-    el.textContent=label;el.dataset.sid=id;
-    el.onclick=()=>activateSection(id,el);
+  const items = map[role] || [];
+  if (!items.length) { showSection('sec-pending'); return; }
+  items.forEach(([id, label], i) => {
+    const el = document.createElement('div');
+    el.className = 'nav-item' + (i === 0 ? ' active' : '');
+    el.textContent = label; el.dataset.sid = id;
+    el.onclick = () => activateSection(id, el);
     nav.appendChild(el);
   });
   showSection(items[0][0]);
-  if(role==='operator'){buildPoolForm();listenMyReports();listenAllReports();listenUsers();}
-  if(role==='admin'){listenAllReports();listenUsers();}
+  if (role === 'worker') { listenMyWorks(); listenUsers(); listenMyTasks(); listenMyNotifications(); }
+  if (role === 'nightwatch') { listenMyWorks(); listenUsers(); listenMyNotifications(); }
+  if (role === 'supervisor') { listenMyWorks(); listenAllWorks('supervisor'); listenUsers(); listenMyTasks(); listenMyNotifications(); }
+  if (role === 'admin') { listenAllWorks('admin'); listenUsers(); }
 }
 
-function activateSection(id,el){
-  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
-  el.classList.add('active');showSection(id);
-  if(id==='sec-allreports')renderAllReports();
-  if(id==='sec-myreports')renderMyReports();
-  if(id==='sec-users')renderUsers();
+function activateSection(id, el) {
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  el.classList.add('active');
+  showSection(id);
+  if (id === 'sec-tasks') renderMyTasks();
+  if (id === 'sec-review') renderReview();
+  if (id === 'sec-myworks') renderMyWorks();
+  if (id === 'sec-submit') renderAssigneeChips();
+  if (id === 'sec-preview') renderPreviewSection();
+  if (id === 'sec-dashboard') { renderAdminStats(); renderAdminWorks(); }
+  if (id === 'sec-users') renderUsers();
 }
-function showSection(id){
-  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+function showSection(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
   document.getElementById(id)?.classList.add('active');
 }
 
-window.selectShift=function(shift){
-  selectedShift=shift;
-  document.getElementById('sh-morning').classList.toggle('active',shift==='morning');
-  document.getElementById('sh-evening').classList.toggle('active',shift==='evening');
-};
-
-function buildPoolForm(){
-  const container=document.getElementById('pools-form');
-  container.innerHTML=POOLS.map(pool=>`
-    <div class="pool-card" id="pc-${sl(pool)}">
-      <div class="pool-card-header" onclick="togglePoolCard('${sl(pool)}')">
-        <div class="pool-name">🏊 ${e(pool)}</div>
-        <input type="checkbox" class="pool-checkbox" id="cb-${sl(pool)}" onclick="event.stopPropagation();togglePoolCard('${sl(pool)}')">
-      </div>
-      <div class="pool-disabled-hint" id="hint-${sl(pool)}">↑ მონიშნეთ შესავსებად</div>
-      <div class="pool-body" id="pb-${sl(pool)}">
-        <div class="pool-measurements">
-          <div class="measure-field">
-            <div class="measure-label">🧪 PH დონე</div>
-            <input type="number" step="0.01" min="0" max="14" class="measure-input" id="ph-${sl(pool)}" placeholder="7.2 – 7.8" oninput="chPH(this)">
-          </div>
-          <div class="measure-field">
-            <div class="measure-label">🔵 ქლორი (მგ/ლ)</div>
-            <input type="number" step="0.01" min="0" class="measure-input" id="cl-${sl(pool)}" placeholder="1.0 – 3.0" oninput="chCL(this)">
-          </div>
-        </div>
-        <div class="pool-checks">
-          <div class="check-section-label">ზედაპირის გარეცხვა</div>
-          <button class="check-btn" id="surf-y-${sl(pool)}" onclick="toggleCheck('surf','${sl(pool)}','yes')">✅ გარეცხილია</button>
-          <button class="check-btn" id="surf-n-${sl(pool)}" onclick="toggleCheck('surf','${sl(pool)}','no')">❌ არ გარეცხილა</button>
-          <div class="check-section-label" style="margin-top:4px">ფილტრის გარეცხვა</div>
-          <button class="check-btn" id="filt-y-${sl(pool)}" onclick="toggleCheck('filt','${sl(pool)}','yes')">✅ გარეცხილია</button>
-          <button class="check-btn" id="filt-n-${sl(pool)}" onclick="toggleCheck('filt','${sl(pool)}','no')">❌ არ გარეცხილა</button>
-          <div class="check-section-label" style="margin-top:4px">გაჩოთქვა</div>
-          <button class="check-btn" id="spla-y-${sl(pool)}" onclick="toggleCheck('spla','${sl(pool)}','yes')">✅ შესრულდა</button>
-          <button class="check-btn" id="spla-n-${sl(pool)}" onclick="toggleCheck('spla','${sl(pool)}','no')">❌ არ შესრულდა</button>
-          <div class="check-section-label" style="margin-top:4px">ცხაურების გარეცხვა</div>
-          <button class="check-btn" id="grid-y-${sl(pool)}" onclick="toggleCheck('grid','${sl(pool)}','yes')">✅ გარეცხილია</button>
-          <button class="check-btn" id="grid-n-${sl(pool)}" onclick="toggleCheck('grid','${sl(pool)}','no')">❌ არ გარეცხილა</button>
-        </div>
-        <div class="chem-section-label">⚗️ ქიმიკატების დამატება</div>
-        <div class="chem-grid">
-          ${CHEMICALS.map(c=>`
-            <div class="chem-field">
-              <div class="chem-label">${e(c)}</div>
-              <input type="number" step="0.1" min="0" class="chem-input" id="ch-${sl(pool)}-chem${CHEMICALS.indexOf(c)}" placeholder="0">
-            </div>`).join('')}
-        </div>
-      </div>
-    </div>`).join('');
+// ---- REALTIME LISTENERS ----
+function listenMyWorks() {
+  const q = query(collection(db, 'works'), orderBy('submittedAt', 'desc'));
+  onSnapshot(q, snap => {
+    const all = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    myOwnWorks = all.filter(w => w.workerId === currentUser.uid);
+    allWorks = myOwnWorks;
+    renderMyWorks();
+  });
 }
 
-window.togglePoolCard=function(poolSlug){
-  const cb=document.getElementById('cb-'+poolSlug);
-  cb.checked=!cb.checked;
-  const card=document.getElementById('pc-'+poolSlug);
-  const body=document.getElementById('pb-'+poolSlug);
-  const hint=document.getElementById('hint-'+poolSlug);
-  if(cb.checked){card.classList.add('checked');body.classList.add('enabled');hint.style.display='none';}
-  else{card.classList.remove('checked');body.classList.remove('enabled');hint.style.display='';}
+function listenAllWorks(role) {
+  const q = query(collection(db, 'works'), orderBy('submittedAt', 'desc'));
+  onSnapshot(q, snap => {
+    allWorks = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    myOwnWorks = allWorks.filter(w => w.workerId === currentUser.uid);
+    if (role === 'supervisor') { renderReview(); renderMyWorks(); }
+    if (role === 'admin') { renderAdminStats(); renderAdminWorks(); }
+  });
+}
+
+function listenUsers() {
+  onSnapshot(collection(db, 'users'), snap => {
+    allUsers = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderUsers();
+    populateWorkerSelects();
+    renderAssigneeChips();
+    renderRdPeopleChips(); // update redirect people list dynamically
+    if (myTasks !== undefined) {
+      renderMyTasks();
+    }
+    if (document.getElementById('sec-preview')?.classList.contains('active')) {
+      renderPreviewSection();
+    }
+  });
+}
+
+function renderAssigneeChips() {
+  const container = document.getElementById('assignee-chips');
+  const emptyMsg = document.getElementById('assignee-empty');
+  if (!container) return;
+  const supervisors = allUsers.filter(u => u.role === 'supervisor');
+  if (!supervisors.length) {
+    container.innerHTML = '';
+    if (emptyMsg) emptyMsg.style.display = 'block';
+    return;
+  }
+  if (emptyMsg) emptyMsg.style.display = 'none';
+  container.innerHTML = supervisors.map(u => `
+    <label class="chip ${assignedTo.includes(u.id) ? 'sel-blue' : ''}" id="asgn-${u.id}" onclick="toggleAssignee('${u.id}','${e(u.name)}')">
+      <span>👤 ${e(u.name)}</span>
+    </label>
+  `).join('');
+}
+
+window.toggleAssignee = function(uid, name) {
+  const idx = assignedTo.indexOf(uid);
+  if (idx === -1) assignedTo.push(uid);
+  else assignedTo.splice(idx, 1);
+  renderAssigneeChips();
 };
 
-window.toggleCheck=function(type,poolSlug,val){
-  if(!checkState[poolSlug])checkState[poolSlug]={};
-  checkState[poolSlug][type]=val;
-  const y=document.getElementById(`${type}-y-${poolSlug}`);
-  const n=document.getElementById(`${type}-n-${poolSlug}`);
-  if(y)y.className='check-btn'+(val==='yes'?' yes':'');
-  if(n)n.className='check-btn'+(val==='no'?' no':'');
+// ---- FILES ----
+window.handleDragOver = function(e) { e.preventDefault(); document.getElementById('drop-zone').classList.add('over'); };
+window.handleDrop = function(e) { e.preventDefault(); document.getElementById('drop-zone').classList.remove('over'); handleFiles(e.dataTransfer.files); };
+window.handleFiles = function(files) {
+  Array.from(files).forEach(f => {
+    if (!f.type.startsWith('image/')) { notify('მხოლოდ სურათები!', 'error'); return; }
+    if (f.size > 10 * 1024 * 1024) { notify('ფოტო ძალიან დიდია (მაქს. 10MB)', 'error'); return; }
+    // Store file object + local preview URL
+    const previewUrl = URL.createObjectURL(f);
+    imgs.push({ file: f, name: f.name, previewUrl });
+    renderPrev();
+  });
+};
+function renderPrev() {
+  document.getElementById('prev-grid').innerHTML = imgs.map((im, i) =>
+    `<div class="preview-item"><img src="${im.previewUrl}"><button class="del-img" onclick="rmImg(${i})">✕</button></div>`
+  ).join('');
+}
+window.rmImg = function(i) {
+  URL.revokeObjectURL(imgs[i].previewUrl);
+  imgs.splice(i, 1);
+  renderPrev();
 };
 
-window.chPH=function(input){
-  const v=parseFloat(input.value);input.className='measure-input';
-  if(!isNaN(v)){
-    if(v>=7.2&&v<=7.8)input.classList.add('ph-ok');
-    else if((v>=7.0&&v<7.2)||(v>7.8&&v<=8.0))input.classList.add('ph-warn');
-    else input.classList.add('ph-bad');
-  }
-};
-window.chCL=function(input){
-  const v=parseFloat(input.value);input.className='measure-input';
-  if(!isNaN(v)){
-    if(v>=1.0&&v<=3.0)input.classList.add('ph-ok');
-    else if(v>0&&v<1.0)input.classList.add('ph-warn');
-    else input.classList.add('ph-bad');
-  }
+// ---- CHIPS ----
+window.selChip = function(group, input, cls) {
+  const prefixMap = { cat:'cc-', res:'rc-', rdcat:'rdc-' };
+  const prefix = prefixMap[group] || (group+'-');
+  document.querySelectorAll(`[id^="${prefix}"]`).forEach(el =>
+    el.classList.remove('sel-blue','sel-green','sel-red','sel-yellow')
+  );
+  input.closest('.chip').classList.add(cls);
+  chipState[group] = input.value;
 };
 
-window.submitReport=async function(){
-  const date=document.getElementById('rep-date').value;
-  const operator=document.getElementById('rep-operator').value;
-  if(!date){toast('თარიღი სავალდებულოა','error');return;}
-  if(!selectedShift){toast('ცვლა სავალდებულოა','error');return;}
-  const poolsData={};
-  for(const pool of POOLS){
-    const s=sl(pool);
-    const cb=document.getElementById('cb-'+s);
-    if(!cb||!cb.checked)continue;
-    const ph=parseFloat(document.getElementById(`ph-${s}`)?.value)||null;
-    const cl=parseFloat(document.getElementById(`cl-${s}`)?.value)||null;
-    const surf=checkState[s]?.surf||null;
-    const filt=checkState[s]?.filt||null;
-    const spla=checkState[s]?.spla||null;
-    const grid=checkState[s]?.grid||null;
-    const chems={};
-    CHEMICALS.forEach((c,i)=>{chems[c]=parseFloat(document.getElementById(`ch-${s}-chem${i}`)?.value)||0;});
-    poolsData[pool]={ph,cl,surf,filt,spla,grid,chems};
-  }
-  try{
-    toast('⏳ ინახება...','info');
-    await addDoc(collection(db,'pool_reports'),{
-      operatorId:currentUser.uid,operatorName:operator,
-      date,shift:selectedShift,pools:poolsData,
-      comment:document.getElementById('rep-comment').value.trim()||null,
-      submittedAt:serverTimestamp()
+// ---- SUBMIT WORK ----
+window.submitWork = async function() {
+  const loc = document.getElementById('w-loc').value.trim();
+  const date = document.getElementById('w-date').value;
+  const time = document.getElementById('w-time').value;
+  const dmg = document.getElementById('w-dmg').value.trim();
+  const comment = document.getElementById('w-comment').value.trim();
+  const cat = chipState.cat;
+  const res = chipState.res;
+  if (!loc) { notify('ობიექტის დასახელება სავალდებულოა', 'error'); return; }
+  if (!date || !time) { notify('თარიღი და დრო სავალდებულოა', 'error'); return; }
+  if (!cat) { notify('კატეგორია სავალდებულოა', 'error'); return; }
+  if (!res) { notify('შედეგი სავალდებულოა', 'error'); return; }
+
+  const snap = await getDoc(doc(db, 'users', currentUser.uid));
+  const userData = snap.data();
+
+  try {
+    // Upload images to Firebase Storage
+    notify('⏳ სურათები იტვირთება...', 'info');
+    const imageUrls = [];
+    for (const img of imgs) {
+      const storageRef = ref(storage, `works/${currentUser.uid}/${Date.now()}_${img.name}`);
+      await uploadBytes(storageRef, img.file);
+      const url = await getDownloadURL(storageRef);
+      imageUrls.push({ name: img.name, url });
+    }
+
+    await addDoc(collection(db, 'works'), {
+      workerId: currentUser.uid,
+      workerName: userData.displayName || userData.name,
+      workerEmail: userData.email,
+      location: loc, category: cat, date, time,
+      damage: dmg, result: res, comment,
+      images: imageUrls,
+      status: userData.role === 'nightwatch' ? 'approved' : 'pending',
+      workerRole: userData.role,
+      submittedAt: serverTimestamp(),
+      checkerComment: userData.role === 'nightwatch' ? 'ღამის მორიგე — ავტო-დამტკიცება' : '',
+      checkedBy: userData.role === 'nightwatch' ? 'სისტემა' : '',
+      checkedAt: userData.role === 'nightwatch' ? serverTimestamp() : null
     });
-    toast('✓ რეპორტი შენახულია!','success');
-    resetForm();
-  }catch(err){toast('შეცდომა: '+err.message,'error');}
+    // reset
+    document.getElementById('w-loc').value = '';
+    document.getElementById('w-dmg').value = '';
+    document.getElementById('w-comment').value = '';
+    document.getElementById('w-date').valueAsDate = new Date();
+    const n = new Date();
+    document.getElementById('w-time').value = n.getHours().toString().padStart(2,'0') + ':' + n.getMinutes().toString().padStart(2,'0');
+    document.querySelectorAll('[id^="cc-"],[id^="rc-"]').forEach(el =>
+      el.classList.remove('sel-blue','sel-green','sel-red','sel-yellow')
+    );
+    chipState.cat = null; chipState.res = null;
+    imgs.forEach(im => URL.revokeObjectURL(im.previewUrl));
+    imgs = []; renderPrev();
+    notify('✓ სამუშაო გაიგზავნა!', 'success');
+  } catch(e) {
+    notify('შეცდომა: ' + e.message, 'error');
+  }
 };
 
-function resetForm(){
-  POOLS.forEach(pool=>{
-    const s=sl(pool);
-    const ph=document.getElementById(`ph-${s}`),cl=document.getElementById(`cl-${s}`);
-    if(ph){ph.value='';ph.className='measure-input';}
-    if(cl){cl.value='';cl.className='measure-input';}
-    ['surf','filt','spla','grid'].forEach(type=>{
-      ['y','n'].forEach(v=>{const btn=document.getElementById(`${type}-${v}-${s}`);if(btn)btn.className='check-btn';});
-    });
-    CHEMICALS.forEach((c,i)=>{const el=document.getElementById(`ch-${s}-chem${i}`);if(el)el.value='';});
-    if(checkState[s])delete checkState[s];
-    const cb=document.getElementById('cb-'+s);
-    if(cb){cb.checked=false;}
-    const card=document.getElementById('pc-'+s);if(card)card.classList.remove('checked');
-    const body=document.getElementById('pb-'+s);if(body)body.classList.remove('enabled');
-    const hint=document.getElementById('hint-'+s);if(hint)hint.style.display='';
-  });
-  selectedShift=null;
-  document.getElementById('sh-morning').classList.remove('active');
-  document.getElementById('sh-evening').classList.remove('active');
-  document.getElementById('rep-date').valueAsDate=new Date();
-  const cm=document.getElementById('rep-comment');if(cm)cm.value='';
+// ---- RENDER WORKS ----
+function renderMyWorks() {
+  const el = document.getElementById('my-list');
+  if (!el) return;
+  const list = myOwnWorks;
+  el.innerHTML = list.length ? list.map(w => wCard(w, currentRole === 'supervisor' ? 'worker' : 'worker')).join('') : empty('📭', 'ჯერ სამუშაოები არ გაქვთ');
 }
 
-function listenMyReports(){
-  const q=query(collection(db,'pool_reports'),orderBy('submittedAt','desc'));
-  onSnapshot(q,snap=>{
-    myReports=snap.docs.map(d=>({id:d.id,...d.data()})).filter(r=>r.operatorId===currentUser.uid);
-    renderMyReports();
-  });
+function renderReview() {
+  const sf = document.getElementById('f-status')?.value || 'all';
+  const rf = document.getElementById('f-res')?.value || 'all';
+  let list = [...allWorks];
+  if (sf !== 'all') list = list.filter(w => w.status === sf);
+  if (rf !== 'all') list = list.filter(w => w.result === rf);
+  const el = document.getElementById('review-list');
+  if (!el) return;
+  el.innerHTML = list.length ? list.map(w => wCard(w, 'supervisor')).join('') : empty('🔍', 'სამუშაოები არ მოიძებნა');
 }
 
-function listenAllReports(){
-  const q=query(collection(db,'pool_reports'),orderBy('submittedAt','desc'));
-  onSnapshot(q,snap=>{
-    allReports=snap.docs.map(d=>({id:d.id,...d.data()}));
-    renderAllReports();renderAdminStats();populateOpSelects();
-  });
+function renderAdminStats() {
+  const w = allWorks;
+  const stats = [
+    {n:w.length, l:'სულ სამუშაო', c:'#58a6ff', st:'all', res:'all'},
+    {n:w.filter(x=>x.status==='pending').length, l:'მოლოდინში', c:'#e3b341', st:'pending', res:'all'},
+    {n:w.filter(x=>x.status==='approved').length, l:'დამტკიცებული', c:'#3fb950', st:'approved', res:'all'},
+    {n:w.filter(x=>x.status==='rejected').length, l:'უარყოფილი', c:'#f85149', st:'rejected', res:'all'},
+    {n:w.filter(x=>x.status==='redirected').length, l:'გადამისამართდა', c:'#58a6ff', st:'redirected', res:'all'},
+    {n:w.filter(x=>x.result==='შესრულდა').length, l:'შესრულდა', c:'#3fb950', st:'all', res:'შესრულდა'},
+    {n:w.filter(x=>x.result==='ვერ შესრულდა').length, l:'ვერ შესრულდა', c:'#f85149', st:'all', res:'ვერ შესრულდა'},
+    {n:w.filter(x=>x.result==='დროებით გაკეთდა').length, l:'დროებით', c:'#e3b341', st:'all', res:'დროებით გაკეთდა'},
+    {n:allUsers.filter(u=>u.role==='worker').length, l:'შემსრულებელი', c:'#a5b4fc', st:null, res:null},
+    {n:allUsers.filter(u=>u.role==='nightwatch').length, l:'ღამის მორიგე', c:'#c4b5fd', st:null, res:null},
+  ];
+  const el = document.getElementById('adm-stats');
+  if (!el) return;
+  el.innerHTML = stats.map(s => {
+    const clickable = s.st !== null;
+    const cursor = clickable ? 'cursor:pointer' : 'cursor:default';
+    const title = clickable ? `title="დააჭირე გასაფილტრად"` : '';
+    return `<div class="stat-card" style="${cursor}" ${title} onclick="${clickable ? `filterBystat('${s.st}','${s.res}')` : ''}">
+      <div class="stat-num" style="color:${s.c}">${s.n}</div>
+      <div class="stat-label">${s.l}</div>
+      ${clickable ? `<div style="font-size:9px;color:var(--text3);margin-top:4px;opacity:.6">დააჭირე</div>` : ''}
+    </div>`;
+  }).join('');
 }
 
-function listenUsers(){
-  onSnapshot(collection(db,'pool_users'),snap=>{
-    allUsers=snap.docs.map(d=>({id:d.id,...d.data()}));
-    renderUsers();populateOpSelects();
-  });
-}
-
-function renderMyReports(){
-  const el=document.getElementById('my-reports-list');if(!el)return;
-  const sf=document.getElementById('mrf-shift')?.value||'all';
-  let list=[...myReports];
-  if(sf!=='all')list=list.filter(r=>r.shift===sf);
-  el.innerHTML=list.length?list.map(r=>reportCard(r)).join(''):emptyState('📭','რეპორტები არ მოიძებნა');
-}
-window.renderMyReports=renderMyReports;
-
-function renderAllReports(){
-  const el=document.getElementById('all-reports-list');if(!el)return;
-  const sf=document.getElementById('arf-shift')?.value||'all';
-  const op=document.getElementById('arf-op')?.value||'all';
-  const fr=document.getElementById('arf-from')?.value;
-  const to=document.getElementById('arf-to')?.value;
-  let list=[...allReports];
-  if(sf!=='all')list=list.filter(r=>r.shift===sf);
-  if(op!=='all')list=list.filter(r=>r.operatorId===op);
-  if(fr)list=list.filter(r=>r.date>=fr);
-  if(to)list=list.filter(r=>r.date<=to);
-  el.innerHTML=list.length?list.map(r=>reportCard(r)).join(''):emptyState('📭','რეპორტები არ მოიძებნა');
-}
-window.renderAllReports=renderAllReports;
-
-function reportCard(r){
-  const shiftLabel=r.shift==='morning'?'🌅 დილა':'🌙 საღამო';
-  const shiftClass=r.shift==='morning'?'shift-morning':'shift-evening';
-  const pools=r.pools||{};
-  const issues=Object.values(pools).filter(p=>
-    (p.ph&&(p.ph<7.2||p.ph>7.8))||(p.cl&&(p.cl<1.0||p.cl>3.0))||p.surf==='no'||p.filt==='no'||p.spla==='no'||p.grid==='no'
-  ).length;
-  return `<div class="report-card">
-    <div class="report-header" onclick="toggleReport('${r.id}')">
-      <div class="report-meta">
-        <span class="report-date">📅 ${r.date||''}</span>
-        <span class="shift-tag ${shiftClass}">${shiftLabel}</span>
-        <span class="report-operator">👤 ${e(r.operatorName||'')}</span>
-      </div>
-      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-        <span class="summary-badge" style="background:rgba(0,119,182,.1);color:var(--accent)">🏊 ${Object.keys(pools).length} აუზი</span>
-        ${issues>0?`<span class="summary-badge" style="background:var(--bad-dim);color:var(--bad)">⚠️ ${issues} პრობლემა</span>`:`<span class="summary-badge" style="background:var(--good-dim);color:var(--good)">✅ ნორმა</span>`}
-        <span style="color:var(--text3);font-size:16px">▼</span>
-      </div>
-    </div>
-    <div class="report-body" id="rb-${r.id}">
-      ${POOLS.map(pool=>{
-        const pd=pools[pool];if(!pd)return'';
-        const phOk=pd.ph!=null?(pd.ph>=7.2&&pd.ph<=7.8?true:false):null;
-        const clOk=pd.cl!=null?(pd.cl>=1.0&&pd.cl<=3.0?true:false):null;
-        return`<div class="pool-row">
-          <div class="pool-row-name">🏊 ${e(pool)}</div>
-          <div class="pool-row-data">
-            <div class="data-item"><div class="data-key">PH</div><div class="data-val" style="color:${phOk===true?'var(--good)':phOk===false?'var(--bad)':'var(--text2)'}">
-              ${pd.ph??'—'}${phOk===true?' ✅':phOk===false?' ⚠️':''}
-            </div></div>
-            <div class="data-item"><div class="data-key">ქლორი</div><div class="data-val" style="color:${clOk===true?'var(--good)':clOk===false?'var(--bad)':'var(--text2)'}">
-              ${pd.cl??'—'}${clOk===true?' ✅':clOk===false?' ⚠️':''}
-            </div></div>
-            <div class="data-item"><div class="data-key">ზედაპირი</div><div class="data-val">${pd.surf==='yes'?'✅ გარეცხ.':pd.surf==='no'?'❌ არა':'—'}</div></div>
-            <div class="data-item"><div class="data-key">ფილტრი</div><div class="data-val">${pd.filt==='yes'?'✅ გარეცხ.':pd.filt==='no'?'❌ არა':'—'}</div></div>
-            <div class="data-item"><div class="data-key">გაჩოთქვა</div><div class="data-val">${pd.spla==='yes'?'✅ შესრ.':pd.spla==='no'?'❌ არა':'—'}</div></div>
-            <div class="data-item"><div class="data-key">ცხაური</div><div class="data-val">${pd.grid==='yes'?'✅ გარეცხ.':pd.grid==='no'?'❌ არა':'—'}</div></div>
-            ${CHEMICALS.map(c=>`<div class="data-item"><div class="data-key">${e(c.split(' ')[0])}</div><div class="data-val">${pd.chems?.[c]??0} კგ</div></div>`).join('')}
-          </div>
-        </div>`;
-      }).join('')}
-      ${r.comment?`<div style="margin-top:12px;padding:12px 14px;background:rgba(0,119,182,.05);border-radius:10px;border-left:3px solid var(--accent)"><div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">💬 კომენტარი</div><div style="font-size:13px;color:var(--text);line-height:1.6">${e(r.comment)}</div></div>`:''}
-    </div>
-  </div>`;
-}
-
-window.toggleReport=function(id){
-  document.getElementById('rb-'+id)?.classList.toggle('open');
+window.filterBystat = function(st, res) {
+  // Set filter dropdowns
+  const stSel = document.getElementById('af-st');
+  const resSel = document.getElementById('af-res');
+  if (stSel) stSel.value = st;
+  if (resSel) resSel.value = res;
+  // Re-render table
+  renderAdminWorks();
+  // Scroll down to table
+  document.querySelector('#sec-dashboard .card')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  // Visual feedback — highlight active stat card
+  document.querySelectorAll('#adm-stats .stat-card').forEach(c => c.style.outline = '');
+  event.currentTarget.style.outline = '2px solid var(--accent2)';
 };
 
-function renderAdminStats(){
-  const el=document.getElementById('adm-stats');if(!el)return;
-  const today=new Date().toISOString().slice(0,10);
-  const todayReps=allReports.filter(r=>r.date===today);
-  const issues=allReports.reduce((acc,r)=>acc+Object.values(r.pools||{}).filter(p=>
-    (p.ph&&(p.ph<7.2||p.ph>7.8))||(p.cl&&(p.cl<1.0||p.cl>3.0))||p.surf==='no'||p.filt==='no'||p.spla==='no'||p.grid==='no'
-  ).length,0);
-  el.innerHTML=[
-    {n:allReports.length,l:'სულ რეპორტი',c:'var(--accent)'},
-    {n:todayReps.length,l:'დღეს',c:'var(--good)'},
-    {n:todayReps.filter(r=>r.shift==='morning').length,l:'🌅 დილა',c:'#d97706'},
-    {n:todayReps.filter(r=>r.shift==='evening').length,l:'🌙 საღამო',c:'#7c3aed'},
-    {n:allUsers.filter(u=>u.role==='operator').length,l:'ოპერატორი',c:'var(--accent2)'},
-    {n:issues,l:'⚠️ პრობლემა',c:'var(--bad)'},
-  ].map(s=>`<div class="stat-card"><div class="stat-num" style="color:${s.c}">${s.n}</div><div class="stat-label">${s.l}</div></div>`).join('');
-}
+function renderAdminWorks() {
+  const sf = document.getElementById('af-st')?.value || 'all';
+  const rf = document.getElementById('af-res')?.value || 'all';
+  const cf = document.getElementById('af-cat')?.value || 'all';
+  const wf = document.getElementById('af-wk')?.value || 'all';
+  let list = [...allWorks];
+  if (sf !== 'all') list = list.filter(w => w.status === sf);
+  if (rf !== 'all') list = list.filter(w => w.result === rf);
+  if (cf !== 'all') list = list.filter(w => w.category === cf);
+  if (wf !== 'all') list = list.filter(w => w.workerId === wf);
+  const tb = document.getElementById('adm-tbody');
+  if (!tb) return;
+  if (!list.length) { tb.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--text3);padding:30px">სამუშაოები არ მოიძებნა</td></tr>'; return; }
+  // Show scroll hint on mobile
+  const hint = document.getElementById('scroll-hint');
+  if (hint && window.innerWidth < 640) hint.style.display = 'block';
+  // Reset select-all checkbox
+  const saCb = document.getElementById('select-all-cb');
+  if (saCb) saCb.checked = false;
+  document.getElementById('batch-bar').style.display = 'none';
 
-function renderUsers(){
-  const tb=document.getElementById('users-tbody');if(!tb)return;
-  tb.innerHTML=allUsers.map(u=>`<tr>
-    <td><strong>${e(u.name||'')}</strong></td>
-    <td style="font-size:12px;color:var(--text2)">${e(u.email||'')}</td>
-    <td>${u.role==='admin'?'<span style="background:rgba(0,119,182,.1);color:var(--accent);padding:3px 10px;border-radius:6px;font-size:11px;font-weight:800">ადმინი</span>'
-      :`<select onchange="setRole('${u.id}',this.value)" style="width:auto;font-size:12px;padding:5px 8px;border-radius:8px">
-          <option value="pending" ${u.role==='pending'?'selected':''}>⏳ მოლოდინში</option>
-          <option value="operator" ${u.role==='operator'?'selected':''}>🏊 ოპერატორი</option>
-        </select>`}
+  tb.innerHTML = list.map(w => `<tr id="tr-${w.id}">
+    <td style="padding:8px 8px">
+      <input type="checkbox" class="work-cb" data-id="${w.id}" onchange="onCbChange()"
+        style="width:16px;height:16px;cursor:pointer;accent-color:var(--accent2)">
     </td>
-    <td style="font-size:12px;color:var(--text3)">${u.createdAt?.toDate?u.createdAt.toDate().toISOString().slice(0,10):''}</td>
-    <td>${u.role!=='admin'?`<button class="btn btn-danger btn-sm" onclick="delUser('${u.id}')">წაშლა</button>`:'—'}</td>
+    <td><strong style="font-size:13px">${e(w.location||'')}</strong></td>
+    <td style="font-size:12px">${e(w.category||'')}</td>
+    <td style="font-size:13px">${e(w.workerName||'')}</td>
+    <td>${rBadge(w.result)}</td>
+    <td>${sBadge(w.status)}</td>
+    <td style="font-size:12px;color:var(--text2);white-space:nowrap">${w.date||''}<br><span style="color:var(--text3)">${w.time||''}</span></td>
+    <td style="white-space:nowrap;min-width:100px">
+      <button class="btn btn-ghost btn-sm" onclick="openModal('${w.id}','admin')" title="დეტალები" style="padding:5px 8px">👁</button>
+      <button class="btn btn-ghost btn-sm" onclick="openEditWork('${w.id}')" title="რედაქტირება" style="padding:5px 8px;margin-left:3px">✏️</button>
+      <button class="btn btn-sm" onclick="admDeleteWork('${w.id}')" title="წაშლა" style="background:rgba(220,38,38,.1);color:#dc2626;border:1px solid rgba(220,38,38,.2);margin-left:3px;padding:5px 8px">🗑</button>
+    </td>
   </tr>`).join('');
 }
 
-window.setRole=async function(uid,role){
-  await updateDoc(doc(db,'pool_users',uid),{role});toast('✓ როლი მიენიჭა','success');
-};
-window.delUser=async function(id){
-  if(!confirm('წაშლა?'))return;
-  await deleteDoc(doc(db,'pool_users',id));toast('წაიშალა','info');
-};
+function renderUsers() {
+  const tb = document.getElementById('users-tbody');
+  if (!tb) return;
+  tb.innerHTML = allUsers.map(u => {
+    const displayName = u.displayName || u.name || '';
+    return `<tr>
+    <td>
+      <div style="font-size:13px;font-weight:600;color:var(--text2);margin-bottom:4px">${e(u.name||'')} <span style="font-weight:400;font-size:11px">(სისტემური)</span></div>
+      <div style="display:flex;align-items:center;gap:6px">
+        <input type="text" id="dn-${u.id}" value="${e(displayName)}" placeholder="სახელი სიაში..." style="font-size:12px;padding:4px 8px;width:160px"
+          onkeydown="if(event.key==='Enter')saveDisplayName('${u.id}')">
+        <button class="btn btn-ghost btn-sm" onclick="saveDisplayName('${u.id}')" style="font-size:11px;padding:4px 8px">💾</button>
+      </div>
+    </td>
+    <td style="font-size:12px;color:var(--text2)">${e(u.email||'')}</td>
+    <td>${u.role === 'admin'
+      ? '<span class="role-badge role-admin">ადმინი</span>'
+      : `<select onchange="setRole('${u.id}',this.value)" style="width:auto;font-size:12px;padding:4px 8px">
+          <option value="pending" ${u.role==='pending'?'selected':''}>⏳ მოლოდინში</option>
+          <option value="worker" ${u.role==='worker'?'selected':''}>👷 შემსრულებელი</option>
+          <option value="supervisor" ${u.role==='supervisor'?'selected':''}>🔍 სუპერვაიზერი</option>
+          <option value="nightwatch" ${u.role==='nightwatch'?'selected':''}>🌙 ღამის მორიგე</option>
+        </select>`}
+    </td>
+    <td style="font-size:12px;color:var(--text3)">${u.createdAt?.toDate ? u.createdAt.toDate().toISOString().slice(0,10) : ''}</td>
+    <td>${u.role !== 'admin' ? `<button class="btn btn-danger btn-sm" onclick="delUser('${u.id}')">წაშლა</button>` : '—'}</td>
+  </tr>`;
+  }).join('');
+}
 
-function populateOpSelects(){
-  const ops=allUsers.filter(u=>u.role==='operator'||u.role==='admin');
-  ['arf-op','ex-op'].forEach(id=>{
-    const sel=document.getElementById(id);if(!sel)return;
-    const cur=sel.value;
-    sel.innerHTML='<option value="all">ყველა ოპერატორი</option>'+ops.map(u=>`<option value="${u.id}">${e(u.name)}</option>`).join('');
-    sel.value=cur;
+function populateWorkerSelects() {
+  const workers = allUsers.filter(u => u.role === 'worker' || u.role === 'nightwatch');
+  ['af-wk','ex-wk'].forEach(id => {
+    const sel = document.getElementById(id);
+    if (!sel) return;
+    sel.innerHTML = '<option value="all">ყველა შემსრულებელი</option>';
+    workers.forEach(u => sel.innerHTML += `<option value="${u.id}">${e(u.displayName||u.name)}</option>`);
   });
 }
 
-window.exportExcel=function(){
-  const op=document.getElementById('ex-op')?.value||'all';
-  const sf=document.getElementById('ex-shift')?.value||'all';
-  const fr=document.getElementById('ex-from')?.value;
-  const to=document.getElementById('ex-to')?.value;
-  let list=[...allReports];
-  if(op!=='all')list=list.filter(r=>r.operatorId===op);
-  if(sf!=='all')list=list.filter(r=>r.shift===sf);
-  if(fr)list=list.filter(r=>r.date>=fr);
-  if(to)list=list.filter(r=>r.date<=to);
-  if(!list.length){toast('ფილტრი ცარიელია','error');return;}
-  const hdr=['თარიღი','ცვლა','ოპერატორი','აუზი','PH','ქლორი (მგ/ლ)','ზედაპირი','ფილტრი','გაჩოთქვა','ცხაურები',...CHEMICALS,'კომენტარი'];
-  const rows=[];
-  list.forEach(r=>{
-    const shift=r.shift==='morning'?'დილა':'საღამო';
-    POOLS.forEach(pool=>{
-      const pd=r.pools?.[pool];if(!pd)return;
-      rows.push([r.date,shift,r.operatorName||'',pool,pd.ph??'',pd.cl??'',
-        pd.surf==='yes'?'გარეცხ.':pd.surf==='no'?'არა':'—',
-        pd.filt==='yes'?'გარეცხ.':pd.filt==='no'?'არა':'—',
-        pd.spla==='yes'?'შესრ.':pd.spla==='no'?'არა':'—',
-        pd.grid==='yes'?'გარეცხ.':pd.grid==='no'?'არა':'—',
-        ...CHEMICALS.map(c=>pd.chems?.[c]??0),r.comment||'']);
-    });
-  });
-  const csv=[hdr,...rows].map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
-  const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');a.href=url;a.download=`auzebis_reporti_${new Date().toISOString().slice(0,10)}.csv`;a.click();
-  URL.revokeObjectURL(url);toast('✓ ჩამოიტვირთა!','success');
+// ---- ROLE CHANGE ----
+window.setRole = async function(uid, role) {
+  try {
+    await updateDoc(doc(db, 'users', uid), { role });
+    notify('✓ როლი მიენიჭა', 'success');
+  } catch(e) { notify('შეცდომა: ' + e.message, 'error'); }
 };
 
-function sl(s){return s.replace(/[^\w\u10D0-\u10FF]/g,'_');}
-function e(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
-function emptyState(icon,msg){return`<div style="text-align:center;padding:60px 20px;color:var(--text3)"><div style="font-size:48px;margin-bottom:12px;opacity:.4">${icon}</div><p style="font-size:14px;font-weight:600">${msg}</p></div>`;}
-function toast(msg,type='info'){const el=document.getElementById('toast');el.textContent=msg;el.className=`show ${type}`;clearTimeout(el._t);el._t=setTimeout(()=>el.className=type,3200);}
+window.saveDisplayName = async function(uid) {
+  const val = document.getElementById('dn-' + uid)?.value.trim();
+  if (!val) { notify('სახელი ცარიელია', 'error'); return; }
+  try {
+    await updateDoc(doc(db, 'users', uid), { displayName: val });
+    notify('✓ სახელი შეინახა: ' + val, 'success');
+  } catch(err) { notify('შეცდომა: ' + err.message, 'error'); }
+};
 
-// ======= ავტომატური დღიური მეილი =======
-const EMAIL_SERVICE_ID='service_uc9t7c5';
-const EMAIL_TEMPLATE_ID='template_c80oqpl';
-const EMAIL_PUBLIC_KEY='gMuchMs4-Nz5YFLch';
-const REPORT_EMAIL='a.gaiparashvili@lopotaresort.com';
-const SEND_HOURS=[10,19];
+window.delUser = async function(id) {
+  if (!confirm('მომხმარებლის წაშლა?')) return;
+  try {
+    await deleteDoc(doc(db, 'users', id));
+    notify('წაიშალა', 'info');
+  } catch(err) { notify('შეცდომა: ' + err.message, 'error'); }
+};
 
-emailjs.init(EMAIL_PUBLIC_KEY);
+// ---- WORK CARD ----
+// Avatar color palette — consistent per name
+function avatarColor(name) {
+  const colors = [
+    ['#6366f1','#4f46e5'],['#10b981','#059669'],['#f59e0b','#d97706'],
+    ['#f43f5e','#e11d48'],['#38bdf8','#0284c7'],['#a78bfa','#7c3aed'],
+    ['#fb923c','#ea580c'],['#34d399','#059669'],['#f472b6','#db2777'],
+    ['#4ade80','#16a34a'],['#60a5fa','#2563eb'],['#fbbf24','#b45309'],
+  ];
+  let hash = 0;
+  for (let i = 0; i < (name||'').length; i++) hash = (hash * 31 + name.charCodeAt(i)) & 0xffff;
+  const [c1, c2] = colors[hash % colors.length];
+  return `background:linear-gradient(135deg,${c1},${c2})`;
+}
+function avatarInitials(name) {
+  const parts = (name||'').trim().split(' ');
+  if (parts.length >= 2) return (parts[0][0]||'') + (parts[1][0]||'');
+  return (name||'').slice(0,2).toUpperCase();
+}
 
-function buildDailyHTMLTable(reports){
-  const today=new Date().toISOString().slice(0,10);
-  const todayReps=reports.filter(r=>r.date===today);
-  if(!todayReps.length)return'<p>დღეს რეპორტი არ არის.</p>';
-  let html=`<h2 style="font-family:sans-serif;color:#0077b6">🏊 აუზების დღიური რეპორტი — ${today}</h2>`;
-  for(const r of todayReps){
-    const shift=r.shift==='morning'?'🌅 დილა':'🌙 საღამო';
-    html+=`<h3 style="font-family:sans-serif;margin-top:20px">${shift} | ${e(r.operatorName||'')}</h3>`;
-    html+=`<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;font-family:sans-serif;font-size:13px;min-width:600px">
-      <thead style="background:#0077b6;color:white">
-        <tr><th>აუზი</th><th>PH</th><th>ქლ.(მგ/ლ)</th><th>ზედაპირი</th><th>ფილტრი</th><th>გაჩოთქვა</th><th>ცხაური</th>${CHEMICALS.map(c=>`<th>${e(c)}</th>`).join('')}<th>კომენტარი</th></tr>
-      </thead><tbody>`;
-    for(const[pool,pd]of Object.entries(r.pools||{})){
-      const phColor=pd.ph&&(pd.ph<7.2||pd.ph>7.8)?'#fecaca':'';
-      const clColor=pd.cl&&(pd.cl<1.0||pd.cl>3.0)?'#fecaca':'';
-      html+=`<tr>
-        <td style="font-weight:600">${e(pool)}</td>
-        <td style="background:${phColor}">${pd.ph??'—'}</td>
-        <td style="background:${clColor}">${pd.cl??'—'}</td>
-        <td>${pd.surf==='yes'?'✅':pd.surf==='no'?'❌':'—'}</td>
-        <td>${pd.filt==='yes'?'✅':pd.filt==='no'?'❌':'—'}</td>
-        <td>${pd.spla==='yes'?'✅':pd.spla==='no'?'❌':'—'}</td>
-        <td>${pd.grid==='yes'?'✅':pd.grid==='no'?'❌':'—'}</td>
-        ${CHEMICALS.map(c=>`<td>${pd.chems?.[c]??0}</td>`).join('')}
-        <td>${e(r.comment||'')}</td>
-      </tr>`;
+window.wCard = function(w, viewAs) {
+  const stripeClass = w.result === 'შესრულდა' ? 'wcard-stripe-green'
+    : w.result === 'ვერ შესრულდა' ? 'wcard-stripe-red'
+    : w.result === 'დროებით გაკეთდა' ? 'wcard-stripe-yellow'
+    : 'wcard-stripe-blue';
+
+  const workerName = w.workerName || '';
+  const initials = avatarInitials(workerName);
+  const avStyle = avatarColor(workerName);
+
+  return `<div class="wcard">
+    <div class="wcard-stripe ${stripeClass}"></div>
+    <div class="wcard-body">
+      <div class="wcard-top">
+        <div class="wcard-info">
+          <div class="wcard-location">${e(w.location||'')}</div>
+          <div class="wcard-row">
+            <div class="wcard-worker">
+              <div class="wcard-avatar" style="${avStyle}">${initials}</div>
+              <span>${e(workerName)}</span>
+            </div>
+            <span class="wcard-cat">${e(w.category||'')}</span>
+            <span class="wcard-date">${w.date||''}${w.time ? ' · '+w.time : ''}</span>
+          </div>
+        </div>
+        <div class="wcard-badges">${rBadge(w.result)} ${sBadge(w.status)}</div>
+      </div>
+      ${w.damage ? `<div class="wcard-detail dmg">⚠️ ${e(w.damage)}</div>` : ''}
+      ${w.comment ? `<div class="wcard-detail">💬 ${e(w.comment)}</div>` : ''}
+      ${w.checkerComment ? `<div class="wcard-detail" style="border-left-color:var(--accent2);color:var(--text2)">🔍 ${e(w.checkerComment)}</div>` : ''}
+    </div>
+    <div class="wcard-footer">
+      <button class="btn btn-ghost btn-sm" onclick="openModal('${w.id}','${viewAs}')">👁 დეტალები</button>
+      ${viewAs==='supervisor'&&w.status==='pending' ? `
+        <button class="btn btn-sm" style="background:rgba(16,185,129,.12);color:#34d399;border:1px solid rgba(16,185,129,.22);font-weight:700" onclick="quickAct('${w.id}','approved')">✓ დამტკიცება</button>
+        <button class="btn btn-sm" style="background:rgba(244,63,94,.12);color:#fb7185;border:1px solid rgba(244,63,94,.22);font-weight:700" onclick="openReject('${w.id}')">✕ უარყოფა</button>
+      ` : ''}
+    </div>
+  </div>`;
+};
+
+// ---- MODAL ----
+window.openModal = function(wid, viewAs) {
+  const w = allWorks.find(x => x.id === wid);
+  if (!w) return;
+  document.getElementById('m-title').textContent = w.location || w.category || 'სამუშაო';
+  let html = `
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px">${rBadge(w.result)} ${sBadge(w.status)}</div>
+    <div class="detail-row"><span class="detail-label">📍 ობიექტი</span><span>${e(w.location||'—')}</span></div>
+    <div class="detail-row"><span class="detail-label">📋 კატეგორია</span><span>${e(w.category||'—')}</span></div>
+    <div class="detail-row"><span class="detail-label">📅 თარიღი / დრო</span><span>${w.date||''}${w.time?' · '+w.time:''}</span></div>
+    <div class="detail-row"><span class="detail-label">👤 შემსრულებელი</span><span>${e(w.workerName||'')}</span></div>
+    ${w.damage ? `<div class="detail-row"><span class="detail-label">⚠️ დაზიანება</span><span>${e(w.damage)}</span></div>` : ''}
+    ${w.comment ? `<div class="detail-row"><span class="detail-label">💬 კომენტარი</span><span>${e(w.comment)}</span></div>` : ''}
+    ${w.assignedTo?.length ? `<div class="detail-row"><span class="detail-label">👤 გაგზავნილია</span><span>${w.assignedTo.map(uid=>{ const u=allUsers.find(x=>x.id===uid); return u?e(u.name):uid; }).join(', ')}</span></div>` : ''}
+    ${w.redirectedTo?.length ? `
+      <div style="height:1px;background:var(--border);margin:12px 0"></div>
+      <div class="detail-row"><span class="detail-label">📨 გადამისამართდა</span><span>${w.redirectedTo.map(n=>e(n)).join(', ')}</span></div>
+      ${w.redirectLocation ? `<div class="detail-row"><span class="detail-label">📍 ობიექტი (გადამ.)</span><span>${e(w.redirectLocation)}</span></div>` : ''}
+      ${w.redirectNote ? `<div class="detail-row"><span class="detail-label">💬 შენიშვნა</span><span>${e(w.redirectNote)}</span></div>` : ''}
+      <div class="detail-row"><span class="detail-label">👤 გადაამისამართა</span><span>${e(w.redirectedBy||'')}</span></div>
+    ` : ''}
+  `;
+  if (w.images?.length) html += `<div class="preview-grid" style="margin-top:12px">${w.images.map(im => `<div class="preview-item"><img src="${im.url || im.data || ''}" loading="lazy"></div>`).join('')}</div>`;
+  if (w.checkerComment) html += `<div class="comment-block" style="margin-top:12px">🔍 ${e(w.checkerComment)}</div>`;
+  if (w.checkedBy) html += `<p class="text-sm" style="margin-top:8px">შეამოწმა: ${e(w.checkedBy)}</p>`;
+  document.getElementById('m-body').innerHTML = html;
+
+  let footer = `<button class="btn btn-ghost btn-sm" onclick="closeModal()">დახურვა</button>`;
+  if (viewAs === 'supervisor' && w.status === 'pending') {
+    footer = `<button class="btn btn-ghost btn-sm" onclick="closeModal()">გაუქმება</button><span style="flex:1"></span>
+      <button class="btn btn-danger btn-sm" onclick="closeModal();openReject('${wid}')">✕ უარყოფა</button>
+      <button class="btn btn-primary btn-sm" onclick="quickAct('${wid}','approved');closeModal()">✓ დამტკიცება</button>`;
+  }
+  if (viewAs === 'admin') {
+    footer = `<button class="btn btn-ghost btn-sm" onclick="closeModal()">დახურვა</button><span style="flex:1"></span>
+      <button class="btn btn-sm" onclick="closeModal();openEditWork('${wid}')" style="background:rgba(99,102,241,.12);color:#a5b4fc;border:1px solid rgba(99,102,241,.25)">✏️ რედაქტირება</button>
+      <button class="btn btn-sm" onclick="closeModal();admDeleteWork('${wid}')" style="background:rgba(244,63,94,.1);color:#fb7185;border:1px solid rgba(244,63,94,.2)">🗑 წაშლა</button>
+      ${w.status!=='approved' ? `<button class="btn btn-primary btn-sm" onclick="admAct('${wid}','approved')">✓ დამტკიცება</button>` : ''}
+      ${w.status!=='rejected' ? `<button class="btn btn-danger btn-sm" onclick="admAct('${wid}','rejected')">✕ უარყოფა</button>` : ''}`;
+  }
+  document.getElementById('m-footer').innerHTML = footer;
+  document.getElementById('modal-ov').classList.add('open');
+};
+
+window.closeModal = function() { document.getElementById('modal-ov').classList.remove('open'); };
+document.getElementById('modal-ov').addEventListener('click', ev => { if (ev.target === ev.currentTarget) window.closeModal(); });
+
+let _rid = null;
+window.openReject = function(wid) {
+  _rid = wid;
+  const w = allWorks.find(x => x.id === wid);
+  document.getElementById('m-title').textContent = 'უარყოფის მიზეზი';
+  document.getElementById('m-body').innerHTML = `
+    <p style="color:var(--text2);margin-bottom:12px;font-size:13px">ობიექტი: <strong>${e(w.location||w.category||'')}</strong></p>
+    <div class="form-group"><label>კომენტარი</label><textarea id="rej-txt" placeholder="მიუთითეთ მიზეზი..."></textarea></div>`;
+  document.getElementById('m-footer').innerHTML = `
+    <button class="btn btn-ghost btn-sm" onclick="closeModal()">გაუქმება</button>
+    <button class="btn btn-danger btn-sm" onclick="confirmReject()">✕ უარყოფა</button>`;
+  document.getElementById('modal-ov').classList.add('open');
+};
+
+window.confirmReject = async function() {
+  const comment = document.getElementById('rej-txt').value.trim();
+  const snap = await getDoc(doc(db, 'users', currentUser.uid));
+  const uname = snap.data()?.name || '';
+  await updateDoc(doc(db, 'works', _rid), {
+    status: 'rejected', checkerComment: comment,
+    checkedBy: uname, checkedAt: serverTimestamp()
+  });
+  window.closeModal();
+  notify('სამუშაო უარყოფილია', 'error');
+};
+
+window.quickAct = async function(wid, status) {
+  const snap = await getDoc(doc(db, 'users', currentUser.uid));
+  const uname = snap.data()?.name || '';
+  await updateDoc(doc(db, 'works', wid), {
+    status, checkedBy: uname, checkedAt: serverTimestamp()
+  });
+  notify(status === 'approved' ? '✓ დამტკიცდა!' : 'უარყოფილია', status === 'approved' ? 'success' : 'error');
+};
+
+window.admAct = async function(wid, status) {
+  const snap = await getDoc(doc(db, 'users', currentUser.uid));
+  const uname = snap.data()?.name || '';
+  await updateDoc(doc(db, 'works', wid), {
+    status, checkedBy: uname, checkedAt: serverTimestamp()
+  });
+  window.closeModal();
+  notify(status === 'approved' ? '✓ დამტკიცდა!' : 'უარყოფილია', status === 'approved' ? 'success' : 'error');
+};
+
+// ---- BATCH SELECTION ----
+window.toggleSelectAll = function(cb) {
+  document.querySelectorAll('.work-cb').forEach(el => el.checked = cb.checked);
+  onCbChange();
+};
+
+window.onCbChange = function() {
+  const checked = [...document.querySelectorAll('.work-cb:checked')];
+  const bar = document.getElementById('batch-bar');
+  const cnt = document.getElementById('batch-count');
+  const allCb = document.getElementById('select-all-cb');
+  const total = document.querySelectorAll('.work-cb').length;
+  if (checked.length > 0) {
+    bar.style.display = 'flex';
+    cnt.textContent = `${checked.length} მონიშნული`;
+  } else {
+    bar.style.display = 'none';
+  }
+  if (allCb) allCb.checked = checked.length === total && total > 0;
+};
+
+window.clearSelection = function() {
+  document.querySelectorAll('.work-cb').forEach(el => el.checked = false);
+  const allCb = document.getElementById('select-all-cb');
+  if (allCb) allCb.checked = false;
+  document.getElementById('batch-bar').style.display = 'none';
+};
+
+window.batchAct = async function(status) {
+  const checked = [...document.querySelectorAll('.work-cb:checked')];
+  if (!checked.length) return;
+  const label = status === 'approved' ? 'დამტკიცება' : 'უარყოფა';
+  if (!confirm(`${checked.length} სამუშაოს ${label}?`)) return;
+
+  const snap = await getDoc(doc(db, 'users', currentUser.uid));
+  const uname = snap.data()?.name || '';
+
+  notify(`⏳ ${checked.length} სამუშაო მუშავდება...`, 'info');
+
+  let done = 0;
+  for (const cb of checked) {
+    const wid = cb.dataset.id;
+    try {
+      await updateDoc(doc(db, 'works', wid), {
+        status, checkedBy: uname, checkedAt: serverTimestamp()
+      });
+      done++;
+      // Highlight row
+      const tr = document.getElementById('tr-' + wid);
+      if (tr) tr.style.background = status === 'approved' ? 'rgba(5,150,105,.06)' : 'rgba(220,38,38,.06)';
+    } catch(e) { console.error('batch error', wid, e); }
+  }
+
+  clearSelection();
+  notify(`✅ ${done} სამუშაო ${status === 'approved' ? 'დამტკიცდა' : 'უარყოფილია'}`, 'success');
+};
+
+window.admDeleteWork = async function(wid) {
+  if (!confirm('ნამდვილად წაიშალოს ეს სამუშაო? ეს მოქმედება შეუქცევადია.')) return;
+  try {
+    await deleteDoc(doc(db, 'works', wid));
+    notify('✓ სამუშაო წაიშალა', 'info');
+  } catch(err) { notify('შეცდომა: ' + err.message, 'error'); }
+};
+
+window.openEditWork = function(wid) {
+  const w = allWorks.find(x => x.id === wid);
+  if (!w) return;
+  document.getElementById('m-title').textContent = '✏️ რედაქტირება — ' + e(w.location||'');
+  document.getElementById('m-body').innerHTML = `
+    <div class="form-group">
+      <label>ობიექტის დასახელება</label>
+      <input type="text" id="ed-loc" value="${e(w.location||'')}">
+    </div>
+    <div class="form-group">
+      <label>კატეგორია</label>
+      <select id="ed-cat">
+        <option ${w.category==='რესტორნები'?'selected':''}>რესტორნები</option>
+        <option ${w.category==='გარეტერიტორია'?'selected':''}>გარეტერიტორია</option>
+        <option ${w.category==='ოთახები'?'selected':''}>ოთახები</option>
+        <option ${w.category==='სხვა'?'selected':''}>სხვა</option>
+      </select>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="form-group"><label>თარიღი</label><input type="date" id="ed-date" value="${e(w.date||'')}"></div>
+      <div class="form-group"><label>დრო</label><input type="time" id="ed-time" value="${e(w.time||'')}"></div>
+    </div>
+    <div class="form-group">
+      <label>შედეგი</label>
+      <select id="ed-res">
+        <option ${w.result==='შესრულდა'?'selected':''}>შესრულდა</option>
+        <option ${w.result==='ვერ შესრულდა'?'selected':''}>ვერ შესრულდა</option>
+        <option ${w.result==='დროებით გაკეთდა'?'selected':''}>დროებით გაკეთდა</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>სტატუსი</label>
+      <select id="ed-status">
+        <option value="pending" ${w.status==='pending'?'selected':''}>⏳ მოლოდინში</option>
+        <option value="approved" ${w.status==='approved'?'selected':''}>✓ დამტკიცებული</option>
+        <option value="rejected" ${w.status==='rejected'?'selected':''}>✕ უარყოფილი</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>⚠️ დაზიანება</label>
+      <textarea id="ed-dmg" style="min-height:70px">${e(w.damage||'')}</textarea>
+    </div>
+    <div class="form-group">
+      <label>💬 კომენტარი</label>
+      <textarea id="ed-comment" style="min-height:70px">${e(w.comment||'')}</textarea>
+    </div>
+  `;
+  document.getElementById('m-footer').innerHTML = `
+    <button class="btn btn-ghost btn-sm" onclick="closeModal()">გაუქმება</button>
+    <span style="flex:1"></span>
+    <button class="btn btn-primary btn-sm" onclick="saveEditWork('${wid}')">💾 შენახვა</button>
+  `;
+  document.getElementById('modal-ov').classList.add('open');
+};
+
+window.saveEditWork = async function(wid) {
+  const loc = document.getElementById('ed-loc').value.trim();
+  const cat = document.getElementById('ed-cat').value;
+  const date = document.getElementById('ed-date').value;
+  const time = document.getElementById('ed-time').value;
+  const res = document.getElementById('ed-res').value;
+  const status = document.getElementById('ed-status').value;
+  const dmg = document.getElementById('ed-dmg').value.trim();
+  const comment = document.getElementById('ed-comment').value.trim();
+  if (!loc) { notify('ობიექტი სავალდებულოა', 'error'); return; }
+  try {
+    await updateDoc(doc(db, 'works', wid), {
+      location: loc, category: cat, date, time,
+      result: res, status, damage: dmg, comment
+    });
+    window.closeModal();
+    notify('✓ ცვლილებები შენახულია', 'success');
+  } catch(err) { notify('შეცდომა: ' + err.message, 'error'); }
+};
+
+// ---- EMAIL REPORT ----
+// EmailJS config — emailjs.com-ზე უფასო account შექმენი
+// და შეცვალე ეს 3 მნიშვნელობა:
+const EMAILJS_PUBLIC_KEY  = 'gMuchMs4-Nz5YFLch';
+const EMAILJS_SERVICE_ID  = 'service_ctzmx7h';
+const EMAILJS_TEMPLATE_ID = 'template_1njv6c9';
+
+// Period selector
+document.addEventListener('change', ev => {
+  if (ev.target.id === 'em-period') {
+    const wrap = document.getElementById('em-date-wrap');
+    if (wrap) wrap.style.display = ev.target.value === 'custom' ? '' : 'none';
+  }
+});
+
+function getDateRange(period) {
+  const now = new Date();
+  // Tbilisi = UTC+4
+  const tbOffset = 4 * 60 * 60 * 1000;
+  const tbNow = new Date(now.getTime() + tbOffset);
+  const todayStr = tbNow.toISOString().slice(0, 10);
+  const yesterdayStr = new Date(tbNow.getTime() - 86400000).toISOString().slice(0, 10);
+
+  // Convert Tbilisi local time to UTC Date object
+  function tbToUTC(dateStr, timeStr) {
+    return new Date(`${dateStr}T${timeStr}:00.000+04:00`);
+  }
+
+  if (period === 'today')     return { from: tbToUTC(todayStr,'00:00'), to: now };
+  if (period === 'morning')   return { from: tbToUTC(todayStr,'00:00'), to: tbToUTC(todayStr,'09:30') };
+  if (period === 'evening')   return { from: tbToUTC(todayStr,'09:30'), to: tbToUTC(todayStr,'18:00') };
+  if (period === 'yesterday') return { from: tbToUTC(yesterdayStr,'00:00'), to: tbToUTC(yesterdayStr,'23:59') };
+  if (period === 'custom') {
+    const d = document.getElementById('em-date')?.value;
+    return d ? { from: tbToUTC(d,'00:00'), to: tbToUTC(d,'23:59') } : null;
+  }
+  return null;
+}
+
+function buildEmailHTML(title, subtitle, works) {
+  const stL = { pending:'⏳ მოლოდინში', approved:'✅ დამტკიცებული', rejected:'❌ უარყოფილი' };
+  const rsL = { 'შესრულდა':'✅ შესრულდა', 'ვერ შესრულდა':'❌ ვერ შესრულდა', 'დროებით გაკეთდა':'🔧 დროებით' };
+  const total = works.length;
+  const done  = works.filter(w => w.result === 'შესრულდა').length;
+  const fail  = works.filter(w => w.result === 'ვერ შესრულდა').length;
+  const temp  = works.filter(w => w.result === 'დროებით გაკეთდა').length;
+  const pend  = works.filter(w => w.status === 'pending').length;
+  const appr  = works.filter(w => w.status === 'approved').length;
+
+  const rows = works.length === 0
+    ? `<tr><td colspan="5" style="text-align:center;padding:20px;color:#94a3b8">სამუშაოები არ მოიძებნა</td></tr>`
+    : works.map(w => `<tr>
+        <td style="padding:9px 10px;border-bottom:1px solid #f1f5f9;font-weight:600;font-size:13px">${e(w.location||'—')}</td>
+        <td style="padding:9px 10px;border-bottom:1px solid #f1f5f9;font-size:12px;color:#64748b">${e(w.category||'—')}</td>
+        <td style="padding:9px 10px;border-bottom:1px solid #f1f5f9;font-size:13px">${e(w.workerName||'—')}</td>
+        <td style="padding:9px 10px;border-bottom:1px solid #f1f5f9;font-size:12px">${rsL[w.result]||w.result||'—'}</td>
+        <td style="padding:9px 10px;border-bottom:1px solid #f1f5f9;font-size:12px">${stL[w.status]||w.status||'—'}</td>
+      </tr>
+      ${w.damage?`<tr><td colspan="5" style="padding:3px 10px 8px;border-bottom:1px solid #f1f5f9;font-size:12px;color:#d97706;background:#fffbeb">⚠️ ${e(w.damage)}</td></tr>`:''}
+      ${w.comment?`<tr><td colspan="5" style="padding:3px 10px 8px;border-bottom:1px solid #f1f5f9;font-size:12px;color:#64748b;background:#f8fafc">💬 ${e(w.comment)}</td></tr>`:''}
+    `).join('');
+
+  return `<!DOCTYPE html><html><head><meta charset="UTF-8"></head>
+<body style="margin:0;padding:0;background:#f1f5f9;font-family:Arial,sans-serif;">
+<div style="max-width:660px;margin:0 auto;padding:20px 12px;">
+  <div style="background:linear-gradient(135deg,#1a1a2e,#0f3460);border-radius:14px 14px 0 0;padding:26px 28px;text-align:center;">
+    <div style="font-size:36px;margin-bottom:8px">📋</div>
+    <h1 style="margin:0;color:white;font-size:20px;font-weight:800">${title}</h1>
+    <p style="margin:6px 0 0;color:rgba(255,255,255,.7);font-size:13px">${subtitle}</p>
+  </div>
+  <div style="background:white;padding:20px;border:1px solid #e2e8f0;border-top:none;">
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px">
+      <div style="text-align:center;padding:12px 8px;background:#eff6ff;border-radius:8px;border:1px solid #bfdbfe">
+        <div style="font-size:24px;font-weight:800;color:#1d4ed8">${total}</div>
+        <div style="font-size:10px;color:#6b7280;font-weight:600;text-transform:uppercase;margin-top:2px">სულ</div>
+      </div>
+      <div style="text-align:center;padding:12px 8px;background:#f0fdf4;border-radius:8px;border:1px solid #bbf7d0">
+        <div style="font-size:24px;font-weight:800;color:#15803d">${done}</div>
+        <div style="font-size:10px;color:#6b7280;font-weight:600;text-transform:uppercase;margin-top:2px">შესრულდა</div>
+      </div>
+      <div style="text-align:center;padding:12px 8px;background:#fef2f2;border-radius:8px;border:1px solid #fecaca">
+        <div style="font-size:24px;font-weight:800;color:#dc2626">${fail}</div>
+        <div style="font-size:10px;color:#6b7280;font-weight:600;text-transform:uppercase;margin-top:2px">ვერ შესრულდა</div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:18px">
+      <div style="text-align:center;padding:8px;background:#fffbeb;border-radius:8px;border:1px solid #fde68a">
+        <div style="font-size:18px;font-weight:800;color:#d97706">${temp}</div>
+        <div style="font-size:10px;color:#6b7280;text-transform:uppercase;margin-top:1px">დროებით</div>
+      </div>
+      <div style="text-align:center;padding:8px;background:#fafafa;border-radius:8px;border:1px solid #e5e7eb">
+        <div style="font-size:18px;font-weight:800;color:#f59e0b">${pend}</div>
+        <div style="font-size:10px;color:#6b7280;text-transform:uppercase;margin-top:1px">მოლოდინში</div>
+      </div>
+      <div style="text-align:center;padding:8px;background:#f0fdf4;border-radius:8px;border:1px solid #bbf7d0">
+        <div style="font-size:18px;font-weight:800;color:#15803d">${appr}</div>
+        <div style="font-size:10px;color:#6b7280;text-transform:uppercase;margin-top:1px">დამტკიცებული</div>
+      </div>
+    </div>
+    <div style="overflow-x:auto;border-radius:8px;border:1px solid #e2e8f0">
+      <table style="width:100%;border-collapse:collapse">
+        <thead><tr style="background:#f9fafb">
+          <th style="text-align:left;padding:8px 10px;color:#6b7280;font-size:10px;font-weight:700;text-transform:uppercase;border-bottom:1px solid #e2e8f0">ობიექტი</th>
+          <th style="text-align:left;padding:8px 10px;color:#6b7280;font-size:10px;font-weight:700;text-transform:uppercase;border-bottom:1px solid #e2e8f0">კატეგ.</th>
+          <th style="text-align:left;padding:8px 10px;color:#6b7280;font-size:10px;font-weight:700;text-transform:uppercase;border-bottom:1px solid #e2e8f0">შემსრულ.</th>
+          <th style="text-align:left;padding:8px 10px;color:#6b7280;font-size:10px;font-weight:700;text-transform:uppercase;border-bottom:1px solid #e2e8f0">შედეგი</th>
+          <th style="text-align:left;padding:8px 10px;color:#6b7280;font-size:10px;font-weight:700;text-transform:uppercase;border-bottom:1px solid #e2e8f0">სტატუსი</th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+  </div>
+  <div style="background:#1e293b;border-radius:0 0 14px 14px;padding:14px 20px;text-align:center;">
+    <p style="margin:0;color:rgba(255,255,255,.5);font-size:11px">✓ შესრულებული სამუშაო — ხელით გაგზავნილი ანგარიში</p>
+  </div>
+</div></body></html>`;
+}
+
+window.sendEmailReport = async function() {
+  const period  = document.getElementById('em-period')?.value || 'today';
+  const toEmail = document.getElementById('em-to')?.value?.trim();
+  const btn = document.getElementById('em-btn');
+
+  if (!toEmail) { showEmailStatus('❌ მეილი სავალდებულოა', 'error'); return; }
+
+  const range = getDateRange(period);
+  if (!range) { showEmailStatus('❌ თარიღი მიუთითეთ', 'error'); return; }
+
+  const from = range.from instanceof Date ? range.from : new Date(range.from);
+  const to   = range.to   instanceof Date ? range.to   : new Date(range.to);
+
+  // For 'today' period — also match by date string as fallback
+  const tbNow = new Date(Date.now() + 4*3600000);
+  const todayStr = tbNow.toISOString().slice(0,10);
+
+  const filtered = allWorks.filter(w => {
+    // Try by submittedAt timestamp first
+    if (w.submittedAt) {
+      const d = w.submittedAt.toDate ? w.submittedAt.toDate() : new Date(w.submittedAt);
+      if (!isNaN(d)) return d >= from && d <= to;
     }
-    html+=`</tbody></table>`;
-    if(r.comment)html+=`<p style="font-family:sans-serif;font-size:13px;color:#555;margin-top:6px">💬 <b>კომენტარი:</b> ${e(r.comment)}</p>`;
+    // Fallback: match by date string
+    if (period === 'today' && w.date) return w.date === todayStr;
+    return false;
+  });
+
+  console.log('Email report:', period, '| allWorks:', allWorks.length, '| filtered:', filtered.length);
+
+  const periodLabels = {
+    today:'დღეს (00:00–ახლა)', morning:'🌅 დილის ცვლა', evening:'🌇 საღამოს ცვლა',
+    yesterday:'გუშინ', custom: document.getElementById('em-date')?.value||''
+  };
+
+  const total = filtered.length;
+  const done  = filtered.filter(w => w.result==='შესრულდა').length;
+  const fail  = filtered.filter(w => w.result==='ვერ შესრულდა').length;
+  const temp  = filtered.filter(w => w.result==='დროებით გაკეთდა').length;
+  const pend  = filtered.filter(w => w.status==='pending').length;
+  const appr  = filtered.filter(w => w.status==='approved').length;
+
+  // Build compact text list (max 30 items to stay under 50kb)
+  const listItems = filtered.slice(0, 30).map((w,i) =>
+    `${i+1}. ${w.location||'—'} | ${w.workerName||'—'} | ${w.result||'—'} | ${w.status==='approved'?'✅':w.status==='rejected'?'❌':'⏳'}`
+  ).join('\n');
+
+  const moreText = filtered.length > 30 ? `\n... და კიდევ ${filtered.length-30} სამუშაო` : '';
+
+  const subject = `📋 სამუშაოს ანგარიში — ${periodLabels[period]} · ${total} სამ.`;
+
+  const message = `📊 სტატისტიკა:
+• სულ სამუშაო: ${total}
+• ✅ შესრულდა: ${done}
+• ❌ ვერ შესრულდა: ${fail}
+• 🔧 დროებით: ${temp}
+• ⏳ მოლოდინში: ${pend}
+• ✓ დამტკიცებული: ${appr}
+
+📋 სამუშაოების სია:
+${listItems}${moreText}
+
+🔗 სრული ანგარიში: agaiparashvili-svg.github.io/work-tracker`;
+
+  if (EMAILJS_PUBLIC_KEY === 'ᲨᲔᲜᲘ_PUBLIC_KEY') {
+    showEmailStatus(`⚠️ EmailJS არ არის კონფიგურირებული — იხ. ინსტრუქცია`, 'error');
+    return;
   }
-  return html;
-}
 
-async function sendDailyEmail(){
-  const today=new Date().toISOString().slice(0,10);
-  const storageKey=`email_sent_${today}_${new Date().getHours()}`;
-  if(localStorage.getItem(storageKey))return;
-  const html=buildDailyHTMLTable(allReports);
-  const shift=new Date().getHours()<15?'🌅 დილა (10:00)':'🌙 საღამო (19:00)';
-  try{
-    await emailjs.send(EMAIL_SERVICE_ID,EMAIL_TEMPLATE_ID,{
-      to_email:REPORT_EMAIL,
-      subject:`🏊 აუზების რეპორტი — ${today} ${shift}`,
-      html_content:html,
-      date:today,
-      shift_label:shift
-    });
-    localStorage.setItem(storageKey,'1');
-    console.log('✅ Daily report email sent');
-  }catch(err){console.error('Email send failed:',err);}
-}
+  btn.disabled = true;
+  btn.textContent = '⏳ იგზავნება...';
+  showEmailStatus('⏳ იგზავნება...', 'info');
 
-window.sendTestEmail=async function(){
-  toast('📧 იგზავნება...','info');
-  const html=buildDailyHTMLTable(allReports);
-  const today=new Date().toISOString().slice(0,10);
-  try{
-    await emailjs.send(EMAIL_SERVICE_ID,EMAIL_TEMPLATE_ID,{
-      to_email:REPORT_EMAIL,
-      subject:`🧪 სატესტო — აუზების რეპორტი ${today}`,
-      html_content:html,
-      date:today,
-      shift_label:'სატესტო'
+  try {
+    emailjs.init(EMAILJS_PUBLIC_KEY);
+    await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+      to_email: toEmail,
+      subject,
+      message,
     });
-    toast('✅ მეილი გაიგზავნა! შეამოწმე '+REPORT_EMAIL,'success');
-  }catch(err){
-    toast('❌ შეცდომა: '+err.text,'error');
-    console.error(err);
+    showEmailStatus(`✅ მეილი გაიგზავნა → ${toEmail}`, 'success');
+  } catch(err) {
+    showEmailStatus(`❌ შეცდომა: ${err?.text || err?.message || 'გაგზავნა ვერ მოხერხდა'}`, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '📧 გაგზავნა';
   }
 };
 
-function startEmailScheduler(){
-  function check(){
-    const h=new Date().getHours();
-    const m=new Date().getMinutes();
-    if(SEND_HOURS.includes(h)&&m===0)sendDailyEmail();
-  }
-  setInterval(check,60000);
-  check();
+function showEmailStatus(msg, type) {
+  const el = document.getElementById('em-status');
+  if (!el) return;
+  el.style.display = 'block';
+  el.textContent = msg;
+  el.style.background = type === 'success' ? 'rgba(5,150,105,.1)' : type === 'error' ? 'rgba(220,38,38,.1)' : 'rgba(79,70,229,.1)';
+  el.style.color = type === 'success' ? '#065f46' : type === 'error' ? '#991b1b' : '#3730a3';
+  el.style.border = `1px solid ${type === 'success' ? 'rgba(5,150,105,.3)' : type === 'error' ? 'rgba(220,38,38,.3)' : 'rgba(79,70,229,.3)'}`;
 }
-startEmailScheduler();
+
+// ---- EXPORT EXCEL ----
+window.exportExcel = function() {
+  const sf = document.getElementById('ex-st')?.value || 'all';
+  const rf = document.getElementById('ex-res')?.value || 'all';
+  const wf = document.getElementById('ex-wk')?.value || 'all';
+  const cf = document.getElementById('ex-cat')?.value || 'all';
+  const fr = document.getElementById('ex-from')?.value;
+  const to = document.getElementById('ex-to')?.value;
+  let list = [...allWorks];
+  if (sf !== 'all') list = list.filter(w => w.status === sf);
+  if (rf !== 'all') list = list.filter(w => w.result === rf);
+  if (wf !== 'all') list = list.filter(w => w.workerId === wf);
+  if (cf !== 'all') list = list.filter(w => w.category === cf);
+  if (fr) list = list.filter(w => w.date >= fr);
+  if (to) list = list.filter(w => w.date <= to);
+  if (!list.length) { notify('ფილტრი ცარიელია', 'error'); return; }
+  downloadCSV(list);
+  notify('✓ ჩამოიტვირთა!', 'success');
+  return list;
+};
+
+function downloadCSV(list) {
+  const sm = { pending:'მოლოდინში', approved:'დამტკიცებული', rejected:'უარყოფილი', redirected:'გადამისამართდა' };
+  const hdr = ['#','ობიექტი','შემსრულებელი','ელ-ფოსტა','კატეგორია','დაზიანება','შედეგი','კომენტარი','სამ.თარიღი','დრო','სტატუსი','სუპერვაიზერი','კომენტარი (სუპ.)'];
+  const rows = list.map((w, i) => [
+    i+1, w.location||'', w.workerName||'', w.workerEmail||'',
+    w.category||'', w.damage||'', w.result||'', w.comment||'',
+    w.date||'', w.time||'', sm[w.status]||w.status,
+    w.checkedBy||'', w.checkerComment||''
+  ]);
+  const csv = [hdr, ...rows].map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `samushaoebi_${new Date().toISOString().slice(0,10)}.csv`; a.click();
+  URL.revokeObjectURL(url);
+}
+
+window.exportAndEmail = async function() {
+  const toEmail = document.getElementById('ex-email')?.value?.trim();
+  const statusEl = document.getElementById('ex-email-status');
+
+  if (!toEmail) { notify('მეილი მიუთითეთ', 'error'); return; }
+  if (EMAILJS_PUBLIC_KEY === 'ᲨᲔᲜᲘ_PUBLIC_KEY') {
+    notify('EmailJS არ არის კონფიგურირებული', 'error'); return;
+  }
+
+  // Get filtered list (same filters as Excel)
+  const sf = document.getElementById('ex-st')?.value || 'all';
+  const rf = document.getElementById('ex-res')?.value || 'all';
+  const wf = document.getElementById('ex-wk')?.value || 'all';
+  const cf = document.getElementById('ex-cat')?.value || 'all';
+  const fr = document.getElementById('ex-from')?.value;
+  const to = document.getElementById('ex-to')?.value;
+  let list = [...allWorks];
+  if (sf !== 'all') list = list.filter(w => w.status === sf);
+  if (rf !== 'all') list = list.filter(w => w.result === rf);
+  if (wf !== 'all') list = list.filter(w => w.workerId === wf);
+  if (cf !== 'all') list = list.filter(w => w.category === cf);
+  if (fr) list = list.filter(w => w.date >= fr);
+  if (to) list = list.filter(w => w.date <= to);
+  if (!list.length) { notify('ფილტრი ცარიელია', 'error'); return; }
+
+  // Download Excel
+  downloadCSV(list);
+
+  // Build email message
+  const sm = { pending:'⏳ მოლოდინში', approved:'✅ დამტკიცებული', rejected:'❌ უარყოფილი' };
+  const total = list.length;
+  const done  = list.filter(w => w.result === 'შესრულდა').length;
+  const fail  = list.filter(w => w.result === 'ვერ შესრულდა').length;
+  const temp  = list.filter(w => w.result === 'დროებით გაკეთდა').length;
+  const pend  = list.filter(w => w.status === 'pending').length;
+  const appr  = list.filter(w => w.status === 'approved').length;
+
+  // Filter description
+  const filterDesc = [
+    sf !== 'all' ? `სტატუსი: ${sf}` : '',
+    rf !== 'all' ? `შედეგი: ${rf}` : '',
+    cf !== 'all' ? `კატეგორია: ${cf}` : '',
+    fr ? `დან: ${fr}` : '',
+    to ? `მდე: ${to}` : '',
+  ].filter(Boolean).join(' | ') || 'ყველა';
+
+  const listText = list.slice(0, 25).map((w,i) =>
+    `${i+1}. ${w.location||'—'} | ${w.workerName||'—'} | ${w.result||'—'} | ${sm[w.status]||w.status||'—'} | ${w.date||''} ${w.time||''}`
+  ).join('\n') + (list.length > 25 ? `\n... და კიდევ ${list.length-25} სამუშაო` : '');
+
+  const dateStr = new Date().toISOString().slice(0,10);
+  const subject = `📊 Excel რეპორტი — ${dateStr} | ${total} სამ. | ფილტრი: ${filterDesc}`;
+  const message = `📊 სტატისტიკა:
+• სულ: ${total}
+• ✅ შესრულდა: ${done}
+• ❌ ვერ შესრულდა: ${fail}
+• 🔧 დროებით: ${temp}
+• ⏳ მოლოდინში: ${pend}
+• ✓ დამტკიცებული: ${appr}
+
+🔍 ფილტრი: ${filterDesc}
+
+📋 სამუშაოების სია:
+${listText}
+
+📎 Excel ფაილი ჩამოტვირთულია თქვენს კომპიუტერზე.
+🔗 სისტემა: agaiparashvili-svg.github.io/work-tracker`;
+
+  // Show loading
+  statusEl.style.display = 'block';
+  statusEl.textContent = '⏳ მეილი იგზავნება...';
+  statusEl.style.background = 'rgba(79,70,229,.08)';
+  statusEl.style.color = '#3730a3';
+  statusEl.style.border = '1px solid rgba(79,70,229,.2)';
+
+  try {
+    emailjs.init(EMAILJS_PUBLIC_KEY);
+    await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+      to_email: toEmail,
+      subject,
+      message,
+    });
+    statusEl.textContent = `✅ მეილი გაიგზავნა → ${toEmail}`;
+    statusEl.style.background = 'rgba(5,150,105,.08)';
+    statusEl.style.color = '#065f46';
+    statusEl.style.border = '1px solid rgba(5,150,105,.2)';
+    setTimeout(() => { statusEl.style.display = 'none'; }, 5000);
+  } catch(err) {
+    statusEl.textContent = `❌ შეცდომა: ${err?.text || err?.message || 'გაგზავნა ვერ მოხერხდა'}`;
+    statusEl.style.background = 'rgba(220,38,38,.08)';
+    statusEl.style.color = '#991b1b';
+    statusEl.style.border = '1px solid rgba(220,38,38,.2)';
+  }
+};
+
+// ---- FILTERS (expose for onchange) ----
+window.renderReview = renderReview;
+window.renderAdminWorks = renderAdminWorks;
+
+// ---- HELPERS ----
+window.switchTab = function(t) {
+  document.querySelectorAll('.tab').forEach((el, i) => {
+    el.classList.toggle('active', (i===0&&t==='login')||(i===1&&t==='register')||(i===2&&t==='reset'));
+  });
+  document.getElementById('login-form').style.display = t==='login' ? '' : 'none';
+  document.getElementById('register-form').style.display = t==='register' ? '' : 'none';
+  document.getElementById('reset-form').style.display = t==='reset' ? '' : 'none';
+};
+
+function sBadge(s) { const m={pending:['s-pending','⏳ მოლოდინში'],approved:['s-approved','✓ დამტკიცებული'],rejected:['s-rejected','✕ უარყოფილი'],redirected:['s-redirected','📨 გადამისამართდა']};const[c,l]=m[s]||['s-pending',s];return `<span class="status ${c}">${l}</span>`; }
+function rBadge(r) { const m={'შესრულდა':['r-done','✅ შესრულდა'],'ვერ შესრულდა':['r-failed','❌ ვერ შესრულდა'],'დროებით გაკეთდა':['r-temp','🔧 დროებით']};const[c,l]=m[r]||['',''];return r?`<span class="status ${c}">${l}</span>`:''; }
+function empty(icon, msg) { return `<div class="empty-state"><div class="empty-icon">${icon}</div><p>${msg}</p></div>`; }
+function e(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function notify(msg, type='info') { const el=document.getElementById('notification');el.textContent=msg;el.className=`show notif-${type}`;clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('show'),3000); }
+
+// Seed admin user profile in Firestore if not exists
+onAuthStateChanged(auth, async (user) => {
+  if (user && user.email === 'admin@work.ge') {
+    const snap = await getDoc(doc(db, 'users', user.uid));
+    if (!snap.exists()) {
+      await setDoc(doc(db, 'users', user.uid), {
+        uid: user.uid, name: 'ადმინი', email: user.email,
+        role: 'admin', createdAt: serverTimestamp()
+      });
+    }
+  }
+});
+
+
+// ---- ADMIN PREVIEW ----
+function renderPreviewSection() {
+  const sel = document.getElementById('preview-user-select');
+  if (!sel) return;
+  const nonAdmins = allUsers.filter(u => u.role !== 'admin');
+  sel.innerHTML = '<option value="">— აირჩიეთ —</option>' +
+    nonAdmins.map(u => {
+      const roleLabel = {worker:'👷',supervisor:'🔍',pending:'⏳'}[u.role]||'';
+      return `<option value="${u.id}">${roleLabel} ${e(u.name)} (${e(u.role)})</option>`;
+    }).join('');
+  document.getElementById('preview-banner').style.display = 'none';
+  document.getElementById('preview-content').innerHTML = '';
+}
+
+window.renderPreviewForUser = function(uid) {
+  if (!uid) {
+    document.getElementById('preview-banner').style.display = 'none';
+    document.getElementById('preview-content').innerHTML = '';
+    return;
+  }
+  const user = allUsers.find(u => u.id === uid);
+  if (!user) return;
+  const roleLabel = {worker:'შემსრულებელი',supervisor:'სუპერვაიზერი',pending:'მოლოდინში'}[user.role]||user.role;
+  const banner = document.getElementById('preview-banner');
+  banner.style.display = 'block';
+  banner.innerHTML = `👁 Preview: <strong>${e(user.name)}</strong> — ${roleLabel} · ხედავთ მის სამუშაო ჩანაწერებს`;
+
+  const userWorks = allWorks.filter(w => w.workerId === uid);
+  const content = document.getElementById('preview-content');
+
+  if (user.role === 'worker' || user.role === 'supervisor') {
+    // Show their submitted works
+    const mySection = `
+      <div style="margin-bottom:16px">
+        <h3 style="font-size:15px;font-weight:700;margin-bottom:12px;color:var(--text2)">📁 გაგზავნილი სამუშაოები (${userWorks.length})</h3>
+        ${userWorks.length ? userWorks.map(w => wCard(w, 'worker')).join('') : empty('📭', 'სამუშაოები არ არის')}
+      </div>`;
+
+    // If supervisor — also show their redirects
+    const userRedirects = allRedirects.filter(r => r.supervisorId === uid);
+    const rdSection = user.role === 'supervisor' ? `
+      <div>
+        <h3 style="font-size:15px;font-weight:700;margin-bottom:12px;color:var(--text2)">📨 გაგზავნილი დავალებები (${userRedirects.length})</h3>
+        ${userRedirects.length ? userRedirects.map(r => `
+          <div class="card">
+            <div class="card-title">📍 ${e(r.location||'')}</div>
+            <div class="card-meta">${e(r.category||'')} · ${r.date||''}</div>
+            <div style="font-size:13px;color:var(--text2);margin:8px 0">${e(r.description||'')}</div>
+            <div style="font-size:12px">👥 ${(r.assignedTo||[]).map(n=>e(n)).join(', ')}</div>
+          </div>`).join('') : empty('📭', 'დავალებები არ არის')}
+      </div>` : '';
+    content.innerHTML = mySection + rdSection;
+  } else {
+    content.innerHTML = empty('⏳', 'ეს მომხმარებელი მოლოდინშია — სამუშაო გვერდი არ გააჩნია');
+  }
+};
+
+// ---- END PREVIEW ----
+
+
+// ---- WEB NOTIFICATIONS + SOUND ----
+function playNotifSound() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    [[0,880],[0.15,1100],[0.3,880]].forEach(([when,freq]) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.frequency.value = freq; osc.type = 'sine';
+      gain.gain.setValueAtTime(0.4, ctx.currentTime + when);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + when + 0.12);
+      osc.start(ctx.currentTime + when);
+      osc.stop(ctx.currentTime + when + 0.14);
+    });
+  } catch(e) {}
+}
+
+function showWebNotification(title, body) {
+  if (!('Notification' in window)) return;
+  if (Notification.permission === 'granted') {
+    try {
+      const n = new Notification(title, {
+        body,
+        icon: 'https://agaiparashvili-svg.github.io/work-tracker/icon-192.png',
+        vibrate: [200,100,200],
+        tag: 'worktrack-notif',
+        renotify: true,
+      });
+      n.onclick = () => { window.focus(); n.close(); };
+    } catch(e) {}
+  }
+}
+
+async function requestNotifPermission() {
+  if (!('Notification' in window)) return;
+  if (Notification.permission === 'default') {
+    await Notification.requestPermission();
+  }
+  if ('serviceWorker' in navigator && Notification.permission === 'granted') {
+    try {
+      const existing = await navigator.serviceWorker.getRegistration('./');
+      if (!existing) {
+        const swCode = `self.addEventListener('push',e=>{const d=e.data?e.data.json():{};self.registration.showNotification(d.title||'📨',{body:d.body||'',vibrate:[200,100,200],tag:'worktrack',renotify:true});});`;
+        const blob = new Blob([swCode], {type:'application/javascript'});
+        await navigator.serviceWorker.register(URL.createObjectURL(blob), {scope:'./'});
+      }
+    } catch(e) {}
+  }
+}
+
+// ---- FCM PUSH SETUP ----
+// VAPID key — Firebase Console → Project Settings → Cloud Messaging → Web Push certificates
+// შეცვალე შენი VAPID key-ით!
+const VAPID_KEY = 'BEl62iUYgUivxIkv69yViEuiBIa40HI80NM9be27bVBtMfXMDfWf5YXGgaVBwcQSMX94z6d9XcFHNrXIRkTIR-g';
+
+async function initFCM() {
+  if (!messaging) return;
+  if (!('serviceWorker' in navigator)) return;
+  try {
+    const swReg = await navigator.serviceWorker.register('./firebase-messaging-sw.js');
+    const token = await getToken(messaging, {
+      vapidKey: VAPID_KEY,
+      serviceWorkerRegistration: swReg
+    });
+    if (token && currentUser) {
+      await updateDoc(doc(db, 'users', currentUser.uid), { fcmToken: token });
+    }
+    // Foreground messages (app open)
+    onMessage(messaging, payload => {
+      const { title, body } = payload.notification || {};
+      playNotifSound();
+      notify(`${title||'📨'}: ${body||''}`, 'info');
+      showWebNotification(title || '📨 შესრულებული სამუშაო', body || '');
+    });
+  } catch(err) {
+    console.warn('FCM init:', err.message);
+  }
+}
+
+// ---- NOTIFICATIONS ----
+let _prevNotifIds = new Set();
+let _notifFirstLoad = true;
+
+function listenMyNotifications() {
+  requestNotifPermission().then(() => {
+    if (Notification.permission === 'granted') initFCM();
+  });
+
+  const q = query(collection(db, 'notifications'), orderBy('createdAt', 'desc'));
+  onSnapshot(q, snap => {
+    const fresh = snap.docs
+      .map(d => ({ id: d.id, ...d.data() }))
+      .filter(n => n.toUid === currentUser.uid);
+
+    if (_notifFirstLoad) {
+      fresh.forEach(n => _prevNotifIds.add(n.id));
+      _notifFirstLoad = false;
+    } else {
+      const newOnes = fresh.filter(n => !n.read && !_prevNotifIds.has(n.id));
+      newOnes.forEach(n => {
+        playNotifSound();
+        showWebNotification(n.title || '📨 შესრულებული სამუშაო', n.body || '');
+      });
+      fresh.forEach(n => _prevNotifIds.add(n.id));
+    }
+
+    myNotifications = fresh;
+    renderNotifBell();
+    renderNotifList();
+  });
+}
+
+function renderNotifBell() {
+  const bell = document.getElementById('notif-bell');
+  const cnt = document.getElementById('notif-count');
+  if (!bell) return;
+  bell.style.display = 'inline-flex';
+  const unread = myNotifications.filter(n => !n.read).length;
+  if (unread > 0) {
+    cnt.style.display = 'flex';
+    cnt.textContent = unread > 9 ? '9+' : unread;
+  } else {
+    cnt.style.display = 'none';
+  }
+}
+
+function renderNotifList() {
+  const el = document.getElementById('notif-list');
+  if (!el) return;
+  if (!myNotifications.length) {
+    el.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text3);font-size:13px">შეტყობინებები არ არის</div>';
+    return;
+  }
+  el.innerHTML = myNotifications.map(n => {
+    const ts = n.createdAt?.toDate ? n.createdAt.toDate().toLocaleString('ka-GE',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : '';
+    return `<div class="notif-item ${n.read?'':'unread'}" onclick="notifClick('${n.id}','${n.redirectId||''}')">
+      <div style="display:flex;align-items:flex-start;gap:10px">
+        <div style="flex:1">
+          <div class="ni-title">${e(n.title||'')}</div>
+          <div class="ni-body">${e(n.body||'')}</div>
+          <div class="ni-time">${ts}</div>
+        </div>
+        ${!n.read ? '<div class="notif-dot" style="margin-top:4px"></div>' : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+window.openNotifPanel = function() {
+  document.getElementById('notif-panel').classList.toggle('open');
+};
+
+// Close panel on outside click
+document.addEventListener('click', ev => {
+  const panel = document.getElementById('notif-panel');
+  const bell = document.getElementById('notif-bell');
+  if (panel && !panel.contains(ev.target) && bell && !bell.contains(ev.target)) {
+    panel.classList.remove('open');
+  }
+});
+
+window.notifClick = async function(nid, redirectId) {
+  // mark as read
+  try { await updateDoc(doc(db, 'notifications', nid), { read: true }); } catch(e){}
+  document.getElementById('notif-panel').classList.remove('open');
+  if (redirectId) {
+    // navigate to tasks section
+    const taskNav = [...document.querySelectorAll('.nav-item')].find(el => el.dataset.sid === 'sec-tasks');
+    if (taskNav) { taskNav.click(); }
+  }
+};
+
+window.markAllRead = async function() {
+  const unread = myNotifications.filter(n => !n.read);
+  for (const n of unread) {
+    try { await updateDoc(doc(db, 'notifications', n.id), { read: true }); } catch(e){}
+  }
+};
+
+// ---- MY TASKS (received redirects) ----
+function listenMyTasks() {
+  const q = query(collection(db, 'redirects'), orderBy('createdAt', 'desc'));
+  onSnapshot(q, snap => {
+    const me = allUsers.find(u => u.id === currentUser.uid);
+    const myLabel = me?.displayName || me?.name || '';
+    myTasks = snap.docs
+      .map(d => ({ id: d.id, ...d.data() }))
+      .filter(r => myLabel && (r.assignedTo || []).includes(myLabel));
+    renderMyTasks();
+  });
+}
+
+function renderMyTasks() {
+  const el = document.getElementById('tasks-list');
+  if (!el) return;
+  const sf = document.getElementById('tf-st')?.value || 'all';
+  const me = allUsers.find(u => u.id === currentUser.uid);
+  const userName = me?.displayName || me?.name || '';
+
+  let list = [...myTasks];
+  if (sf !== 'all') {
+    list = list.filter(r => {
+      const ts = (r.taskStatus || {})[userName]?.status || 'new';
+      return ts === sf;
+    });
+  }
+
+  if (!list.length) { el.innerHTML = empty('📭', 'დავალებები არ მოიძებნა'); return; }
+
+  el.innerHTML = list.map(r => {
+    const myStatus = (r.taskStatus || {})[userName] || {};
+    const st = myStatus.status || 'new';
+    const stLabels = { new:'🆕 ახალი', in_progress:'🔄 მიმდინარე', done:'✅ შესრულდა', failed:'❌ ვერ შესრულდა', temp:'🔧 დროებით' };
+    const stColors = { new:'s-redirected', in_progress:'s-pending', done:'s-approved', failed:'s-rejected', temp:'s-pending' };
+    return `<div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;margin-bottom:10px">
+        <div>
+          <div class="card-title">📍 ${e(r.location||'')}</div>
+          <div class="card-meta">${e(r.category||'')} · ${r.date||''}${r.time?' · '+r.time:''} · ${e(r.supervisorName||'')}</div>
+        </div>
+        <span class="status ${stColors[st]||'s-pending'}">${stLabels[st]||st}</span>
+      </div>
+      <div style="font-size:13px;color:var(--text2);margin-bottom:10px">${e(r.description||'')}</div>
+      ${r.note ? `<div style="font-size:12px;color:var(--text3);margin-bottom:10px">💬 ${e(r.note)}</div>` : ''}
+      ${myStatus.comment ? `<div class="comment-block" style="margin-bottom:10px">📝 ${e(myStatus.comment)}</div>` : ''}
+      <div class="card-footer">
+        <button class="btn btn-ghost btn-sm" onclick="openTaskUpdate('${r.id}','${e(userName)}','${e(r.location||'')}')">✏️ სტატუსის განახლება</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+window.renderMyTasks = renderMyTasks;
+
+window.openTaskUpdate = function(redirectId, userName, location) {
+  const r = myTasks.find(x => x.id === redirectId);
+  const myStatus = (r?.taskStatus || {})[userName] || {};
+  const cur = myStatus.status || 'new';
+  const curComment = myStatus.comment || '';
+
+  document.getElementById('m-title').textContent = '✏️ ' + location;
+  document.getElementById('m-body').innerHTML = `
+    <p style="color:var(--text2);font-size:13px;margin-bottom:16px">${e(r?.description||'')}</p>
+    <div class="form-group">
+      <label>სტატუსი</label>
+      <div style="display:flex;flex-wrap:wrap;gap:8px" id="tstat-chips">
+        ${[['in_progress','🔄 მიმდინარე','sel-blue'],['done','✅ შესრულდა','sel-green'],['failed','❌ ვერ შესრულდა','sel-red'],['temp','🔧 დროებით','sel-yellow']].map(([val,lbl,cls])=>`
+          <span class="tstat-chip ${cur===val?cls:''}" data-val="${val}" onclick="selectTaskStatus(this,'${cls}')">${lbl}</span>
+        `).join('')}
+      </div>
+    </div>
+    <div class="form-group">
+      <label>💬 კომენტარი</label>
+      <textarea id="task-comment" placeholder="კომენტარი..." style="min-height:90px">${e(curComment)}</textarea>
+    </div>
+  `;
+  document.getElementById('m-footer').innerHTML = `
+    <button class="btn btn-ghost btn-sm" onclick="closeModal()">გაუქმება</button>
+    <button class="btn btn-primary btn-sm" onclick="submitTaskUpdate('${redirectId}','${e(userName)}','${r?.supervisorId||''}')">📤 გაგზავნა</button>
+  `;
+  document.getElementById('modal-ov').classList.add('open');
+};
+
+window.selectTaskStatus = function(chip, cls) {
+  document.querySelectorAll('#tstat-chips .tstat-chip').forEach(c =>
+    c.classList.remove('sel-green','sel-red','sel-yellow','sel-blue')
+  );
+  chip.classList.add(cls);
+};
+
+window.submitTaskUpdate = async function(redirectId, userName, supervisorId) {
+  const statusChip = document.querySelector('#tstat-chips .tstat-chip.sel-green, #tstat-chips .tstat-chip.sel-red, #tstat-chips .tstat-chip.sel-yellow, #tstat-chips .tstat-chip.sel-blue');
+  const status = statusChip?.dataset.val;
+  const comment = document.getElementById('task-comment')?.value.trim() || '';
+  if (!status) { notify('სტატუსი სავალდებულოა', 'error'); return; }
+
+  try {
+    // Update the redirect doc's taskStatus map
+    await updateDoc(doc(db, 'redirects', redirectId), {
+      [`taskStatus.${userName}`]: { status, comment, updatedAt: new Date().toISOString() }
+    });
+
+    // Notify the supervisor
+    if (supervisorId) {
+      const stLabels = { in_progress:'🔄 მიმდინარე', done:'✅ შესრულდა', failed:'❌ ვერ შესრულდა', temp:'🔧 დროებით' };
+      await addDoc(collection(db, 'notifications'), {
+        toUid: supervisorId,
+        toName: '',
+        fromName: userName,
+        redirectId,
+        title: `${stLabels[status]||status} — ${userName}`,
+        body: `${userName}-მა განაახლა სტატუსი${comment?' · '+comment.slice(0,60):''}`,
+        read: false,
+        createdAt: serverTimestamp()
+      });
+    }
+
+    window.closeModal();
+    notify('✓ სტატუსი განახლდა!', 'success');
+  } catch(err) {
+    notify('შეცდომა: ' + err.message, 'error');
+  }
+};
+// ---- END NOTIFICATIONS & TASKS ----
 </script>
 </body>
 </html>
