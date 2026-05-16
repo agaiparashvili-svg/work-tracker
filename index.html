@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>სამუშაოს აღრიცხვა</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Georgian:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Georgian:wght@300;400;500;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap');
 
@@ -551,48 +550,14 @@
 
     <!-- EXPORT -->
     <div class="section" id="sec-export">
-      <div class="section-header"><h2>📥 ექსპორტი და მეილი</h2></div>
-
-      <!-- EMAIL SEND CARD -->
-      <div class="card" style="border-left:4px solid var(--accent2)">
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
-          <span style="font-size:24px">📧</span>
-          <div>
-            <div style="font-weight:800;font-size:15px">რეპორტის გაგზავნა მეილზე</div>
-            <div style="font-size:12px;color:var(--text2)">დღევანდელი სამუშაოების შეჯამება პირდაპირ მეილზე</div>
-          </div>
-        </div>
-        <div class="form-row" style="margin-bottom:12px">
-          <div class="form-group">
-            <label>📅 პერიოდი</label>
-            <select id="em-period">
-              <option value="today">დღეს (00:00 – ახლა)</option>
-              <option value="morning">🌅 დილის ცვლა (00:00 – 09:30)</option>
-              <option value="evening">🌇 საღამოს ცვლა (09:30 – 18:00)</option>
-              <option value="yesterday">გუშინ</option>
-              <option value="custom">კონკრეტული თარიღი</option>
-            </select>
-          </div>
-          <div class="form-group" id="em-date-wrap" style="display:none">
-            <label>📅 თარიღი</label>
-            <input type="date" id="em-date">
-          </div>
-        </div>
-        <div class="form-group">
-          <label>📨 მეილის მისამართი</label>
-          <div style="display:flex;gap:8px;flex-wrap:wrap">
-            <input type="email" id="em-to" placeholder="example@email.com" style="flex:1;min-width:200px" value="a.gaiparashvili@lopotaresort.com">
-            <button class="btn btn-primary" onclick="sendEmailReport()" id="em-btn" style="white-space:nowrap">
-              📧 გაგზავნა
-            </button>
-          </div>
-        </div>
-        <div id="em-status" style="display:none;margin-top:10px;padding:10px 14px;border-radius:8px;font-size:13px;font-weight:600"></div>
-      </div>
+      <div class="section-header"><h2>📥 Excel ექსპორტი</h2></div>
 
       <!-- EXCEL EXPORT CARD -->
       <div class="card">
-        <div style="font-weight:700;margin-bottom:16px">📊 Excel ჩამოტვირთვა</div>
+        <p style="color:var(--text2);font-size:13px;margin-bottom:18px;line-height:1.6">
+          🕐 <strong>ავტომატური მეილი:</strong> სისტემა ყოველდღე <strong>09:30</strong> და <strong>18:00</strong> საათზე ავტომატურად გზავნის შეჯამებას 
+          <span style="background:rgba(79,70,229,.1);color:var(--accent2);padding:2px 8px;border-radius:20px;font-size:11px;font-weight:700">a.gaiparashvili@lopotaresort.com</span>-ზე
+        </p>
         <div class="form-row">
           <div class="form-group"><label>სტატუსი</label>
             <select id="ex-st"><option value="all">ყველა</option><option value="approved">დამტკიცებული</option><option value="rejected">უარყოფილი</option><option value="pending">მოლოდინში</option></select>
@@ -611,15 +576,7 @@
           <div class="form-group"><label>თარიღი — დან</label><input type="date" id="ex-from"></div>
           <div class="form-group"><label>თარიღი — მდე</label><input type="date" id="ex-to"></div>
         </div>
-        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
-          <button class="btn btn-primary" style="max-width:260px" onclick="exportExcel()">📊 Excel ჩამოტვირთვა</button>
-          <button class="btn btn-sm" onclick="exportAndEmail()" style="background:rgba(79,70,229,.1);color:#3730a3;border:1.5px solid rgba(79,70,229,.3);font-weight:700;white-space:nowrap">📧 ჩამოტვირთვა + მეილი</button>
-        </div>
-        <div style="margin-top:10px">
-          <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text2)">📨 მეილის მისამართი</label>
-          <input type="email" id="ex-email" value="a.gaiparashvili@lopotaresort.com" style="margin-top:6px;max-width:340px">
-        </div>
-        <div id="ex-email-status" style="display:none;margin-top:8px;padding:9px 12px;border-radius:8px;font-size:13px;font-weight:600"></div>
+        <button class="btn btn-primary" style="max-width:260px" onclick="exportExcel()">📊 Excel ჩამოტვირთვა</button>
       </div>
     </div>
   </div>
@@ -1487,223 +1444,6 @@ window.saveEditWork = async function(wid) {
   } catch(err) { notify('შეცდომა: ' + err.message, 'error'); }
 };
 
-// ---- EMAIL REPORT ----
-// EmailJS config — emailjs.com-ზე უფასო account შექმენი
-// და შეცვალე ეს 3 მნიშვნელობა:
-const EMAILJS_PUBLIC_KEY  = 'gMuchMs4-Nz5YFLch';
-const EMAILJS_SERVICE_ID  = 'service_ctzmx7h';
-const EMAILJS_TEMPLATE_ID = 'template_1njv6c9';
-
-// Period selector
-document.addEventListener('change', ev => {
-  if (ev.target.id === 'em-period') {
-    const wrap = document.getElementById('em-date-wrap');
-    if (wrap) wrap.style.display = ev.target.value === 'custom' ? '' : 'none';
-  }
-});
-
-function getDateRange(period) {
-  const now = new Date();
-  // Tbilisi = UTC+4
-  const tbOffset = 4 * 60 * 60 * 1000;
-  const tbNow = new Date(now.getTime() + tbOffset);
-  const todayStr = tbNow.toISOString().slice(0, 10);
-  const yesterdayStr = new Date(tbNow.getTime() - 86400000).toISOString().slice(0, 10);
-
-  // Convert Tbilisi local time to UTC Date object
-  function tbToUTC(dateStr, timeStr) {
-    return new Date(`${dateStr}T${timeStr}:00.000+04:00`);
-  }
-
-  if (period === 'today')     return { from: tbToUTC(todayStr,'00:00'), to: now };
-  if (period === 'morning')   return { from: tbToUTC(todayStr,'00:00'), to: tbToUTC(todayStr,'09:30') };
-  if (period === 'evening')   return { from: tbToUTC(todayStr,'09:30'), to: tbToUTC(todayStr,'18:00') };
-  if (period === 'yesterday') return { from: tbToUTC(yesterdayStr,'00:00'), to: tbToUTC(yesterdayStr,'23:59') };
-  if (period === 'custom') {
-    const d = document.getElementById('em-date')?.value;
-    return d ? { from: tbToUTC(d,'00:00'), to: tbToUTC(d,'23:59') } : null;
-  }
-  return null;
-}
-
-function buildEmailHTML(title, subtitle, works) {
-  const stL = { pending:'⏳ მოლოდინში', approved:'✅ დამტკიცებული', rejected:'❌ უარყოფილი' };
-  const rsL = { 'შესრულდა':'✅ შესრულდა', 'ვერ შესრულდა':'❌ ვერ შესრულდა', 'დროებით გაკეთდა':'🔧 დროებით' };
-  const total = works.length;
-  const done  = works.filter(w => w.result === 'შესრულდა').length;
-  const fail  = works.filter(w => w.result === 'ვერ შესრულდა').length;
-  const temp  = works.filter(w => w.result === 'დროებით გაკეთდა').length;
-  const pend  = works.filter(w => w.status === 'pending').length;
-  const appr  = works.filter(w => w.status === 'approved').length;
-
-  const rows = works.length === 0
-    ? `<tr><td colspan="5" style="text-align:center;padding:20px;color:#94a3b8">სამუშაოები არ მოიძებნა</td></tr>`
-    : works.map(w => `<tr>
-        <td style="padding:9px 10px;border-bottom:1px solid #f1f5f9;font-weight:600;font-size:13px">${e(w.location||'—')}</td>
-        <td style="padding:9px 10px;border-bottom:1px solid #f1f5f9;font-size:12px;color:#64748b">${e(w.category||'—')}</td>
-        <td style="padding:9px 10px;border-bottom:1px solid #f1f5f9;font-size:13px">${e(w.workerName||'—')}</td>
-        <td style="padding:9px 10px;border-bottom:1px solid #f1f5f9;font-size:12px">${rsL[w.result]||w.result||'—'}</td>
-        <td style="padding:9px 10px;border-bottom:1px solid #f1f5f9;font-size:12px">${stL[w.status]||w.status||'—'}</td>
-      </tr>
-      ${w.damage?`<tr><td colspan="5" style="padding:3px 10px 8px;border-bottom:1px solid #f1f5f9;font-size:12px;color:#d97706;background:#fffbeb">⚠️ ${e(w.damage)}</td></tr>`:''}
-      ${w.comment?`<tr><td colspan="5" style="padding:3px 10px 8px;border-bottom:1px solid #f1f5f9;font-size:12px;color:#64748b;background:#f8fafc">💬 ${e(w.comment)}</td></tr>`:''}
-    `).join('');
-
-  return `<!DOCTYPE html><html><head><meta charset="UTF-8"></head>
-<body style="margin:0;padding:0;background:#f1f5f9;font-family:Arial,sans-serif;">
-<div style="max-width:660px;margin:0 auto;padding:20px 12px;">
-  <div style="background:linear-gradient(135deg,#1a1a2e,#0f3460);border-radius:14px 14px 0 0;padding:26px 28px;text-align:center;">
-    <div style="font-size:36px;margin-bottom:8px">📋</div>
-    <h1 style="margin:0;color:white;font-size:20px;font-weight:800">${title}</h1>
-    <p style="margin:6px 0 0;color:rgba(255,255,255,.7);font-size:13px">${subtitle}</p>
-  </div>
-  <div style="background:white;padding:20px;border:1px solid #e2e8f0;border-top:none;">
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px">
-      <div style="text-align:center;padding:12px 8px;background:#eff6ff;border-radius:8px;border:1px solid #bfdbfe">
-        <div style="font-size:24px;font-weight:800;color:#1d4ed8">${total}</div>
-        <div style="font-size:10px;color:#6b7280;font-weight:600;text-transform:uppercase;margin-top:2px">სულ</div>
-      </div>
-      <div style="text-align:center;padding:12px 8px;background:#f0fdf4;border-radius:8px;border:1px solid #bbf7d0">
-        <div style="font-size:24px;font-weight:800;color:#15803d">${done}</div>
-        <div style="font-size:10px;color:#6b7280;font-weight:600;text-transform:uppercase;margin-top:2px">შესრულდა</div>
-      </div>
-      <div style="text-align:center;padding:12px 8px;background:#fef2f2;border-radius:8px;border:1px solid #fecaca">
-        <div style="font-size:24px;font-weight:800;color:#dc2626">${fail}</div>
-        <div style="font-size:10px;color:#6b7280;font-weight:600;text-transform:uppercase;margin-top:2px">ვერ შესრულდა</div>
-      </div>
-    </div>
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:18px">
-      <div style="text-align:center;padding:8px;background:#fffbeb;border-radius:8px;border:1px solid #fde68a">
-        <div style="font-size:18px;font-weight:800;color:#d97706">${temp}</div>
-        <div style="font-size:10px;color:#6b7280;text-transform:uppercase;margin-top:1px">დროებით</div>
-      </div>
-      <div style="text-align:center;padding:8px;background:#fafafa;border-radius:8px;border:1px solid #e5e7eb">
-        <div style="font-size:18px;font-weight:800;color:#f59e0b">${pend}</div>
-        <div style="font-size:10px;color:#6b7280;text-transform:uppercase;margin-top:1px">მოლოდინში</div>
-      </div>
-      <div style="text-align:center;padding:8px;background:#f0fdf4;border-radius:8px;border:1px solid #bbf7d0">
-        <div style="font-size:18px;font-weight:800;color:#15803d">${appr}</div>
-        <div style="font-size:10px;color:#6b7280;text-transform:uppercase;margin-top:1px">დამტკიცებული</div>
-      </div>
-    </div>
-    <div style="overflow-x:auto;border-radius:8px;border:1px solid #e2e8f0">
-      <table style="width:100%;border-collapse:collapse">
-        <thead><tr style="background:#f9fafb">
-          <th style="text-align:left;padding:8px 10px;color:#6b7280;font-size:10px;font-weight:700;text-transform:uppercase;border-bottom:1px solid #e2e8f0">ობიექტი</th>
-          <th style="text-align:left;padding:8px 10px;color:#6b7280;font-size:10px;font-weight:700;text-transform:uppercase;border-bottom:1px solid #e2e8f0">კატეგ.</th>
-          <th style="text-align:left;padding:8px 10px;color:#6b7280;font-size:10px;font-weight:700;text-transform:uppercase;border-bottom:1px solid #e2e8f0">შემსრულ.</th>
-          <th style="text-align:left;padding:8px 10px;color:#6b7280;font-size:10px;font-weight:700;text-transform:uppercase;border-bottom:1px solid #e2e8f0">შედეგი</th>
-          <th style="text-align:left;padding:8px 10px;color:#6b7280;font-size:10px;font-weight:700;text-transform:uppercase;border-bottom:1px solid #e2e8f0">სტატუსი</th>
-        </tr></thead>
-        <tbody>${rows}</tbody>
-      </table>
-    </div>
-  </div>
-  <div style="background:#1e293b;border-radius:0 0 14px 14px;padding:14px 20px;text-align:center;">
-    <p style="margin:0;color:rgba(255,255,255,.5);font-size:11px">✓ შესრულებული სამუშაო — ხელით გაგზავნილი ანგარიში</p>
-  </div>
-</div></body></html>`;
-}
-
-window.sendEmailReport = async function() {
-  const period  = document.getElementById('em-period')?.value || 'today';
-  const toEmail = document.getElementById('em-to')?.value?.trim();
-  const btn = document.getElementById('em-btn');
-
-  if (!toEmail) { showEmailStatus('❌ მეილი სავალდებულოა', 'error'); return; }
-
-  const range = getDateRange(period);
-  if (!range) { showEmailStatus('❌ თარიღი მიუთითეთ', 'error'); return; }
-
-  const from = range.from instanceof Date ? range.from : new Date(range.from);
-  const to   = range.to   instanceof Date ? range.to   : new Date(range.to);
-
-  // For 'today' period — also match by date string as fallback
-  const tbNow = new Date(Date.now() + 4*3600000);
-  const todayStr = tbNow.toISOString().slice(0,10);
-
-  const filtered = allWorks.filter(w => {
-    // Try by submittedAt timestamp first
-    if (w.submittedAt) {
-      const d = w.submittedAt.toDate ? w.submittedAt.toDate() : new Date(w.submittedAt);
-      if (!isNaN(d)) return d >= from && d <= to;
-    }
-    // Fallback: match by date string
-    if (period === 'today' && w.date) return w.date === todayStr;
-    return false;
-  });
-
-  console.log('Email report:', period, '| allWorks:', allWorks.length, '| filtered:', filtered.length);
-
-  const periodLabels = {
-    today:'დღეს (00:00–ახლა)', morning:'🌅 დილის ცვლა', evening:'🌇 საღამოს ცვლა',
-    yesterday:'გუშინ', custom: document.getElementById('em-date')?.value||''
-  };
-
-  const total = filtered.length;
-  const done  = filtered.filter(w => w.result==='შესრულდა').length;
-  const fail  = filtered.filter(w => w.result==='ვერ შესრულდა').length;
-  const temp  = filtered.filter(w => w.result==='დროებით გაკეთდა').length;
-  const pend  = filtered.filter(w => w.status==='pending').length;
-  const appr  = filtered.filter(w => w.status==='approved').length;
-
-  // Build compact text list (max 30 items to stay under 50kb)
-  const listItems = filtered.slice(0, 30).map((w,i) =>
-    `${i+1}. ${w.location||'—'} | ${w.workerName||'—'} | ${w.result||'—'} | ${w.status==='approved'?'✅':w.status==='rejected'?'❌':'⏳'}`
-  ).join('\n');
-
-  const moreText = filtered.length > 30 ? `\n... და კიდევ ${filtered.length-30} სამუშაო` : '';
-
-  const subject = `📋 სამუშაოს ანგარიში — ${periodLabels[period]} · ${total} სამ.`;
-
-  const message = `📊 სტატისტიკა:
-• სულ სამუშაო: ${total}
-• ✅ შესრულდა: ${done}
-• ❌ ვერ შესრულდა: ${fail}
-• 🔧 დროებით: ${temp}
-• ⏳ მოლოდინში: ${pend}
-• ✓ დამტკიცებული: ${appr}
-
-📋 სამუშაოების სია:
-${listItems}${moreText}
-
-🔗 სრული ანგარიში: agaiparashvili-svg.github.io/work-tracker`;
-
-  if (EMAILJS_PUBLIC_KEY === 'ᲨᲔᲜᲘ_PUBLIC_KEY') {
-    showEmailStatus(`⚠️ EmailJS არ არის კონფიგურირებული — იხ. ინსტრუქცია`, 'error');
-    return;
-  }
-
-  btn.disabled = true;
-  btn.textContent = '⏳ იგზავნება...';
-  showEmailStatus('⏳ იგზავნება...', 'info');
-
-  try {
-    emailjs.init(EMAILJS_PUBLIC_KEY);
-    await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
-      to_email: toEmail,
-      subject,
-      message,
-    });
-    showEmailStatus(`✅ მეილი გაიგზავნა → ${toEmail}`, 'success');
-  } catch(err) {
-    showEmailStatus(`❌ შეცდომა: ${err?.text || err?.message || 'გაგზავნა ვერ მოხერხდა'}`, 'error');
-  } finally {
-    btn.disabled = false;
-    btn.textContent = '📧 გაგზავნა';
-  }
-};
-
-function showEmailStatus(msg, type) {
-  const el = document.getElementById('em-status');
-  if (!el) return;
-  el.style.display = 'block';
-  el.textContent = msg;
-  el.style.background = type === 'success' ? 'rgba(5,150,105,.1)' : type === 'error' ? 'rgba(220,38,38,.1)' : 'rgba(79,70,229,.1)';
-  el.style.color = type === 'success' ? '#065f46' : type === 'error' ? '#991b1b' : '#3730a3';
-  el.style.border = `1px solid ${type === 'success' ? 'rgba(5,150,105,.3)' : type === 'error' ? 'rgba(220,38,38,.3)' : 'rgba(79,70,229,.3)'}`;
-}
-
 // ---- EXPORT EXCEL ----
 window.exportExcel = function() {
   const sf = document.getElementById('ex-st')?.value || 'all';
@@ -1742,100 +1482,6 @@ function downloadCSV(list) {
   URL.revokeObjectURL(url);
 }
 
-window.exportAndEmail = async function() {
-  const toEmail = document.getElementById('ex-email')?.value?.trim();
-  const statusEl = document.getElementById('ex-email-status');
-
-  if (!toEmail) { notify('მეილი მიუთითეთ', 'error'); return; }
-  if (EMAILJS_PUBLIC_KEY === 'ᲨᲔᲜᲘ_PUBLIC_KEY') {
-    notify('EmailJS არ არის კონფიგურირებული', 'error'); return;
-  }
-
-  // Get filtered list (same filters as Excel)
-  const sf = document.getElementById('ex-st')?.value || 'all';
-  const rf = document.getElementById('ex-res')?.value || 'all';
-  const wf = document.getElementById('ex-wk')?.value || 'all';
-  const cf = document.getElementById('ex-cat')?.value || 'all';
-  const fr = document.getElementById('ex-from')?.value;
-  const to = document.getElementById('ex-to')?.value;
-  let list = [...allWorks];
-  if (sf !== 'all') list = list.filter(w => w.status === sf);
-  if (rf !== 'all') list = list.filter(w => w.result === rf);
-  if (wf !== 'all') list = list.filter(w => w.workerId === wf);
-  if (cf !== 'all') list = list.filter(w => w.category === cf);
-  if (fr) list = list.filter(w => w.date >= fr);
-  if (to) list = list.filter(w => w.date <= to);
-  if (!list.length) { notify('ფილტრი ცარიელია', 'error'); return; }
-
-  // Download Excel
-  downloadCSV(list);
-
-  // Build email message
-  const sm = { pending:'⏳ მოლოდინში', approved:'✅ დამტკიცებული', rejected:'❌ უარყოფილი' };
-  const total = list.length;
-  const done  = list.filter(w => w.result === 'შესრულდა').length;
-  const fail  = list.filter(w => w.result === 'ვერ შესრულდა').length;
-  const temp  = list.filter(w => w.result === 'დროებით გაკეთდა').length;
-  const pend  = list.filter(w => w.status === 'pending').length;
-  const appr  = list.filter(w => w.status === 'approved').length;
-
-  // Filter description
-  const filterDesc = [
-    sf !== 'all' ? `სტატუსი: ${sf}` : '',
-    rf !== 'all' ? `შედეგი: ${rf}` : '',
-    cf !== 'all' ? `კატეგორია: ${cf}` : '',
-    fr ? `დან: ${fr}` : '',
-    to ? `მდე: ${to}` : '',
-  ].filter(Boolean).join(' | ') || 'ყველა';
-
-  const listText = list.slice(0, 25).map((w,i) =>
-    `${i+1}. ${w.location||'—'} | ${w.workerName||'—'} | ${w.result||'—'} | ${sm[w.status]||w.status||'—'} | ${w.date||''} ${w.time||''}`
-  ).join('\n') + (list.length > 25 ? `\n... და კიდევ ${list.length-25} სამუშაო` : '');
-
-  const dateStr = new Date().toISOString().slice(0,10);
-  const subject = `📊 Excel რეპორტი — ${dateStr} | ${total} სამ. | ფილტრი: ${filterDesc}`;
-  const message = `📊 სტატისტიკა:
-• სულ: ${total}
-• ✅ შესრულდა: ${done}
-• ❌ ვერ შესრულდა: ${fail}
-• 🔧 დროებით: ${temp}
-• ⏳ მოლოდინში: ${pend}
-• ✓ დამტკიცებული: ${appr}
-
-🔍 ფილტრი: ${filterDesc}
-
-📋 სამუშაოების სია:
-${listText}
-
-📎 Excel ფაილი ჩამოტვირთულია თქვენს კომპიუტერზე.
-🔗 სისტემა: agaiparashvili-svg.github.io/work-tracker`;
-
-  // Show loading
-  statusEl.style.display = 'block';
-  statusEl.textContent = '⏳ მეილი იგზავნება...';
-  statusEl.style.background = 'rgba(79,70,229,.08)';
-  statusEl.style.color = '#3730a3';
-  statusEl.style.border = '1px solid rgba(79,70,229,.2)';
-
-  try {
-    emailjs.init(EMAILJS_PUBLIC_KEY);
-    await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
-      to_email: toEmail,
-      subject,
-      message,
-    });
-    statusEl.textContent = `✅ მეილი გაიგზავნა → ${toEmail}`;
-    statusEl.style.background = 'rgba(5,150,105,.08)';
-    statusEl.style.color = '#065f46';
-    statusEl.style.border = '1px solid rgba(5,150,105,.2)';
-    setTimeout(() => { statusEl.style.display = 'none'; }, 5000);
-  } catch(err) {
-    statusEl.textContent = `❌ შეცდომა: ${err?.text || err?.message || 'გაგზავნა ვერ მოხერხდა'}`;
-    statusEl.style.background = 'rgba(220,38,38,.08)';
-    statusEl.style.color = '#991b1b';
-    statusEl.style.border = '1px solid rgba(220,38,38,.2)';
-  }
-};
 
 // ---- FILTERS (expose for onchange) ----
 window.renderReview = renderReview;
