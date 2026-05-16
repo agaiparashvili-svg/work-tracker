@@ -176,6 +176,7 @@
   td{padding:12px 14px;border-bottom:1px solid var(--border);vertical-align:middle;}
   tr:last-child td{border-bottom:none;}
   tr:hover td{background:rgba(99,102,241,.025);}
+  tr:hover td[style*="sticky"]{background:rgba(248,250,252,.98)!important;}
 
   /* ── FILE UPLOAD ── */
   .file-area{border:2px dashed var(--border);border-radius:var(--radius-lg);padding:28px;text-align:center;cursor:pointer;transition:all .2s;background:var(--surface2);}
@@ -519,14 +520,15 @@
           <button class="btn btn-sm" onclick="batchAct('rejected')" style="background:rgba(220,38,38,.1);color:#991b1b;border:1px solid rgba(220,38,38,.25);font-weight:700">❌ მონიშნულების უარყოფა</button>
           <button class="btn btn-ghost btn-sm" onclick="clearSelection()">გაუქმება</button>
         </div>
-        <p style="font-size:11px;color:var(--text3);margin-bottom:8px;display:none" id="scroll-hint">← გაიწიე მარჯვნივ სრული ცხრილის სანახავად →</p>
+        <p style="font-size:11px;color:var(--text2);margin-bottom:8px;text-align:right" id="scroll-hint">← გაიწიე მარჯვნივ · ღილაკები მარჯვნივ →</p>
         <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;" id="adm-table-wrap">
-          <table style="min-width:660px">
+          <table style="min-width:750px">
             <thead><tr>
-              <th style="width:36px;padding:10px 8px">
+              <th style="width:36px;padding:10px 8px;position:sticky;left:0;background:var(--surface2);z-index:2">
                 <input type="checkbox" id="select-all-cb" onclick="toggleSelectAll(this)" style="width:16px;height:16px;cursor:pointer;accent-color:var(--accent2)">
               </th>
-              <th>ობიექტი</th><th>კატეგ.</th><th>შემსრულებელი</th><th>შედეგი</th><th>სტატუსი</th><th>თარიღი</th><th style="min-width:100px">მოქმედება</th>
+              <th>ობიექტი</th><th>კატეგ.</th><th>შემსრულებელი</th><th>შედეგი</th><th>სტატუსი</th><th>თარიღი</th>
+              <th style="min-width:110px;position:sticky;right:0;background:var(--surface2);z-index:2">მოქმედება</th>
             </tr></thead>
             <tbody id="adm-tbody"></tbody>
           </table>
@@ -1099,7 +1101,7 @@ function renderAdminWorks() {
   document.getElementById('batch-bar').style.display = 'none';
 
   tb.innerHTML = list.map(w => `<tr id="tr-${w.id}">
-    <td style="padding:8px 8px">
+    <td style="padding:8px 8px;position:sticky;left:0;background:var(--surface);z-index:1">
       <input type="checkbox" class="work-cb" data-id="${w.id}" onchange="onCbChange()"
         style="width:16px;height:16px;cursor:pointer;accent-color:var(--accent2)">
     </td>
@@ -1109,7 +1111,7 @@ function renderAdminWorks() {
     <td>${rBadge(w.result)}</td>
     <td>${sBadge(w.status)}</td>
     <td style="font-size:12px;color:var(--text2);white-space:nowrap">${w.date||''}<br><span style="color:var(--text3)">${w.time||''}</span></td>
-    <td style="white-space:nowrap;min-width:100px">
+    <td style="white-space:nowrap;min-width:110px;position:sticky;right:0;background:var(--surface);z-index:1">
       <button class="btn btn-ghost btn-sm" onclick="openModal('${w.id}','admin')" title="დეტალები" style="padding:5px 8px">👁</button>
       <button class="btn btn-ghost btn-sm" onclick="openEditWork('${w.id}')" title="რედაქტირება" style="padding:5px 8px;margin-left:3px">✏️</button>
       <button class="btn btn-sm" onclick="admDeleteWork('${w.id}')" title="წაშლა" style="background:rgba(220,38,38,.1);color:#dc2626;border:1px solid rgba(220,38,38,.2);margin-left:3px;padding:5px 8px">🗑</button>
@@ -1265,7 +1267,17 @@ window.openModal = function(wid, viewAs) {
       <div class="detail-row"><span class="detail-label">👤 გადაამისამართა</span><span>${e(w.redirectedBy||'')}</span></div>
     ` : ''}
   `;
-  if (w.images?.length) html += `<div class="preview-grid" style="margin-top:12px">${w.images.map(im => `<div class="preview-item"><img src="${im.url || im.data || ''}" loading="lazy"></div>`).join('')}</div>`;
+  if (w.images?.length) html += `
+    <div style="margin-top:14px">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:8px">📷 ფოტო მასალა (${w.images.length})</div>
+      <div class="preview-grid">${w.images.map(im => {
+        const src = im.url || im.data || '';
+        return `<div class="preview-item" style="cursor:pointer" onclick="window.open('${src}','_blank')" title="გასადიდებლად დააჭირეთ">
+          <img src="${src}" loading="lazy" onerror="this.parentElement.innerHTML='<div style=\\'display:flex;align-items:center;justify-content:center;height:100%;font-size:11px;color:var(--text3)\\'>⚠️ ვერ ჩაიტვირთა</div>'">
+          <div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.4);color:white;font-size:10px;text-align:center;padding:3px">🔍 გადიდება</div>
+        </div>`;
+      }).join('')}</div>
+    </div>`;
   if (w.checkerComment) html += `<div class="comment-block" style="margin-top:12px">🔍 ${e(w.checkerComment)}</div>`;
   if (w.checkedBy) html += `<p class="text-sm" style="margin-top:8px">შეამოწმა: ${e(w.checkedBy)}</p>`;
   document.getElementById('m-body').innerHTML = html;
