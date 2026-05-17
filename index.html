@@ -468,6 +468,31 @@
       <div id="review-list"></div>
     </div>
 
+    <!-- STATISTICS -->
+    <div class="section" id="sec-stats">
+      <div class="section-header">
+        <h2>📈 სტატისტიკა</h2>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <select id="stat-period" onchange="renderStats()" style="font-size:12px;padding:7px 11px;border-radius:9px;border:1.5px solid var(--border)">
+            <option value="all">სულ ყველა</option>
+            <option value="today">დღეს</option>
+            <option value="week">ამ კვირაში</option>
+            <option value="month">ამ თვეში</option>
+          </select>
+        </div>
+      </div>
+      <!-- Overall stats -->
+      <div class="stats-grid" id="overall-stats" style="margin-bottom:24px"></div>
+      <!-- Worker ranking -->
+      <div class="card" style="padding:0;overflow:hidden">
+        <div style="padding:16px 20px;border-bottom:1.5px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+          <strong style="font-size:15px">👤 თანამშრომლების შეფასება</strong>
+          <span id="stat-period-label" style="font-size:12px;color:var(--text3);font-weight:600"></span>
+        </div>
+        <div id="worker-stats-list" style="padding:0"></div>
+      </div>
+    </div>
+
     <!-- ADMIN PREVIEW -->
     <div class="section" id="sec-preview">
       <div class="section-header"><h2>👁 როლის Preview</h2></div>
@@ -799,7 +824,7 @@ function buildNav(role, userData) {
     worker: [['sec-submit','📤 გაგზავნა'],['sec-myworks','📁 ჩემი'],['sec-tasks','📬 დავალებები']],
     nightwatch: [['sec-submit','📤 გაგზავნა'],['sec-myworks','📁 ჩემი']],
     supervisor: [['sec-submit','📤 გაგზავნა'],['sec-myworks','📁 ჩემი'],['sec-tasks','📬 დავალებები'],['sec-review','🔍 შემოწმება'],],
-    admin: [['sec-dashboard','📊 Dashboard'],['sec-users','👥 მომხმარებლები'],['sec-preview','👁 Preview'],['sec-export','📥 ექსპორტი']]
+    admin: [['sec-dashboard','📊 Dashboard'],['sec-stats','📈 სტატისტიკა'],['sec-users','👥 მომხმარებლები'],['sec-preview','👁 Preview'],['sec-export','📥 ექსპორტი']]
   };
   const items = map[role] || [];
   if (!items.length) { showSection('sec-pending'); return; }
@@ -825,6 +850,7 @@ function activateSection(id, el) {
   if (id === 'sec-review') renderReview();
   if (id === 'sec-myworks') renderMyWorks();
   if (id === 'sec-submit') renderAssigneeChips();
+  if (id === 'sec-stats') renderStats();
   if (id === 'sec-preview') renderPreviewSection();
   if (id === 'sec-dashboard') { renderAdminStats(); renderAdminWorks(); }
   if (id === 'sec-users') renderUsers();
@@ -851,7 +877,9 @@ function listenAllWorks(role) {
     allWorks = snap.docs.map(d => ({ id: d.id, ...d.data() }));
     myOwnWorks = allWorks.filter(w => w.workerId === currentUser.uid);
     if (role === 'supervisor') { renderReview(); renderMyWorks(); }
-    if (role === 'admin') { renderAdminStats(); renderAdminWorks(); }
+    if (role === 'admin') { renderAdminStats(); renderAdminWorks();
+      if (document.getElementById('sec-stats')?.classList.contains('active')) renderStats();
+    }
   });
 }
 
@@ -1532,6 +1560,148 @@ function downloadCSV(list) {
 // ---- FILTERS (expose for onchange) ----
 window.renderReview = renderReview;
 window.renderAdminWorks = renderAdminWorks;
+
+// ---- STATISTICS ----
+function getStatWorks() {
+  const period = document.getElementById('stat-period')?.value || 'all';
+  const now = new Date();
+  const tbOffset = 4*3600000;
+  const tbNow = new Date(now.getTime() + tbOffset);
+  const today = tbNow.toISOString().slice(0,10);
+
+  if (period === 'all') return allWorks;
+
+  return allWorks.filter(w => {
+    if (!w.date) return false;
+    if (period === 'today') return w.date === today;
+    if (period === 'week') {
+      const d = new Date(w.date);
+      const weekAgo = new Date(tbNow - 7*86400000);
+      return d >= weekAgo;
+    }
+    if (period === 'month') {
+      return w.date.slice(0,7) === today.slice(0,7);
+    }
+    return true;
+  });
+}
+
+function renderStats() {
+  const works = getStatWorks();
+  const period = document.getElementById('stat-period')?.value || 'all';
+  const labels = { all:'სულ ყველა', today:'დღეს', week:'ამ კვირაში', month:'ამ თვეში' };
+  const lbl = document.getElementById('stat-period-label');
+  if (lbl) lbl.textContent = labels[period] || '';
+
+  // ── Overall stats ──
+  const total  = works.length;
+  const done   = works.filter(w => w.result==='შესრულდა').length;
+  const fail   = works.filter(w => w.result==='ვერ შესრულდა').length;
+  const temp   = works.filter(w => w.result==='დროებით გაკეთდა').length;
+  const appr   = works.filter(w => w.status==='approved').length;
+  const pend   = works.filter(w => w.status==='pending').length;
+  const doneRate = total > 0 ? Math.round(done/total*100) : 0;
+  const apprRate = total > 0 ? Math.round(appr/total*100) : 0;
+
+  const overallEl = document.getElementById('overall-stats');
+  if (overallEl) overallEl.innerHTML = [
+    {n:total,   l:'სულ სამუშაო',    c:'var(--accent2)'},
+    {n:done,    l:'✅ შესრულდა',     c:'var(--good)'},
+    {n:fail,    l:'❌ ვერ შესრულდა', c:'var(--bad)'},
+    {n:temp,    l:'🔧 დროებით',      c:'var(--warn)'},
+    {n:appr,    l:'✓ დამტკიცებული', c:'#059669'},
+    {n:pend,    l:'⏳ მოლოდინში',    c:'#d97706'},
+    {n:`${doneRate}%`, l:'შესრულების %',  c:'var(--good)'},
+    {n:`${apprRate}%`, l:'დამტკიცების %', c:'var(--accent2)'},
+  ].map(s => `<div class="stat-card">
+    <div class="stat-num" style="color:${s.c}">${s.n}</div>
+    <div class="stat-label">${s.l}</div>
+  </div>`).join('');
+
+  // ── Per-worker stats ──
+  const workerMap = {};
+  works.forEach(w => {
+    const wid = w.workerId || 'unknown';
+    const name = w.workerName || '?';
+    if (!workerMap[wid]) workerMap[wid] = {
+      name, total:0, done:0, fail:0, temp:0, appr:0, pend:0, rej:0,
+      categories: {}
+    };
+    const wr = workerMap[wid];
+    wr.total++;
+    if (w.result==='შესრულდა') wr.done++;
+    if (w.result==='ვერ შესრულდა') wr.fail++;
+    if (w.result==='დროებით გაკეთდა') wr.temp++;
+    if (w.status==='approved') wr.appr++;
+    if (w.status==='pending') wr.pend++;
+    if (w.status==='rejected') wr.rej++;
+    if (w.category) wr.categories[w.category] = (wr.categories[w.category]||0)+1;
+  });
+
+  // Sort by total desc
+  const sorted = Object.values(workerMap).sort((a,b) => b.total - a.total);
+
+  const listEl = document.getElementById('worker-stats-list');
+  if (!listEl) return;
+  if (!sorted.length) {
+    listEl.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text3)">მონაცემები არ მოიძებნა</div>`;
+    return;
+  }
+
+  listEl.innerHTML = sorted.map((wr, idx) => {
+    const doneRate = wr.total > 0 ? Math.round(wr.done/wr.total*100) : 0;
+    const apprRate = wr.total > 0 ? Math.round(wr.appr/wr.total*100) : 0;
+    const barColor = doneRate >= 80 ? 'var(--good)' : doneRate >= 50 ? 'var(--warn)' : 'var(--bad)';
+    const medal = idx===0 ? '🥇' : idx===1 ? '🥈' : idx===2 ? '🥉' : `${idx+1}.`;
+    const topCat = Object.entries(wr.categories).sort((a,b)=>b[1]-a[1])[0];
+
+    // Avatar
+    const avStyle = avatarColor(wr.name);
+    const initials = avatarInitials(wr.name);
+
+    // Score — weighted: done*3 + appr*2 - fail*2 - rej*3
+    const score = wr.done*3 + wr.appr*2 - wr.fail*2 - wr.rej*3;
+    const scoreColor = score > 0 ? 'var(--good)' : score < 0 ? 'var(--bad)' : 'var(--text3)';
+
+    return `<div style="padding:16px 20px;border-bottom:1.5px solid var(--border);transition:background .15s" onmouseenter="this.style.background='rgba(79,70,229,.025)'" onmouseleave="this.style.background=''">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap">
+        <span style="font-size:20px;min-width:28px;text-align:center">${medal}</span>
+        <div class="wcard-avatar" style="${avStyle};width:36px;height:36px;font-size:13px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;color:white;font-weight:800;flex-shrink:0">${initials}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:15px;font-weight:800;color:var(--text)">${e(wr.name)}</div>
+          ${topCat ? `<div style="font-size:11px;color:var(--text3)">ძირითადი კატეგორია: ${e(topCat[0])} (${topCat[1]})</div>` : ''}
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:11px;color:var(--text3);font-weight:600">რეიტინგი</div>
+          <div style="font-size:20px;font-weight:800;color:${scoreColor}">${score > 0 ? '+' : ''}${score}</div>
+        </div>
+      </div>
+
+      <!-- Progress bar -->
+      <div style="height:6px;background:var(--surface3);border-radius:3px;margin-bottom:12px;overflow:hidden">
+        <div style="height:100%;width:${doneRate}%;background:${barColor};border-radius:3px;transition:width .5s"></div>
+      </div>
+
+      <!-- Stats grid -->
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:8px">
+        ${[
+          {n:wr.total, l:'სულ', c:'var(--accent2)'},
+          {n:wr.done,  l:'✅ შესრულდა', c:'var(--good)'},
+          {n:wr.fail,  l:'❌ ვერ', c:'var(--bad)'},
+          {n:wr.temp,  l:'🔧 დროებით', c:'var(--warn)'},
+          {n:wr.appr,  l:'✓ დამტკიცდა', c:'#059669'},
+          {n:wr.pend,  l:'⏳ მოლოდინში', c:'#d97706'},
+          {n:`${doneRate}%`, l:'შესრულება', c:barColor},
+          {n:`${apprRate}%`, l:'დამტკიცება', c:'var(--accent2)'},
+        ].map(s => `<div style="text-align:center;padding:8px 4px;background:var(--surface2);border-radius:8px;border:1px solid var(--border)">
+          <div style="font-size:16px;font-weight:800;color:${s.c}">${s.n}</div>
+          <div style="font-size:9px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.3px;margin-top:2px">${s.l}</div>
+        </div>`).join('')}
+      </div>
+    </div>`;
+  }).join('');
+}
+window.renderStats = renderStats;
 
 // ---- HELPERS ----
 window.switchTab = function(t) {
