@@ -406,7 +406,19 @@
         </div>
         <div class="form-row">
           <div class="form-group"><label>სამუშაოს თარიღი *</label><input type="date" id="w-date"></div>
-          <div class="form-group"><label>დრო *</label><input type="time" id="w-time"></div>
+          <div class="form-group"><label>დაწყების დრო *</label><input type="time" id="w-time"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>დასრულების დრო</label>
+            <input type="time" id="w-time-end">
+          </div>
+          <div class="form-group">
+            <label>⏱ შესრულების დრო</label>
+            <div id="duration-display" style="padding:11px 14px;background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--radius);font-size:14px;font-weight:700;color:var(--accent2);min-height:44px">
+              — მიუთითეთ დრო
+            </div>
+          </div>
         </div>
         <div class="form-group">
           <label>⚠️ დაზიანება / პრობლემა</label>
@@ -785,6 +797,30 @@ function launchApp(userData) {
   if (wd) wd.valueAsDate = new Date();
   const wt = document.getElementById('w-time');
   if (wt) { const n = new Date(); wt.value = n.getHours().toString().padStart(2,'0') + ':' + n.getMinutes().toString().padStart(2,'0'); }
+
+  // Duration auto-calculator
+  setTimeout(() => {
+    const timeEnd = document.getElementById('w-time-end');
+    const timeStart = document.getElementById('w-time');
+    if (timeEnd && timeStart) {
+      const calc = () => {
+        const s = timeStart.value, en = timeEnd.value;
+        const disp = document.getElementById('duration-display');
+        if (!disp) return;
+        if (!s || !en) { disp.textContent = '— მიუთითეთ დრო'; disp.style.color = 'var(--text3)'; return; }
+        const [sh,sm] = s.split(':').map(Number);
+        const [eh,em] = en.split(':').map(Number);
+        let mins = (eh*60+em) - (sh*60+sm);
+        if (mins < 0) mins += 24*60;
+        if (mins === 0) { disp.textContent = '— დრო ერთნაირია'; disp.style.color = 'var(--text3)'; return; }
+        const h = Math.floor(mins/60), m = mins%60;
+        disp.textContent = h > 0 ? `${h} სთ ${m} წთ` : `${m} წთ`;
+        disp.style.color = 'var(--accent2)';
+      };
+      timeStart.addEventListener('change', calc);
+      timeEnd.addEventListener('change', calc);
+    }
+  }, 500);
   if ('Notification' in window && Notification.permission === 'default' && userData.role !== 'admin' && userData.role !== 'pending') {
     setTimeout(showPermBanner, 1000);
   }
@@ -964,6 +1000,16 @@ window.submitWork = async function() {
   const loc = document.getElementById('w-loc').value.trim();
   const date = document.getElementById('w-date').value;
   const time = document.getElementById('w-time').value;
+  const timeEnd = document.getElementById('w-time-end').value;
+  // Calculate duration
+  let durationMins = null;
+  if (time && timeEnd) {
+    const [sh,sm] = time.split(':').map(Number);
+    const [eh,em] = timeEnd.split(':').map(Number);
+    let mins = (eh*60+em) - (sh*60+sm);
+    if (mins < 0) mins += 24*60;
+    if (mins > 0) durationMins = mins;
+  }
   const dmg = document.getElementById('w-dmg').value.trim();
   const comment = document.getElementById('w-comment').value.trim();
   const cat = chipState.cat;
@@ -992,6 +1038,9 @@ window.submitWork = async function() {
       workerName: userData.displayName || userData.name,
       workerEmail: userData.email,
       location: loc, category: cat, date, time,
+      timeEnd: timeEnd || null,
+      durationMins: durationMins,
+      coefficient: null,
       damage: dmg, result: res, comment,
       images: imageUrls,
       status: userData.role === 'nightwatch' ? 'approved' : 'pending',
@@ -1008,6 +1057,10 @@ window.submitWork = async function() {
     document.getElementById('w-date').valueAsDate = new Date();
     const n = new Date();
     document.getElementById('w-time').value = n.getHours().toString().padStart(2,'0') + ':' + n.getMinutes().toString().padStart(2,'0');
+    const te = document.getElementById('w-time-end');
+    if (te) te.value = '';
+    const dd = document.getElementById('duration-display');
+    if (dd) { dd.textContent = '— მიუთითეთ დრო'; dd.style.color = 'var(--text3)'; }
     document.querySelectorAll('[id^="cc-"],[id^="rc-"]').forEach(el =>
       el.classList.remove('sel-blue','sel-green','sel-red','sel-yellow')
     );
@@ -1257,8 +1310,27 @@ window.openModal = function(wid, viewAs) {
     <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px">${rBadge(w.result)} ${sBadge(w.status)}</div>
     <div class="detail-row"><span class="detail-label">📍 ობიექტი</span><span>${e(w.location||'—')}</span></div>
     <div class="detail-row"><span class="detail-label">📋 კატეგორია</span><span>${e(w.category||'—')}</span></div>
-    <div class="detail-row"><span class="detail-label">📅 თარიღი / დრო</span><span>${w.date||''}${w.time?' · '+w.time:''}</span></div>
+    <div class="detail-row"><span class="detail-label">📅 თარიღი / დრო</span><span>${w.date||''}${w.time?' · '+w.time:''}${w.timeEnd?' – '+w.timeEnd:''}</span></div>
+    ${w.durationMins ? `<div class="detail-row"><span class="detail-label">⏱ შესრულების დრო</span><span style="font-weight:700;color:var(--accent2)">${w.durationMins>=60?Math.floor(w.durationMins/60)+' სთ '+(w.durationMins%60)+' წთ':w.durationMins+' წთ'}</span></div>` : ''}
     <div class="detail-row"><span class="detail-label">👤 შემსრულებელი</span><span>${e(w.workerName||'')}</span></div>
+    <div class="detail-row">
+      <span class="detail-label">⭐ კოეფიციენტი</span>
+      <span id="coef-display-${wid}">
+        ${w.coefficient != null
+          ? `<span style="font-size:18px;font-weight:800;color:var(--warn)">${'⭐'.repeat(w.coefficient)} (${w.coefficient})</span>`
+          : `<span style="color:var(--text3)">— არ არის მინიჭებული</span>`}
+        ${(viewAs==='admin'||viewAs==='supervisor') ? `
+          <select id="coef-sel-${wid}" onchange="saveCoefficient('${wid}',this.value)"
+            style="margin-left:8px;font-size:12px;padding:4px 8px;border-radius:8px;border:1.5px solid var(--border)">
+            <option value="">მინიჭება...</option>
+            <option value="1" ${w.coefficient===1?'selected':''}>⭐ 1 — მარტივი</option>
+            <option value="2" ${w.coefficient===2?'selected':''}>⭐⭐ 2 — საშუალო</option>
+            <option value="3" ${w.coefficient===3?'selected':''}>⭐⭐⭐ 3 — რთული</option>
+            <option value="4" ${w.coefficient===4?'selected':''}>⭐⭐⭐⭐ 4 — ძალიან რთული</option>
+            <option value="5" ${w.coefficient===5?'selected':''}>⭐⭐⭐⭐⭐ 5 — განსაკუთრებული</option>
+          </select>` : ''}
+      </span>
+    </div>
     ${w.damage ? `<div class="detail-row"><span class="detail-label">⚠️ დაზიანება</span><span>${e(w.damage)}</span></div>` : ''}
     ${w.comment ? `<div class="detail-row"><span class="detail-label">💬 კომენტარი</span><span>${e(w.comment)}</span></div>` : ''}
     ${w.assignedTo?.length ? `<div class="detail-row"><span class="detail-label">👤 გაგზავნილია</span><span>${w.assignedTo.map(uid=>{ const u=allUsers.find(x=>x.id===uid); return u?e(u.name):uid; }).join(', ')}</span></div>` : ''}
@@ -1348,6 +1420,22 @@ window.admAct = async function(wid, status) {
   });
   window.closeModal();
   notify(status === 'approved' ? '✓ დამტკიცდა!' : 'უარყოფილია', status === 'approved' ? 'success' : 'error');
+};
+
+window.saveCoefficient = async function(wid, val) {
+  if (!val) return;
+  const coef = parseInt(val);
+  try {
+    await updateDoc(doc(db, 'works', wid), { coefficient: coef });
+    // Update display in modal
+    const disp = document.getElementById('coef-display-' + wid);
+    if (disp) {
+      const sel = document.getElementById('coef-sel-' + wid);
+      const selHtml = sel ? sel.outerHTML : '';
+      disp.innerHTML = `<span style="font-size:18px;font-weight:800;color:var(--warn)">${'⭐'.repeat(coef)} (${coef})</span> ${selHtml}`;
+    }
+    notify(`⭐ კოეფიციენტი ${coef} მინიჭებულია`, 'success');
+  } catch(err) { notify('შეცდომა: ' + err.message, 'error'); }
 };
 
 // ---- BATCH SELECTION ----
@@ -1625,6 +1713,7 @@ function renderStats() {
     const name = w.workerName || '?';
     if (!workerMap[wid]) workerMap[wid] = {
       name, total:0, done:0, fail:0, temp:0, appr:0, pend:0, rej:0,
+      coefSum:0, coefCount:0, durationSum:0, durationCount:0,
       categories: {}
     };
     const wr = workerMap[wid];
@@ -1635,6 +1724,8 @@ function renderStats() {
     if (w.status==='approved') wr.appr++;
     if (w.status==='pending') wr.pend++;
     if (w.status==='rejected') wr.rej++;
+    if (w.coefficient) { wr.coefSum += w.coefficient; wr.coefCount++; }
+    if (w.durationMins) { wr.durationSum += w.durationMins; wr.durationCount++; }
     if (w.category) wr.categories[w.category] = (wr.categories[w.category]||0)+1;
   });
 
@@ -1654,13 +1745,15 @@ function renderStats() {
     const barColor = doneRate >= 80 ? 'var(--good)' : doneRate >= 50 ? 'var(--warn)' : 'var(--bad)';
     const medal = idx===0 ? '🥇' : idx===1 ? '🥈' : idx===2 ? '🥉' : `${idx+1}.`;
     const topCat = Object.entries(wr.categories).sort((a,b)=>b[1]-a[1])[0];
+    const score = wr.done*3 + wr.appr*2 - wr.fail*2 - wr.rej*3 + Math.round(wr.coefSum||0);
 
     // Avatar
     const avStyle = avatarColor(wr.name);
     const initials = avatarInitials(wr.name);
 
-    // Score — weighted: done*3 + appr*2 - fail*2 - rej*3
-    const score = wr.done*3 + wr.appr*2 - wr.fail*2 - wr.rej*3;
+    const avgCoef = wr.coefCount > 0 ? (wr.coefSum/wr.coefCount).toFixed(1) : null;
+    const avgDur  = wr.durationCount > 0 ? Math.round(wr.durationSum/wr.durationCount) : null;
+    const avgDurStr = avgDur ? (avgDur>=60 ? `${Math.floor(avgDur/60)}სთ ${avgDur%60}წთ` : `${avgDur}წთ`) : null;
     const scoreColor = score > 0 ? 'var(--good)' : score < 0 ? 'var(--bad)' : 'var(--text3)';
 
     return `<div style="padding:16px 20px;border-bottom:1.5px solid var(--border);transition:background .15s" onmouseenter="this.style.background='rgba(79,70,229,.025)'" onmouseleave="this.style.background=''">
@@ -1669,7 +1762,11 @@ function renderStats() {
         <div class="wcard-avatar" style="${avStyle};width:36px;height:36px;font-size:13px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;color:white;font-weight:800;flex-shrink:0">${initials}</div>
         <div style="flex:1;min-width:0">
           <div style="font-size:15px;font-weight:800;color:var(--text)">${e(wr.name)}</div>
-          ${topCat ? `<div style="font-size:11px;color:var(--text3)">ძირითადი კატეგორია: ${e(topCat[0])} (${topCat[1]})</div>` : ''}
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px">
+            ${topCat ? `<span style="font-size:11px;color:var(--text3);background:var(--surface2);padding:2px 8px;border-radius:20px;border:1px solid var(--border)">${e(topCat[0])} (${topCat[1]})</span>` : ''}
+            ${avgCoef ? `<span style="font-size:11px;font-weight:700;color:var(--warn);background:rgba(245,158,11,.08);padding:2px 8px;border-radius:20px;border:1px solid rgba(245,158,11,.2)">⭐ ${avgCoef} საშ. კოეფ.</span>` : ''}
+            ${avgDurStr ? `<span style="font-size:11px;font-weight:700;color:var(--accent2);background:rgba(79,70,229,.08);padding:2px 8px;border-radius:20px;border:1px solid rgba(79,70,229,.2)">⏱ ${avgDurStr} საშ. დრო</span>` : ''}
+          </div>
         </div>
         <div style="text-align:right">
           <div style="font-size:11px;color:var(--text3);font-weight:600">რეიტინგი</div>
