@@ -599,6 +599,8 @@
               <strong>🌅 09:30</strong> — ღამის ცვლა (00:00–09:30)<br>
               <strong>🌇 18:00</strong> — დღის ცვლა (09:30–18:00)<br>
               <span style="background:rgba(79,70,229,.1);color:var(--accent2);padding:2px 8px;border-radius:20px;font-size:11px;font-weight:700;display:inline-block;margin-top:4px">a.gaiparashvili@lopotaresort.com</span>
+              <span style="background:rgba(79,70,229,.1);color:var(--accent2);padding:2px 8px;border-radius:20px;font-size:11px;font-weight:700;display:inline-block;margin-top:4px">a.akhalmosulishvili@lopotaresort.com</span>
+              <span style="background:rgba(79,70,229,.1);color:var(--accent2);padding:2px 8px;border-radius:20px;font-size:11px;font-weight:700;display:inline-block;margin-top:4px">n.kakashvili@lopotaresort.com</span>
             </div>
           </div>
           <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-end">
@@ -676,6 +678,23 @@ const db = getFirestore(fireApp);
 const storage = getStorage(fireApp);
 let messaging = null;
 try { messaging = getMessaging(fireApp); } catch(e) { /* not supported */ }
+
+// ---- REPORT EMAIL RECIPIENTS ----
+const REPORT_EMAILS = [
+  'a.gaiparashvili@lopotaresort.com',
+  'a.akhalmosulishvili@lopotaresort.com',
+  'n.kakashvili@lopotaresort.com'
+];
+
+// Write email config to Firestore so Cloud Function can read it
+async function syncEmailConfig() {
+  try {
+    await setDoc(doc(db, 'settings', 'email'), {
+      recipients: REPORT_EMAILS,
+      updatedAt: serverTimestamp()
+    });
+  } catch(e) { /* silently fail if no permission */ }
+}
 
 // ---- GLOBALS ----
 let currentUser = null;
@@ -793,6 +812,8 @@ function launchApp(userData) {
   b.textContent = rl[userData.role] || userData.role;
   b.className = 'role-badge ' + (rc[userData.role] || 'role-pending');
   buildNav(userData.role, userData);
+  // Sync email recipients config to Firestore (admin only)
+  if (userData.role === 'admin') syncEmailConfig();
   const wd = document.getElementById('w-date');
   if (wd) wd.valueAsDate = new Date();
   const wt = document.getElementById('w-time');
@@ -1593,7 +1614,8 @@ window.sendTestEmail = async function() {
       type: 'test',
       requestedBy: currentUser.uid,
       requestedAt: serverTimestamp(),
-      sent: false
+      sent: false,
+      recipients: REPORT_EMAILS
     });
     statusEl.textContent = '✅ მოთხოვნა გაიგზავნა — მეილი 1-2 წუთში მოვა';
     statusEl.style.color = 'var(--good)';
