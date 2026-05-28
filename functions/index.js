@@ -22,19 +22,13 @@ const REPORT_EMAILS = [
 ];
 
 // ── HTML რეპორტის builder ─────────────────────────────────
-async function buildReport(shiftLabel, timeFrom, timeTo, dateStr) {
-  const snap = await db.collection('works').where('date', '==', dateStr).get();
-  const all = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-
-  const toMins = t => { const [h, m] = t.split(':').map(Number); return h * 60 + m; };
-  const fromMins = toMins(timeFrom);
-  const toMinsEnd = toMins(timeTo);
-
-  const works = all.filter(w => {
-    if (!w.time) return false;
-    const m = toMins(w.time);
-    return m >= fromMins && m < toMinsEnd;
-  });
+async function buildReport(shiftLabel, hoursBack, dateStr) {
+  const since = new Date(Date.now() - hoursBack * 3600000);
+  const snap = await db.collection('works')
+    .where('submittedAt', '>=', since)
+    .orderBy('submittedAt', 'desc')
+    .get();
+  const works = snap.docs.map(d => ({ id: d.id, ...d.data() }));
 
   const total  = works.length;
   const done   = works.filter(w => w.result === 'შესრულდა').length;
@@ -107,7 +101,7 @@ exports.morningReport = functions
   .timeZone('Asia/Tbilisi')
   .onRun(async () => {
     const date = todayTbilisi();
-    const html = await buildReport('🌅 ღამის ცვლის შეჯამება', '00:00', '09:30', date);
+    const html = await buildReport('🌅 ღამის ცვლის შეჯამება', 15, date);
     await transporter.sendMail({
       from: `"სამუშაო Tracker" <${GMAIL_USER}>`,
       to: REPORT_EMAILS.join(', '),
@@ -125,7 +119,7 @@ exports.eveningReport = functions
   .timeZone('Asia/Tbilisi')
   .onRun(async () => {
     const date = todayTbilisi();
-    const html = await buildReport('🌇 დღის ცვლის შეჯამება', '09:30', '18:00', date);
+    const html = await buildReport('🌇 დღის ცვლის შეჯამება', 9, date);
     await transporter.sendMail({
       from: `"სამუშაო Tracker" <${GMAIL_USER}>`,
       to: REPORT_EMAILS.join(', '),
@@ -147,7 +141,7 @@ exports.handleEmailQueue = functions
     const date = todayTbilisi();
     const recipients = data.recipients || REPORT_EMAILS;
 
-    const html = await buildReport('🧪 საცდელი მეილი (მიმდინარე დღე)', '00:00', '23:59', date);
+    const html = await buildReport('🧪 საცდელი მეილი (ბოლო 24 საათი)', 24, date);
     await transporter.sendMail({
       from: `"სამუშაო Tracker" <${GMAIL_USER}>`,
       to: recipients.join(', '),
