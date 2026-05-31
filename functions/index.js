@@ -248,11 +248,11 @@ exports.handleEmailQueue = functions
     return null;
   });
 
-// ── 4. საქვაბის შემოწმება: დღიური შეჯამება 23:30 Tbilisi ──
-//    (დროის შესაცვლელად შეცვალე '30 23' — წუთი/საათი)
+// ── 4. საქვაბის შემოწმება: დღიური შეჯამება 10:00 Tbilisi ──
+//    (დროის შესაცვლელად შეცვალე '0 10' — წუთი/საათი)
 exports.dailyBoilerReport = functions
   .region('us-central1')
-  .pubsub.schedule('30 23 * * *')
+  .pubsub.schedule('0 10 * * *')
   .timeZone('Asia/Tbilisi')
   .onRun(async () => {
     const list = await getInspections(24);
