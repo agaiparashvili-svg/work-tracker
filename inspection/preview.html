@@ -235,18 +235,18 @@ const INSPECT_OBJECTS = [
 const DEMO_NAME = 'გიორგი მაისურაძე';
 let allInspections = [
   { id:'s1', objectId:'k1', objectName:'პირველი კორპუსი', type:'both',
-    hotwater:{filled:'ჩართულია',temp:56,pressure:2.1,comment:''},
-    cooling:{status:'მუშაობს',temp:7,pressure:1.4,expander:'წესრიგშია',comment:''},
+    hotwater:{filled:'ჩართულია',pump:'მუშაობს',comment:''},
+    cooling:{status:'მუშაობს',pumps:'მუშაობს',expander:'მუშაობს',comment:''},
     images:[], workerName:DEMO_NAME, workerEmail:'giorgi@example.com', date:'2026-05-31', time:'09:20' },
   { id:'s2', objectId:'k11', objectName:'11 კორპუსი', type:'wateronly',
-    hotwater:{filled:'გათიშულია',temp:38,pressure:1.0,comment:'სისტემა გათიშულია, ჩასართავია'},
+    hotwater:{filled:'გათიშულია',pump:'დაზიანებულია',comment:'სისტემა გათიშულია, ტუმბო დაზიანებულია'},
     cooling:null, images:[], workerName:DEMO_NAME, workerEmail:'giorgi@example.com', date:'2026-05-31', time:'10:05' },
   { id:'s3', objectId:'cafe', objectName:'კაფეტერია', type:'wateronly',
-    hotwater:{filled:'ჩართულია',temp:60,pressure:2.3,comment:''},
+    hotwater:{filled:'ჩართულია',pump:'მუშაობს',comment:''},
     cooling:null, images:[], workerName:'ნინო ბერიძე', workerEmail:'nino@example.com', date:'2026-05-30', time:'18:40' },
   { id:'s4', objectId:'ovali', objectName:'ოვალი', type:'both',
-    hotwater:{filled:'ჩართულია',temp:54,pressure:2.0,comment:''},
-    cooling:{status:'პრობლემა',temp:12,pressure:0.9,expander:'პრობლემა',comment:'ჩილერი ხმაურობს, წნევა დაბალია'},
+    hotwater:{filled:'ჩართულია',pump:'მუშაობს',comment:''},
+    cooling:{status:'პრობლემა',pumps:'მუშაობს',expander:'მოსატენი',comment:'გამაფართოებელი ბალონი მოსატენია'},
     images:[], workerName:'ნინო ბერიძე', workerEmail:'nino@example.com', date:'2026-05-30', time:'19:15' },
 ];
 let myInspections = [];
@@ -325,19 +325,21 @@ function renderObjGrid(){
 function coolBlockHtml(){
   return `<div class="sys-block cool">
     <div class="sys-title">❄️ გაგრილება / ჩილერი</div>
-    <div class="form-group"><label>სტატუსი *</label>
+    <div class="form-group"><label>მდგომარეობა *</label>
       <div class="chip-group">
         <label class="chip" data-cls="sel-green"><input type="radio" name="cool-status" value="მუშაობს" onchange="inspSel(this)"><span>✅ მუშაობს</span></label>
         <label class="chip" data-cls="sel-yellow"><input type="radio" name="cool-status" value="პრობლემა" onchange="inspSel(this)"><span>⚠️ პრობლემა</span></label>
         <label class="chip" data-cls="sel-red"><input type="radio" name="cool-status" value="არ მუშაობს" onchange="inspSel(this)"><span>❌ არ მუშაობს</span></label>
       </div>
     </div>
-    <div class="form-row">
-      <div class="form-group"><label>🌡 ტემპერატურა (°C)</label><input type="number" step="0.1" id="cool-temp" placeholder="მაგ: 7"></div>
-      <div class="form-group"><label>📊 წნევა (bar)</label><input type="number" step="0.1" id="cool-pressure" placeholder="მაგ: 1.5"></div>
+    <div class="form-group"><label>🔄 ცირკულაციის ტუმბოები *</label>
+      <div class="chip-group">
+        <label class="chip" data-cls="sel-green"><input type="radio" name="cool-pumps" value="მუშაობს" onchange="inspSel(this)"><span>✅ მუშაობს</span></label>
+        <label class="chip" data-cls="sel-red"><input type="radio" name="cool-pumps" value="დაზიანებულია" onchange="inspSel(this)"><span>❌ დაზიანებულია</span></label>
+      </div>
     </div>
-    <div class="form-group"><label>⚙️ გამაფართოებლის მდგომარეობა</label>
-      <select id="cool-expander"><option value="">— აირჩიეთ —</option><option value="წესრიგშია">✅ წესრიგშია</option><option value="პრობლემა">⚠️ პრობლემა</option><option value="არ მუშაობს">❌ არ მუშაობს</option></select>
+    <div class="form-group"><label>⚙️ გამაფართოებელი ბალონები</label>
+      <select id="cool-expander"><option value="">— აირჩიეთ —</option><option value="მუშაობს">✅ მუშაობს</option><option value="დაზიანებულია">❌ დაზიანებულია</option><option value="მოსატენი">⚠️ მოსატენი</option></select>
     </div>
     <div class="form-group"><label>💬 კომენტარი</label><textarea id="cool-comment" placeholder="შენიშვნა (სურვილისამებრ)..."></textarea></div>
   </div>`;
@@ -351,9 +353,11 @@ function waterBlockHtml(){
         <label class="chip" data-cls="sel-red"><input type="radio" name="water-filled" value="გათიშულია" onchange="inspSel(this)"><span>❌ გათიშულია</span></label>
       </div>
     </div>
-    <div class="form-row">
-      <div class="form-group"><label>🌡 წყლის ტემპერატურა (°C)</label><input type="number" step="0.1" id="water-temp" placeholder="მაგ: 55"></div>
-      <div class="form-group"><label>📊 წნევა (bar)</label><input type="number" step="0.1" id="water-pressure" placeholder="მაგ: 2"></div>
+    <div class="form-group"><label>🔄 რეცირკულაციის ტუმბო *</label>
+      <div class="chip-group">
+        <label class="chip" data-cls="sel-green"><input type="radio" name="water-pump" value="მუშაობს" onchange="inspSel(this)"><span>✅ მუშაობს</span></label>
+        <label class="chip" data-cls="sel-red"><input type="radio" name="water-pump" value="დაზიანებულია" onchange="inspSel(this)"><span>❌ დაზიანებულია</span></label>
+      </div>
     </div>
     <div class="form-group"><label>💬 კომენტარი</label><textarea id="water-comment" placeholder="შენიშვნა (სურვილისამებრ)..."></textarea></div>
   </div>`;
@@ -406,15 +410,18 @@ window.submitInspection = function(){
   const obj=currentInspectObj; if(!obj){ notify('აირჩიეთ ობიექტი','error'); return; }
   const getR=n=>document.querySelector(`#inspect-form-host input[name="${n}"]:checked`)?.value||null;
   const gv=id=>{ const el=$(id); return el?el.value.trim():''; };
-  const num=v=>v===''?null:Number(v);
   const filled=getR('water-filled');
-  if(!filled){ notify('მიუთითეთ წყლის მდგომარეობა','error'); return; }
-  const hotwater={ filled, temp:num(gv('water-temp')), pressure:num(gv('water-pressure')), comment:gv('water-comment') };
+  if(!filled){ notify('მიუთითეთ ცხელი წყლის მდგომარეობა','error'); return; }
+  const waterPump=getR('water-pump');
+  if(!waterPump){ notify('მიუთითეთ რეცირკულაციის ტუმბოს მდგომარეობა','error'); return; }
+  const hotwater={ filled, pump:waterPump, comment:gv('water-comment') };
   let cooling=null;
   if(obj.type==='both'){
     const cs=getR('cool-status');
-    if(!cs){ notify('მიუთითეთ გაგრილების სტატუსი','error'); return; }
-    cooling={ status:cs, temp:num(gv('cool-temp')), pressure:num(gv('cool-pressure')), expander:gv('cool-expander'), comment:gv('cool-comment') };
+    if(!cs){ notify('მიუთითეთ ჩილერის მდგომარეობა','error'); return; }
+    const cp=getR('cool-pumps');
+    if(!cp){ notify('მიუთითეთ ცირკულაციის ტუმბოების მდგომარეობა','error'); return; }
+    cooling={ status:cs, pumps:cp, expander:gv('cool-expander'), comment:gv('cool-comment') };
   }
   const now=new Date();
   const date=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
@@ -468,7 +475,8 @@ window.clearInspectFilter=function(){
 
 function insBadge(status){
   const m={'მუშაობს':['s-good','✅ მუშაობს'],'პრობლემა':['s-warn','⚠️ პრობლემა'],'არ მუშაობს':['s-bad','❌ არ მუშაობს'],
-    'ჩართულია':['s-good','✅ ჩართულია'],'გათიშულია':['s-bad','❌ გათიშულია'],'წესრიგშია':['s-good','✅ წესრიგშია']};
+    'ჩართულია':['s-good','✅ ჩართულია'],'გათიშულია':['s-bad','❌ გათიშულია'],
+    'დაზიანებულია':['s-bad','❌ დაზიანებულია'],'მოსატენი':['s-warn','⚠️ მოსატენი'],'წესრიგშია':['s-good','✅ წესრიგშია']};
   const [c,l]=m[status]||['', status||'—'];
   return `<span class="status ${c}">${l}</span>`;
 }
@@ -495,10 +503,13 @@ window.openInspectModal=function(id){
   const sysHtml=(title,color,sys,isWater)=>{
     if(!sys) return '';
     let r=`<div style="height:1px;background:var(--border);margin:14px 0 10px"></div><div style="font-weight:800;color:${color};margin-bottom:8px">${title}</div>`;
-    r+=`<div class="detail-row"><span class="detail-label">${isWater?'მდგომარეობა':'სტატუსი'}</span><span>${insBadge(isWater?sys.filled:sys.status)}</span></div>`;
-    if(sys.temp!=null&&sys.temp!=='') r+=`<div class="detail-row"><span class="detail-label">🌡 ტემპერატურა</span><span>${e(sys.temp)} °C</span></div>`;
-    if(sys.pressure!=null&&sys.pressure!=='') r+=`<div class="detail-row"><span class="detail-label">📊 წნევა</span><span>${e(sys.pressure)} bar</span></div>`;
-    if(sys.expander) r+=`<div class="detail-row"><span class="detail-label">⚙️ გამაფართოებელი</span><span>${insBadge(sys.expander)}</span></div>`;
+    r+=`<div class="detail-row"><span class="detail-label">მდგომარეობა</span><span>${insBadge(isWater?sys.filled:sys.status)}</span></div>`;
+    if(isWater){
+      if(sys.pump) r+=`<div class="detail-row"><span class="detail-label">🔄 რეცირკ. ტუმბო</span><span>${insBadge(sys.pump)}</span></div>`;
+    } else {
+      if(sys.pumps) r+=`<div class="detail-row"><span class="detail-label">🔄 ცირკ. ტუმბოები</span><span>${insBadge(sys.pumps)}</span></div>`;
+      if(sys.expander) r+=`<div class="detail-row"><span class="detail-label">⚙️ გამაფართ. ბალონები</span><span>${insBadge(sys.expander)}</span></div>`;
+    }
     if(sys.comment) r+=`<div class="comment-block">${e(sys.comment)}</div>`;
     return r;
   };
@@ -523,12 +534,12 @@ window.exportInspectCSV=function(){
   const list=filteredAllInspections();
   if(!list.length){ notify('სია ცარიელია','error'); return; }
   const hdr=['#','ობიექტი','თანამშრომელი','ელ-ფოსტა','თარიღი','დრო',
-    'წყალი-მდგომარეობა','წყალი-ტემპ(°C)','წყალი-წნევა(bar)','წყალი-კომენტარი',
-    'გაგრილება-სტატუსი','გაგრილება-ტემპ(°C)','გაგრილება-წნევა(bar)','გაგრილება-გამაფართოებელი','გაგრილება-კომენტარი'];
+    'წყალი-მდგომარეობა','წყალი-რეცირკ.ტუმბო','წყალი-კომენტარი',
+    'ჩილერი-მდგომარეობა','ჩილერი-ცირკ.ტუმბოები','ჩილერი-გამაფართ.ბალონები','ჩილერი-კომენტარი'];
   const rows=list.map((x,i)=>{ const w=x.hotwater||{}, c=x.cooling||{};
     return [i+1,x.objectName||'',x.workerName||'',x.workerEmail||'',x.date||'',x.time||'',
-      w.filled||'',w.temp??'',w.pressure??'',w.comment||'',
-      c.status||'',c.temp??'',c.pressure??'',c.expander||'',c.comment||'']; });
+      w.filled||'',w.pump||'',w.comment||'',
+      c.status||'',c.pumps||'',c.expander||'',c.comment||'']; });
   const csv=[hdr,...rows].map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
   const blob=new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8;'});
   const url=URL.createObjectURL(blob);
