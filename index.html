@@ -283,6 +283,28 @@
     .stats-grid{grid-template-columns:repeat(2,1fr);}
     .nav-item{padding:10px 8px;font-size:11px;}
   }
+
+  /* ── INSPECTION ── */
+  .obj-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-top:6px;}
+  .obj-btn{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius-lg);padding:16px 14px;cursor:pointer;text-align:left;transition:all .2s;display:flex;flex-direction:column;gap:6px;font-family:inherit;}
+  .obj-btn:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:0 6px 22px rgba(5,150,105,.14);}
+  .obj-btn .obj-name{font-size:15px;font-weight:800;color:var(--text);letter-spacing:-.3px;}
+  .obj-btn .obj-tags{display:flex;gap:5px;flex-wrap:wrap;}
+  .obj-tag{font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;letter-spacing:.2px;}
+  .obj-tag.heat{background:var(--warn-dim);color:#b45309;}
+  .obj-tag.cool{background:var(--accent2-dim);color:#4338ca;}
+  .obj-tag.water{background:rgba(2,132,199,.1);color:#0369a1;}
+  .obj-btn .obj-last{font-size:11px;color:var(--text3);font-weight:600;}
+  .sys-block{border:1.5px solid var(--border);border-radius:var(--radius-lg);padding:18px;margin-bottom:16px;background:var(--surface);}
+  .sys-block.heat{border-left:4px solid var(--warn);}
+  .sys-block.cool{border-left:4px solid var(--accent2);}
+  .sys-block.water{border-left:4px solid var(--sky);}
+  .sys-title{font-size:15px;font-weight:800;letter-spacing:-.3px;margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+  .ins-status .chip.sel-green{border-color:var(--accent);background:var(--accent-dim);color:#047857;}
+  .ins-status .chip.sel-red{border-color:var(--danger);background:var(--danger-dim);color:#b91c1c;}
+  .ins-status .chip.sel-yellow{border-color:var(--warn);background:var(--warn-dim);color:#b45309;}
+  .ins-back{display:inline-flex;align-items:center;gap:6px;cursor:pointer;color:var(--text2);font-size:13px;font-weight:700;margin-bottom:14px;background:none;border:none;font-family:inherit;}
+  .ins-back:hover{color:var(--accent);}
 </style>
 </head>
 <body>
@@ -636,6 +658,42 @@
         <button class="btn btn-primary" style="max-width:260px" onclick="exportExcel()">📊 Excel ჩამოტვირთვა</button>
       </div>
     </div>
+
+    <!-- INSPECTION — SUBMIT -->
+    <div class="section" id="sec-inspect">
+      <div class="section-header"><h2>🌡 გათბობა / გაგრილების შემოწმება</h2></div>
+      <div id="inspect-picker">
+        <p style="color:var(--text2);font-size:13px;margin-bottom:14px">აირჩიეთ ობიექტი, რომელსაც ამოწმებთ</p>
+        <div class="obj-grid" id="obj-grid"></div>
+      </div>
+      <div id="inspect-form-host" style="display:none"></div>
+    </div>
+
+    <!-- INSPECTION — MY REPORTS -->
+    <div class="section" id="sec-myinspect">
+      <div class="section-header">
+        <h2>📋 ჩემი შემოწმებები</h2>
+        <div class="filter-row" style="margin:0">
+          <select id="mif-obj" onchange="renderMyInspections()"><option value="all">ყველა ობიექტი</option></select>
+        </div>
+      </div>
+      <div id="myinspect-list"></div>
+    </div>
+
+    <!-- INSPECTION — ALL (supervisor / admin) -->
+    <div class="section" id="sec-inspect-all">
+      <div class="section-header">
+        <h2>🗂 შემოწმებები — ყველა</h2>
+        <div class="filter-row" style="margin:0">
+          <select id="aif-obj" onchange="renderAllInspections()"><option value="all">ყველა ობიექტი</option></select>
+          <select id="aif-wk" onchange="renderAllInspections()"><option value="all">ყველა თანამშრომელი</option></select>
+          <input type="date" id="aif-date" onchange="renderAllInspections()" style="width:auto;font-size:12px;padding:7px 11px">
+          <button class="btn btn-sm btn-ghost" onclick="clearInspectFilter()">გასუფთავება</button>
+          <button class="btn btn-sm" onclick="exportInspectCSV()" style="background:rgba(5,150,105,.12);color:#065f46;border:1px solid rgba(5,150,105,.3);font-weight:700">📥 CSV</button>
+        </div>
+      </div>
+      <div id="allinspect-list"></div>
+    </div>
   </div>
 </div>
 
@@ -706,6 +764,10 @@ let allRedirects = []; // all redirects from all supervisors
 let myTasks = []; // redirects assigned to current user (by name)
 let myNotifications = []; // unread notification docs
 let imgs = [];
+let myInspections = [];   // current user's inspection reports
+let allInspections = [];  // all inspection reports (supervisor/admin)
+let inspectImgs = [];     // staged photos for the inspection form
+let currentInspectObj = null; // object currently being inspected
 const chipState = { cat: null, res: null };
 let assignedTo = []; // multi-select assignees
 let adminPreviewRole = null; // for admin preview mode
@@ -878,10 +940,10 @@ function buildNav(role, userData) {
   const nav = document.getElementById('main-nav');
   nav.innerHTML = '';
   const map = {
-    worker: [['sec-submit','📤 გაგზავნა'],['sec-myworks','📁 ჩემი'],['sec-tasks','📬 დავალებები']],
-    nightwatch: [['sec-submit','📤 გაგზავნა'],['sec-myworks','📁 ჩემი']],
-    supervisor: [['sec-submit','📤 გაგზავნა'],['sec-myworks','📁 ჩემი'],['sec-tasks','📬 დავალებები'],['sec-review','🔍 შემოწმება'],],
-    admin: [['sec-dashboard','📊 Dashboard'],['sec-stats','📈 სტატისტიკა'],['sec-users','👥 მომხმარებლები'],['sec-preview','👁 Preview'],['sec-export','📥 ექსპორტი']]
+    worker: [['sec-submit','📤 გაგზავნა'],['sec-myworks','📁 ჩემი'],['sec-tasks','📬 დავალებები'],['sec-inspect','🌡 შემოწმება'],['sec-myinspect','📋 ჩემი შემოწმებები']],
+    nightwatch: [['sec-submit','📤 გაგზავნა'],['sec-myworks','📁 ჩემი'],['sec-inspect','🌡 შემოწმება'],['sec-myinspect','📋 ჩემი შემოწმებები']],
+    supervisor: [['sec-submit','📤 გაგზავნა'],['sec-myworks','📁 ჩემი'],['sec-tasks','📬 დავალებები'],['sec-review','🔍 შემოწმება'],['sec-inspect','🌡 ინსპექცია'],['sec-inspect-all','🗂 ინსპექციები'],],
+    admin: [['sec-dashboard','📊 Dashboard'],['sec-stats','📈 სტატისტიკა'],['sec-inspect-all','🌡 ინსპექციები'],['sec-users','👥 მომხმარებლები'],['sec-preview','👁 Preview'],['sec-export','📥 ექსპორტი']]
   };
   const items = map[role] || [];
   if (!items.length) { showSection('sec-pending'); return; }
@@ -893,10 +955,10 @@ function buildNav(role, userData) {
     nav.appendChild(el);
   });
   showSection(items[0][0]);
-  if (role === 'worker') { listenMyWorks(); listenUsers(); listenMyTasks(); listenMyNotifications(); }
-  if (role === 'nightwatch') { listenMyWorks(); listenUsers(); listenMyNotifications(); }
-  if (role === 'supervisor') { listenMyWorks(); listenAllWorks('supervisor'); listenUsers(); listenMyTasks(); listenMyNotifications(); }
-  if (role === 'admin') { listenAllWorks('admin'); listenUsers(); }
+  if (role === 'worker') { listenMyWorks(); listenUsers(); listenMyTasks(); listenMyNotifications(); listenMyInspections(); }
+  if (role === 'nightwatch') { listenMyWorks(); listenUsers(); listenMyNotifications(); listenMyInspections(); }
+  if (role === 'supervisor') { listenMyWorks(); listenAllWorks('supervisor'); listenUsers(); listenMyTasks(); listenMyNotifications(); listenMyInspections(); listenAllInspections(); }
+  if (role === 'admin') { listenAllWorks('admin'); listenUsers(); listenAllInspections(); }
 }
 
 function activateSection(id, el) {
@@ -911,6 +973,9 @@ function activateSection(id, el) {
   if (id === 'sec-preview') renderPreviewSection();
   if (id === 'sec-dashboard') { renderAdminStats(); renderAdminWorks(); }
   if (id === 'sec-users') renderUsers();
+  if (id === 'sec-inspect') resetInspectPicker();
+  if (id === 'sec-myinspect') renderMyInspections();
+  if (id === 'sec-inspect-all') renderAllInspections();
 }
 function showSection(id) {
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
@@ -1670,6 +1735,407 @@ function downloadCSV(list) {
 // ---- FILTERS (expose for onchange) ----
 window.renderReview = renderReview;
 window.renderAdminWorks = renderAdminWorks;
+
+// ════════════════════════════════════════════════════════
+//  HEATING / COOLING INSPECTION
+// ════════════════════════════════════════════════════════
+const INSPECT_OBJECTS = [
+  { id:'k1',  name:'პირველი კორპუსი', type:'standard' },
+  { id:'k23', name:'2-3 კორპუსი',      type:'standard' },
+  { id:'k4',  name:'4 კორპუსი',        type:'standard' },
+  { id:'k5',  name:'5 კორპუსი',        type:'standard' },
+  { id:'k6',  name:'6 კორპუსი',        type:'standard' },
+  { id:'k7',  name:'7 კორპუსი',        type:'standard' },
+  { id:'k8',  name:'8 კორპუსი',        type:'standard' },
+  { id:'k9',  name:'9 კორპუსი',        type:'standard' },
+  { id:'k10', name:'10 კორპუსი',       type:'standard' },
+  { id:'k11', name:'11 კორპუსი',       type:'heatonly' }, // ჩილერი არ აქვს
+  { id:'k12', name:'12 კორპუსი',       type:'standard' },
+  { id:'k13', name:'13 კორპუსი',       type:'standard' },
+  { id:'k14', name:'14 კორპუსი',       type:'standard' },
+  { id:'k15', name:'15 კორპუსი',       type:'standard' },
+  { id:'k16', name:'16 კორპუსი',       type:'standard' },
+  { id:'ike',      name:'იკე',         type:'standard' },
+  { id:'jimi',     name:'ჯიმი',        type:'standard' },
+  { id:'jazi',     name:'ჯაზი',        type:'standard' },
+  { id:'cafe',     name:'კაფეტერია',   type:'hotwater' }, // მხოლოდ ცხელი წყლის შევსება
+  { id:'shveduri', name:'შვედური',     type:'standard' },
+  { id:'ovali',    name:'ოვალი',       type:'standard' },
+  { id:'shato',    name:'შატო',        type:'standard' },
+  { id:'a',        name:'ა',           type:'standard' },
+];
+
+// ---- OBJECT PICKER ----
+window.resetInspectPicker = function() {
+  currentInspectObj = null;
+  inspectImgs.forEach(im => URL.revokeObjectURL(im.previewUrl));
+  inspectImgs = [];
+  const host = document.getElementById('inspect-form-host');
+  if (host) { host.style.display = 'none'; host.innerHTML = ''; }
+  const picker = document.getElementById('inspect-picker');
+  if (picker) picker.style.display = 'block';
+  renderObjGrid();
+};
+
+function renderObjGrid() {
+  const grid = document.getElementById('obj-grid');
+  if (!grid) return;
+  grid.innerHTML = INSPECT_OBJECTS.map(o => {
+    const tags = o.type === 'hotwater' ? '<span class="obj-tag water">💧 ცხელი წყალი</span>'
+      : o.type === 'heatonly' ? '<span class="obj-tag heat">🔥 გათბობა</span>'
+      : '<span class="obj-tag heat">🔥 გათბობა</span><span class="obj-tag cool">❄️ ჩილერი</span>';
+    const last = myInspections.find(x => x.objectId === o.id);
+    const lastTxt = last ? `ბოლო შემოწმება: ${last.date || ''}` : 'ჯერ არ შემოწმებულა';
+    return `<button class="obj-btn" onclick="openInspectForm('${o.id}')">
+      <span class="obj-name">${e(o.name)}</span>
+      <span class="obj-tags">${tags}</span>
+      <span class="obj-last">${lastTxt}</span>
+    </button>`;
+  }).join('');
+}
+
+// ---- FORM BUILDERS ----
+function sysBlockHtml(kind) {
+  const cfg = {
+    heat: { cls:'heat', icon:'🔥', title:'გათბობა', name:'heat' },
+    cool: { cls:'cool', icon:'❄️', title:'გაგრილება / ჩილერი', name:'cool' }
+  }[kind];
+  return `<div class="sys-block ${cfg.cls}">
+    <div class="sys-title">${cfg.icon} ${cfg.title}</div>
+    <div class="form-group">
+      <label>სტატუსი *</label>
+      <div class="chip-group ins-status">
+        <label class="chip" data-cls="sel-green"><input type="radio" name="${cfg.name}-status" value="მუშაობს" onchange="inspSel(this)"><span>✅ მუშაობს</span></label>
+        <label class="chip" data-cls="sel-yellow"><input type="radio" name="${cfg.name}-status" value="პრობლემა" onchange="inspSel(this)"><span>⚠️ პრობლემა</span></label>
+        <label class="chip" data-cls="sel-red"><input type="radio" name="${cfg.name}-status" value="არ მუშაობს" onchange="inspSel(this)"><span>❌ არ მუშაობს</span></label>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>🌡 ტემპერატურა (°C)</label><input type="number" step="0.1" id="${cfg.name}-temp" placeholder="მაგ: 65"></div>
+      <div class="form-group"><label>📊 წნევა (bar)</label><input type="number" step="0.1" id="${cfg.name}-pressure" placeholder="მაგ: 1.5"></div>
+    </div>
+    <div class="form-group">
+      <label>⚙️ გამაფართოებლის მდგომარეობა</label>
+      <select id="${cfg.name}-expander">
+        <option value="">— აირჩიეთ —</option>
+        <option value="წესრიგშია">✅ წესრიგშია</option>
+        <option value="პრობლემა">⚠️ პრობლემა</option>
+        <option value="არ მუშაობს">❌ არ მუშაობს</option>
+      </select>
+    </div>
+    <div class="form-group"><label>💬 კომენტარი</label><textarea id="${cfg.name}-comment" placeholder="შენიშვნა (სურვილისამებრ)..." style="min-height:60px"></textarea></div>
+  </div>`;
+}
+
+function waterBlockHtml() {
+  return `<div class="sys-block water">
+    <div class="sys-title">💧 ცხელი წყლის შევსება</div>
+    <div class="form-group">
+      <label>წყალი შევსებულია? *</label>
+      <div class="chip-group ins-status">
+        <label class="chip" data-cls="sel-green"><input type="radio" name="water-filled" value="კი" onchange="inspSel(this)"><span>✅ კი</span></label>
+        <label class="chip" data-cls="sel-red"><input type="radio" name="water-filled" value="არა" onchange="inspSel(this)"><span>❌ არა</span></label>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>🌡 წყლის ტემპერატურა (°C)</label><input type="number" step="0.1" id="water-temp" placeholder="მაგ: 55"></div>
+      <div class="form-group"><label>📊 წნევა (bar)</label><input type="number" step="0.1" id="water-pressure" placeholder="მაგ: 2"></div>
+    </div>
+    <div class="form-group"><label>💬 კომენტარი</label><textarea id="water-comment" placeholder="შენიშვნა (სურვილისამებრ)..." style="min-height:60px"></textarea></div>
+  </div>`;
+}
+
+const photoBlockHtml = `<div class="sys-block" style="border-left:4px solid var(--purple)">
+  <div class="sys-title">📷 ფოტო მასალა</div>
+  <div class="file-area" id="ins-drop" onclick="document.getElementById('ins-fi').click()"
+    ondragover="insDragOver(event)" ondrop="insDrop(event)" ondragleave="this.classList.remove('over')">
+    <div style="font-size:36px">📷</div>
+    <p>დააჭირეთ ან გადმოიტანეთ ფოტოები</p>
+    <p style="font-size:11px;margin-top:4px;color:var(--text3)">JPG, PNG · მაქს. 10MB თითო სურათი</p>
+  </div>
+  <input type="file" id="ins-fi" accept="image/*" multiple style="display:none" onchange="handleInspectFiles(this.files)">
+  <div class="preview-grid" id="ins-prev"></div>
+</div>`;
+
+window.openInspectForm = function(objId) {
+  const obj = INSPECT_OBJECTS.find(o => o.id === objId);
+  if (!obj) return;
+  currentInspectObj = obj;
+  inspectImgs.forEach(im => URL.revokeObjectURL(im.previewUrl));
+  inspectImgs = [];
+  let blocks = '';
+  if (obj.type === 'hotwater') blocks = waterBlockHtml();
+  else { blocks = sysBlockHtml('heat'); if (obj.type === 'standard') blocks += sysBlockHtml('cool'); }
+  const host = document.getElementById('inspect-form-host');
+  host.innerHTML = `
+    <button class="ins-back" onclick="resetInspectPicker()">← ობიექტის შეცვლა</button>
+    <div class="section-header" style="margin-bottom:14px"><h2 style="font-size:17px">${e(obj.name)}</h2></div>
+    ${blocks}
+    ${photoBlockHtml}
+    <button class="btn btn-primary btn-full" onclick="submitInspection()">📤 შემოწმების გაგზავნა</button>
+  `;
+  document.getElementById('inspect-picker').style.display = 'none';
+  host.style.display = 'block';
+  host.scrollIntoView({ behavior:'smooth', block:'start' });
+};
+
+window.inspSel = function(input) {
+  document.querySelectorAll(`#inspect-form-host input[name="${input.name}"]`).forEach(r =>
+    r.closest('.chip').classList.remove('sel-green','sel-red','sel-yellow')
+  );
+  const chip = input.closest('.chip');
+  chip.classList.add(chip.dataset.cls);
+};
+
+// ---- INSPECTION FILES ----
+window.insDragOver = function(e) { e.preventDefault(); document.getElementById('ins-drop').classList.add('over'); };
+window.insDrop = function(e) { e.preventDefault(); document.getElementById('ins-drop').classList.remove('over'); handleInspectFiles(e.dataTransfer.files); };
+window.handleInspectFiles = function(files) {
+  Array.from(files).forEach(f => {
+    if (!f.type.startsWith('image/')) { notify('მხოლოდ სურათები!', 'error'); return; }
+    if (f.size > 10 * 1024 * 1024) { notify('ფოტო ძალიან დიდია (მაქს. 10MB)', 'error'); return; }
+    inspectImgs.push({ file:f, name:f.name, previewUrl:URL.createObjectURL(f) });
+  });
+  renderInspectPrev();
+};
+function renderInspectPrev() {
+  const el = document.getElementById('ins-prev');
+  if (!el) return;
+  el.innerHTML = inspectImgs.map((im, i) =>
+    `<div class="preview-item"><img src="${im.previewUrl}"><button class="del-img" onclick="rmInspectImg(${i})">✕</button></div>`
+  ).join('');
+}
+window.rmInspectImg = function(i) {
+  URL.revokeObjectURL(inspectImgs[i].previewUrl);
+  inspectImgs.splice(i, 1);
+  renderInspectPrev();
+};
+
+// ---- SUBMIT INSPECTION ----
+window.submitInspection = async function() {
+  const obj = currentInspectObj;
+  if (!obj) { notify('აირჩიეთ ობიექტი', 'error'); return; }
+  const getR = n => document.querySelector(`#inspect-form-host input[name="${n}"]:checked`)?.value || null;
+  const gv = id => { const el = document.getElementById(id); return el ? el.value.trim() : ''; };
+  const num = v => v === '' ? null : Number(v);
+
+  let heating = null, cooling = null, hotwater = null;
+  if (obj.type === 'hotwater') {
+    const filled = getR('water-filled');
+    if (!filled) { notify('მიუთითეთ წყალი შევსებულია თუ არა', 'error'); return; }
+    hotwater = { filled, temp:num(gv('water-temp')), pressure:num(gv('water-pressure')), comment:gv('water-comment') };
+  } else {
+    const hs = getR('heat-status');
+    if (!hs) { notify('მიუთითეთ გათბობის სტატუსი', 'error'); return; }
+    heating = { status:hs, temp:num(gv('heat-temp')), pressure:num(gv('heat-pressure')), expander:gv('heat-expander'), comment:gv('heat-comment') };
+    if (obj.type === 'standard') {
+      const cs = getR('cool-status');
+      if (!cs) { notify('მიუთითეთ გაგრილების სტატუსი', 'error'); return; }
+      cooling = { status:cs, temp:num(gv('cool-temp')), pressure:num(gv('cool-pressure')), expander:gv('cool-expander'), comment:gv('cool-comment') };
+    }
+  }
+
+  const snap = await getDoc(doc(db, 'users', currentUser.uid));
+  const ud = snap.data();
+  const now = new Date();
+  const date = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+  const time = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+
+  try {
+    if (inspectImgs.length) notify('⏳ სურათები იტვირთება...', 'info');
+    const imageUrls = [];
+    for (const img of inspectImgs) {
+      const sref = ref(storage, `inspections/${currentUser.uid}/${Date.now()}_${img.name}`);
+      await uploadBytes(sref, img.file);
+      imageUrls.push({ name:img.name, url:await getDownloadURL(sref) });
+    }
+    await addDoc(collection(db, 'inspections'), {
+      objectId:obj.id, objectName:obj.name, type:obj.type,
+      heating, cooling, hotwater, images:imageUrls,
+      workerId:currentUser.uid, workerName:ud.displayName || ud.name, workerEmail:ud.email, workerRole:ud.role,
+      date, time, submittedAt:serverTimestamp()
+    });
+    notify('✓ შემოწმება გაიგზავნა!', 'success');
+    resetInspectPicker();
+  } catch(err) {
+    notify('შეცდომა: ' + err.message, 'error');
+  }
+};
+
+// ---- LISTENERS ----
+function listenMyInspections() {
+  const qy = query(collection(db, 'inspections'), orderBy('submittedAt', 'desc'));
+  onSnapshot(qy, snap => {
+    const all = snap.docs.map(d => ({ id:d.id, ...d.data() }));
+    myInspections = all.filter(x => x.workerId === currentUser.uid);
+    populateInspectFilters();
+    renderObjGrid();
+    renderMyInspections();
+  }, () => {});
+}
+function listenAllInspections() {
+  const qy = query(collection(db, 'inspections'), orderBy('submittedAt', 'desc'));
+  onSnapshot(qy, snap => {
+    allInspections = snap.docs.map(d => ({ id:d.id, ...d.data() }));
+    populateInspectFilters();
+    renderAllInspections();
+  }, () => {});
+}
+
+// ---- FILTERS ----
+function populateInspectFilters() {
+  ['mif-obj','aif-obj'].forEach(id => {
+    const sel = document.getElementById(id);
+    if (!sel) return;
+    const cur = sel.value;
+    sel.innerHTML = '<option value="all">ყველა ობიექტი</option>' +
+      INSPECT_OBJECTS.map(o => `<option value="${o.id}">${e(o.name)}</option>`).join('');
+    sel.value = cur || 'all';
+  });
+  const wkSel = document.getElementById('aif-wk');
+  if (wkSel) {
+    const cur = wkSel.value;
+    const names = [...new Set(allInspections.map(x => x.workerName).filter(Boolean))];
+    wkSel.innerHTML = '<option value="all">ყველა თანამშრომელი</option>' +
+      names.map(n => `<option value="${e(n)}">${e(n)}</option>`).join('');
+    wkSel.value = cur || 'all';
+  }
+}
+
+window.renderMyInspections = function() {
+  const el = document.getElementById('myinspect-list');
+  if (!el) return;
+  const of = document.getElementById('mif-obj')?.value || 'all';
+  let list = [...myInspections];
+  if (of !== 'all') list = list.filter(x => x.objectId === of);
+  el.innerHTML = list.length ? list.map(x => inspCard(x, 'self')).join('') : empty('🌡', 'ჯერ შემოწმებები არ გაქვთ');
+};
+
+function filteredAllInspections() {
+  const of = document.getElementById('aif-obj')?.value || 'all';
+  const wf = document.getElementById('aif-wk')?.value || 'all';
+  const df = document.getElementById('aif-date')?.value || '';
+  let list = [...allInspections];
+  if (of !== 'all') list = list.filter(x => x.objectId === of);
+  if (wf !== 'all') list = list.filter(x => x.workerName === wf);
+  if (df) list = list.filter(x => x.date === df);
+  return list;
+}
+window.renderAllInspections = function() {
+  const el = document.getElementById('allinspect-list');
+  if (!el) return;
+  const list = filteredAllInspections();
+  const viewAs = currentRole === 'admin' ? 'admin' : 'supervisor';
+  el.innerHTML = list.length ? list.map(x => inspCard(x, viewAs)).join('') : empty('🗂', 'შემოწმებები არ მოიძებნა');
+};
+window.clearInspectFilter = function() {
+  ['aif-obj','aif-wk'].forEach(id => { const s = document.getElementById(id); if (s) s.value = 'all'; });
+  const d = document.getElementById('aif-date'); if (d) d.value = '';
+  renderAllInspections();
+};
+
+// ---- CARDS / BADGES ----
+function insBadge(status) {
+  const m = {
+    'მუშაობს':['r-done','✅ მუშაობს'], 'პრობლემა':['s-pending','⚠️ პრობლემა'], 'არ მუშაობს':['r-failed','❌ არ მუშაობს'],
+    'კი':['r-done','✅ შევსებულია'], 'არა':['r-failed','❌ არ არის შევსებული'],
+    'წესრიგშია':['r-done','✅ წესრიგშია']
+  };
+  const [c, l] = m[status] || ['', status || '—'];
+  return `<span class="status ${c}">${l}</span>`;
+}
+
+function inspCard(ins, viewAs) {
+  const when = (ins.date || '') + (ins.time ? ' · ' + ins.time : '');
+  let badges = '';
+  if (ins.heating)  badges += `<span style="font-size:11px;font-weight:700;color:#b45309">🔥</span>${insBadge(ins.heating.status)}`;
+  if (ins.cooling)  badges += `<span style="font-size:11px;font-weight:700;color:var(--accent2)">❄️</span>${insBadge(ins.cooling.status)}`;
+  if (ins.hotwater) badges += `<span style="font-size:11px;font-weight:700;color:var(--sky)">💧</span>${insBadge(ins.hotwater.filled)}`;
+  const delBtn = (viewAs === 'admin')
+    ? `<button class="btn btn-sm" onclick="event.stopPropagation();delInspection('${ins.id}')" style="background:rgba(220,38,38,.1);color:#dc2626;border:1px solid rgba(220,38,38,.2);padding:4px 8px">🗑</button>`
+    : '';
+  return `<div class="card" style="cursor:pointer;margin-bottom:10px;padding:16px 18px" onclick="openInspectModal('${ins.id}')">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:10px">
+      <div>
+        <div style="font-size:15px;font-weight:800;letter-spacing:-.3px">${e(ins.objectName || '')}</div>
+        <div style="font-size:12px;color:var(--text3);margin-top:3px">👤 ${e(ins.workerName || '')} · 📅 ${when}</div>
+      </div>
+      ${delBtn}
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">${badges}</div>
+    ${ins.images?.length ? `<div style="font-size:11px;color:var(--text3);margin-top:8px">📷 ${ins.images.length} ფოტო</div>` : ''}
+  </div>`;
+}
+
+window.openInspectModal = function(id) {
+  const ins = [...allInspections, ...myInspections].find(x => x.id === id);
+  if (!ins) return;
+  document.getElementById('m-title').textContent = ins.objectName || 'შემოწმება';
+  let html = `
+    <div class="detail-row"><span class="detail-label">👤 თანამშრომელი</span><span>${e(ins.workerName || '')}</span></div>
+    <div class="detail-row"><span class="detail-label">📅 თარიღი / დრო</span><span>${ins.date || ''}${ins.time ? ' · ' + ins.time : ''}</span></div>`;
+  const sysHtml = (title, color, sys, isWater) => {
+    if (!sys) return '';
+    let r = `<div style="height:1px;background:var(--border);margin:14px 0 10px"></div>
+      <div style="font-weight:800;color:${color};margin-bottom:8px">${title}</div>`;
+    r += `<div class="detail-row"><span class="detail-label">${isWater ? 'წყალი' : 'სტატუსი'}</span><span>${insBadge(isWater ? sys.filled : sys.status)}</span></div>`;
+    if (sys.temp != null && sys.temp !== '') r += `<div class="detail-row"><span class="detail-label">🌡 ტემპერატურა</span><span>${e(sys.temp)} °C</span></div>`;
+    if (sys.pressure != null && sys.pressure !== '') r += `<div class="detail-row"><span class="detail-label">📊 წნევა</span><span>${e(sys.pressure)} bar</span></div>`;
+    if (sys.expander) r += `<div class="detail-row"><span class="detail-label">⚙️ გამაფართოებელი</span><span>${insBadge(sys.expander)}</span></div>`;
+    if (sys.comment) r += `<div class="comment-block">${e(sys.comment)}</div>`;
+    return r;
+  };
+  html += sysHtml('🔥 გათბობა', '#b45309', ins.heating, false);
+  html += sysHtml('❄️ გაგრილება / ჩილერი', 'var(--accent2)', ins.cooling, false);
+  html += sysHtml('💧 ცხელი წყალი', 'var(--sky)', ins.hotwater, true);
+  if (ins.images?.length) html += `
+    <div style="margin-top:14px">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:8px">📷 ფოტო მასალა (${ins.images.length})</div>
+      <div class="preview-grid">${ins.images.map(im => {
+        const src = im.url || im.data || '';
+        return `<div class="preview-item" style="cursor:pointer" onclick="window.open('${src}','_blank')" title="გასადიდებლად დააჭირეთ">
+          <img src="${src}" loading="lazy">
+        </div>`;
+      }).join('')}</div>
+    </div>`;
+  document.getElementById('m-body').innerHTML = html;
+  let footer = `<button class="btn btn-ghost btn-sm" onclick="closeModal()">დახურვა</button>`;
+  if (currentRole === 'admin') {
+    footer += `<span style="flex:1"></span>
+      <button class="btn btn-sm" onclick="closeModal();delInspection('${id}')" style="background:rgba(244,63,94,.1);color:#fb7185;border:1px solid rgba(244,63,94,.2)">🗑 წაშლა</button>`;
+  }
+  document.getElementById('m-footer').innerHTML = footer;
+  document.getElementById('modal-ov').classList.add('open');
+};
+
+window.delInspection = async function(id) {
+  if (!confirm('წავშალო ეს შემოწმება?')) return;
+  try { await deleteDoc(doc(db, 'inspections', id)); notify('✓ წაიშალა', 'success'); }
+  catch(err) { notify('შეცდომა: ' + err.message, 'error'); }
+};
+
+window.exportInspectCSV = function() {
+  const list = filteredAllInspections();
+  if (!list.length) { notify('სია ცარიელია', 'error'); return; }
+  const hdr = ['#','ობიექტი','თანამშრომელი','ელ-ფოსტა','თარიღი','დრო',
+    'გათბობა-სტატუსი','გათბობა-ტემპ(°C)','გათბობა-წნევა(bar)','გათბობა-გამაფართოებელი','გათბობა-კომენტარი',
+    'გაგრილება-სტატუსი','გაგრილება-ტემპ(°C)','გაგრილება-წნევა(bar)','გაგრილება-გამაფართოებელი','გაგრილება-კომენტარი',
+    'წყალი-შევსებულია','წყალი-ტემპ(°C)','წყალი-წნევა(bar)','წყალი-კომენტარი'];
+  const rows = list.map((x, i) => {
+    const h = x.heating || {}, c = x.cooling || {}, w = x.hotwater || {};
+    return [i+1, x.objectName||'', x.workerName||'', x.workerEmail||'', x.date||'', x.time||'',
+      h.status||'', h.temp??'', h.pressure??'', h.expander||'', h.comment||'',
+      c.status||'', c.temp??'', c.pressure??'', c.expander||'', c.comment||'',
+      w.filled||'', w.temp??'', w.pressure??'', w.comment||''];
+  });
+  const csv = [hdr, ...rows].map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob(['﻿' + csv], { type:'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `shemowmebebi_${new Date().toISOString().slice(0,10)}.csv`; a.click();
+  URL.revokeObjectURL(url);
+  notify('✓ ჩამოიტვირთა!', 'success');
+};
 
 // ---- STATISTICS ----
 function getStatWorks() {
