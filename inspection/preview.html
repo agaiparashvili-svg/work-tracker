@@ -339,7 +339,11 @@ function coolBlockHtml(){
       </div>
     </div>
     <div class="form-group"><label>⚙️ გამაფართოებელი ბალონები</label>
-      <select id="cool-expander"><option value="">— აირჩიეთ —</option><option value="მუშაობს">✅ მუშაობს</option><option value="დაზიანებულია">❌ დაზიანებულია</option><option value="მოსატენი">⚠️ მოსატენი</option></select>
+      <div class="chip-group">
+        <label class="chip" data-cls="sel-green"><input type="radio" name="cool-expander" value="მუშაობს" onchange="inspSel(this)"><span>✅ მუშაობს</span></label>
+        <label class="chip" data-cls="sel-red"><input type="radio" name="cool-expander" value="დაზიანებულია" onchange="inspSel(this)"><span>❌ დაზიანებულია</span></label>
+        <label class="chip" data-cls="sel-yellow"><input type="radio" name="cool-expander" value="მოსატენი" onchange="inspSel(this)"><span>⚠️ მოსატენი</span></label>
+      </div>
     </div>
     <div class="form-group"><label>💬 კომენტარი</label><textarea id="cool-comment" placeholder="შენიშვნა (სურვილისამებრ)..."></textarea></div>
   </div>`;
@@ -421,7 +425,7 @@ window.submitInspection = function(){
     if(!cs){ notify('მიუთითეთ ჩილერის მდგომარეობა','error'); return; }
     const cp=getR('cool-pumps');
     if(!cp){ notify('მიუთითეთ ცირკულაციის ტუმბოების მდგომარეობა','error'); return; }
-    cooling={ status:cs, pumps:cp, expander:gv('cool-expander'), comment:gv('cool-comment') };
+    cooling={ status:cs, pumps:cp, expander:getR('cool-expander')||'', comment:gv('cool-comment') };
   }
   const now=new Date();
   const date=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
