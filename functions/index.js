@@ -125,6 +125,7 @@ function stLabel(v) {
 // ── HTML builder — საქვაბის შემოწმება ────────────────────
 function buildInspectionsHtml(title, list, periodLabel) {
   const total = list.length;
+  const boilerIssue = list.filter(x => x.boiler && x.boiler.status !== 'მუშაობს').length;
   const waterOff = list.filter(x => x.hotwater && x.hotwater.filled === 'გათიშულია').length;
   const chillerIssue = list.filter(x => x.cooling && x.cooling.status !== 'მუშაობს').length;
   const faults = list.filter(x => {
@@ -141,13 +142,14 @@ function buildInspectionsHtml(title, list, periodLabel) {
 
   const cell = v => `<td style="padding:9px 12px;border:1px solid #e5e7eb">${v}</td>`;
   const rows = list.map((x, i) => {
-    const h = x.hotwater || {}, c = x.cooling || {};
-    const comments = [h.comment, c.comment].filter(Boolean).join(' · ') || '—';
+    const b = x.boiler || {}, h = x.hotwater || {}, c = x.cooling || {};
+    const comments = [b.comment, h.comment, c.comment].filter(Boolean).join(' · ') || '—';
     return `<tr style="background:${i%2===0?'#f9fafb':'#fff'}">
       ${cell(i+1)}
       ${cell(`<strong>${x.objectName||'—'}</strong>`)}
       ${cell(x.workerName||'—')}
       ${cell(`${x.date||'—'} ${x.time||''}`)}
+      ${cell(b.status ? stLabel(b.status) : '—')}
       ${cell(stLabel(h.filled))}
       ${cell(stLabel(h.pump))}
       ${cell(c.status ? stLabel(c.status) : '—')}
@@ -164,6 +166,7 @@ function buildInspectionsHtml(title, list, periodLabel) {
     </div>
     <table style="border-collapse:separate;border-spacing:10px;margin-bottom:20px"><tr>
       ${box(total,'სულ შემოწმება','#f1f5f9','#0f172a')}
+      ${box(boilerIssue,'🔥 საქვაბე პრობლემა','#fef3c7','#92400e')}
       ${box(waterOff,'💧 წყალი გათიშული','#fee2e2','#991b1b')}
       ${box(chillerIssue,'❄️ ჩილერი პრობლემა','#fef3c7','#92400e')}
       ${box(faults,'🔧 ტუმბო/ბალონი ხარვეზი','#fee2e2','#991b1b')}
@@ -175,6 +178,7 @@ function buildInspectionsHtml(title, list, periodLabel) {
         <th style="padding:10px 12px;border:1px solid #0369a1">ობიექტი</th>
         <th style="padding:10px 12px;border:1px solid #0369a1">თანამშრომელი</th>
         <th style="padding:10px 12px;border:1px solid #0369a1">თარიღი/დრო</th>
+        <th style="padding:10px 12px;border:1px solid #0369a1">🔥 საქვაბე</th>
         <th style="padding:10px 12px;border:1px solid #0369a1">💧 ცხელი წყალი</th>
         <th style="padding:10px 12px;border:1px solid #0369a1">რეცირკ. ტუმბო</th>
         <th style="padding:10px 12px;border:1px solid #0369a1">❄️ ჩილერი</th>

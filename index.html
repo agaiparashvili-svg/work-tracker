@@ -1827,6 +1827,20 @@ function coolBlockHtml() {
     <div class="form-group"><label>💬 კომენტარი</label><textarea id="cool-comment" placeholder="შენიშვნა (სურვილისამებრ)..." style="min-height:60px"></textarea></div>
   </div>`;
 }
+function boilerBlockHtml() {
+  return `<div class="sys-block" style="border-left:4px solid var(--warn)">
+    <div class="sys-title">🔥 საქვაბე</div>
+    <div class="form-group">
+      <label>მდგომარეობა *</label>
+      <div class="chip-group ins-status">
+        <label class="chip" data-cls="sel-green"><input type="radio" name="boiler-status" value="მუშაობს" onchange="inspSel(this)"><span>✅ მუშაობს</span></label>
+        <label class="chip" data-cls="sel-yellow"><input type="radio" name="boiler-status" value="პრობლემა" onchange="inspSel(this)"><span>⚠️ პრობლემა</span></label>
+        <label class="chip" data-cls="sel-red"><input type="radio" name="boiler-status" value="არ მუშაობს" onchange="inspSel(this)"><span>❌ არ მუშაობს</span></label>
+      </div>
+    </div>
+    <div class="form-group"><label>💬 კომენტარი</label><textarea id="boiler-comment" placeholder="შენიშვნა (სურვილისამებრ)..." style="min-height:60px"></textarea></div>
+  </div>`;
+}
 function waterBlockHtml() {
   return `<div class="sys-block water">
     <div class="sys-title">💧 ცხელი წყალი</div>
@@ -1865,7 +1879,7 @@ window.openInspectForm = function(objId) {
   currentInspectObj = obj;
   inspectImgs.forEach(im => URL.revokeObjectURL(im.previewUrl));
   inspectImgs = [];
-  let blocks = waterBlockHtml();
+  let blocks = boilerBlockHtml() + waterBlockHtml();
   if (obj.type === 'both') blocks += coolBlockHtml();
   const host = document.getElementById('inspect-form-host');
   host.innerHTML = `
@@ -1911,6 +1925,10 @@ window.submitInspection = async function() {
   const getR = n => document.querySelector(`#inspect-form-host input[name="${n}"]:checked`)?.value || null;
   const gv = id => { const el = document.getElementById(id); return el ? el.value.trim() : ''; };
 
+  const boilerStatus = getR('boiler-status');
+  if (!boilerStatus) { notify('მიუთითეთ საქვაბის მდგომარეობა', 'error'); return; }
+  const boiler = { status:boilerStatus, comment:gv('boiler-comment') };
+
   const filled = getR('water-filled');
   if (!filled) { notify('მიუთითეთ ცხელი წყლის მდგომარეობა', 'error'); return; }
   const waterPump = getR('water-pump');
@@ -1942,7 +1960,7 @@ window.submitInspection = async function() {
     }
     await addDoc(collection(db, 'inspections'), {
       objectId:obj.id, objectName:obj.name, type:obj.type,
-      cooling, hotwater, images:imageUrls,
+      boiler, cooling, hotwater, images:imageUrls,
       workerId:currentUser.uid, workerName:ud.displayName || ud.name, workerEmail:ud.email, workerRole:ud.role,
       date, time, submittedAt:serverTimestamp()
     });
@@ -2036,6 +2054,7 @@ function insBadge(status) {
 function inspCard(ins, viewAs) {
   const when = (ins.date || '') + (ins.time ? ' · ' + ins.time : '');
   let badges = '';
+  if (ins.boiler) badges += `<span style="font-size:12px">🔥</span>${insBadge(ins.boiler.status)}`;
   if (ins.hotwater) badges += `<span style="font-size:12px">💧</span>${insBadge(ins.hotwater.filled)}`;
   if (ins.cooling)  badges += `<span style="font-size:12px">❄️</span>${insBadge(ins.cooling.status)}`;
   const delBtn = (viewAs === 'admin')
@@ -2072,6 +2091,7 @@ window.openInspectModal = function(id) {
     if (sys.comment) r += `<div class="comment-block">${e(sys.comment)}</div>`;
     return r;
   };
+  html += sysHtml('🔥 საქვაბე', '#b45309', ins.boiler, false);
   html += sysHtml('💧 ცხელი წყალი', 'var(--sky)', ins.hotwater, true);
   html += sysHtml('❄️ გაგრილება / ჩილერი', 'var(--accent2)', ins.cooling, false);
   if (ins.images?.length) html += `
@@ -2094,11 +2114,13 @@ window.exportInspectCSV = function() {
   const list = filteredAllInspections();
   if (!list.length) { notify('სია ცარიელია', 'error'); return; }
   const hdr = ['#','ობიექტი','თანამშრომელი','ელ-ფოსტა','თარიღი','დრო',
+    'საქვაბე-მდგომარეობა','საქვაბე-კომენტარი',
     'წყალი-მდგომარეობა','წყალი-რეცირკ.ტუმბო','წყალი-კომენტარი',
     'ჩილერი-მდგომარეობა','ჩილერი-ცირკ.ტუმბოები','ჩილერი-გამაფართ.ბალონები','ჩილერი-კომენტარი'];
   const rows = list.map((x, i) => {
-    const w = x.hotwater || {}, c = x.cooling || {};
+    const b = x.boiler || {}, w = x.hotwater || {}, c = x.cooling || {};
     return [i+1, x.objectName||'', x.workerName||'', x.workerEmail||'', x.date||'', x.time||'',
+      b.status||'', b.comment||'',
       w.filled||'', w.pump||'', w.comment||'',
       c.status||'', c.pumps||'', c.expander||'', c.comment||''];
   });
