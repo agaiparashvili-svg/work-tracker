@@ -427,6 +427,7 @@
             <label class="chip" id="cc-2"><input type="radio" name="w-cat" value="ოთახები" onchange="selChip('cat',this,'sel-blue')"><span>🛏 ოთახები</span></label>
             <label class="chip" id="cc-3"><input type="radio" name="w-cat" value="სხვა" onchange="selChip('cat',this,'sel-blue')"><span>📦 სხვა</span></label>
             <label class="chip" id="cc-4"><input type="radio" name="w-cat" value="საქვაბის შემოწმება" onchange="selChip('cat',this,'sel-blue')"><span>🔥 საქვაბის შემოწმება</span></label>
+            <label class="chip" id="cc-5"><input type="radio" name="w-cat" value="გამწოვების შემოწმება" onchange="selChip('cat',this,'sel-blue')"><span>💨 გამწოვების შემოწმება</span></label>
           </div>
         </div>
         <div id="work-standard-fields">
@@ -476,13 +477,22 @@
         <button class="btn btn-primary btn-full" onclick="submitWork()">📤 სამუშაოს გაგზავნა</button>
         </div><!-- end work-standard-fields -->
 
-        <!-- BOILER INSPECTION FLOW (shown when category = საქვაბის შემოწმება) -->
+        <!-- BOILER INSPECTION FLOW -->
         <div id="boiler-flow" style="display:none">
           <div id="inspect-picker">
             <p style="color:var(--text2);font-size:13px;margin-bottom:14px">აირჩიეთ ობიექტი (საქვაბე), რომელსაც ამოწმებთ</p>
             <div class="obj-grid" id="obj-grid"></div>
           </div>
           <div id="inspect-form-host" style="display:none"></div>
+        </div>
+
+        <!-- EXHAUST FAN FLOW -->
+        <div id="exhaust-flow" style="display:none">
+          <div id="exhaust-picker">
+            <p style="color:var(--text2);font-size:13px;margin-bottom:14px">აირჩიეთ გამწოვი, რომელსაც ამოწმებთ</p>
+            <div class="obj-grid" id="exhaust-obj-grid"></div>
+          </div>
+          <div id="exhaust-form-host" style="display:none"></div>
         </div>
       </div>
     </div>
@@ -623,56 +633,24 @@
 
     <!-- EXHAUST FANS -->
     <div class="section" id="sec-exhaust">
-      <div class="section-header"><h2>💨 გამწოვების შემოწმება</h2></div>
-
-      <!-- ADD FORM -->
-      <div class="card" style="margin-bottom:16px">
-        <div style="font-weight:700;font-size:15px;margin-bottom:16px">+ ახალი შემოწმება</div>
-        <div class="form-row">
-          <div class="form-group">
-            <label>გამწოვის დასახელება *</label>
-            <select id="ex-unit">
-              <option value="">— აირჩიეთ —</option>
-              <option value="პირველი აჰუ">პირველი აჰუ</option>
-              <option value="მეორე აჰუ">მეორე აჰუ</option>
-              <option value="დანარჩენი გამწოვები">დანარჩენი გამწოვები</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>სტატუსი *</label>
-            <div style="display:flex;gap:10px;margin-top:4px">
-              <label class="chip" id="ex-on" onclick="selectExhaustStatus('ჩართული',this)">
-                <span>✅ ჩართული</span>
-              </label>
-              <label class="chip" id="ex-off" onclick="selectExhaustStatus('გამორთული',this)">
-                <span>❌ გამორთული</span>
-              </label>
-            </div>
-          </div>
+      <div class="section-header">
+        <h2>💨 გამწოვების შემოწმებები</h2>
+        <div class="filter-row" style="margin:0">
+          <select id="exf-unit2" onchange="renderExhaustList()" style="min-width:160px">
+            <option value="all">ყველა გამწოვი</option>
+            <option value="პირველი აჰუ">პირველი აჰუ</option>
+            <option value="მეორე აჰუ">მეორე აჰუ</option>
+            <option value="დანარჩენი გამწოვები">დანარჩენი გამწოვები</option>
+          </select>
+          <select id="exf-status2" onchange="renderExhaustList()" style="min-width:140px">
+            <option value="all">ყველა სტატუსი</option>
+            <option value="ჩართული">✅ ჩართული</option>
+            <option value="გამორთული">❌ გამორთული</option>
+          </select>
+          <input type="date" id="exf-date2" onchange="renderExhaustList()" style="width:auto;font-size:12px;padding:7px 11px">
+          <button class="btn btn-sm btn-ghost" onclick="document.getElementById('exf-unit2').value='all';document.getElementById('exf-status2').value='all';document.getElementById('exf-date2').value='';renderExhaustList()">გასუფთავება</button>
+          <button class="btn btn-sm" onclick="exportExhaustCSV()" style="background:rgba(5,150,105,.1);color:#065f46;border:1px solid rgba(5,150,105,.3);font-weight:700">📊 CSV</button>
         </div>
-        <div class="form-group">
-          <label>კომენტარი <span style="color:var(--text3);font-weight:400">(სურვილისამებრ)</span></label>
-          <input type="text" id="ex-comment" placeholder="შენიშვნა...">
-        </div>
-        <button class="btn btn-primary" onclick="submitExhaustCheck()">💨 შემოწმების დამატება</button>
-      </div>
-
-      <!-- FILTERS -->
-      <div class="filter-row">
-        <select id="exf-unit" onchange="renderExhaustList()" style="flex:1;min-width:160px">
-          <option value="all">ყველა გამწოვი</option>
-          <option value="პირველი აჰუ">პირველი აჰუ</option>
-          <option value="მეორე აჰუ">მეორე აჰუ</option>
-          <option value="დანარჩენი გამწოვები">დანარჩენი გამწოვები</option>
-        </select>
-        <select id="exf-status" onchange="renderExhaustList()" style="flex:1;min-width:140px">
-          <option value="all">ყველა სტატუსი</option>
-          <option value="ჩართული">✅ ჩართული</option>
-          <option value="გამორთული">❌ გამორთული</option>
-        </select>
-        <input type="date" id="exf-date" onchange="renderExhaustList()" style="flex:1;min-width:140px;padding:7px 11px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-family:inherit;font-size:12px">
-        <button class="btn btn-ghost btn-sm" onclick="document.getElementById('exf-unit').value='all';document.getElementById('exf-status').value='all';document.getElementById('exf-date').value='';renderExhaustList()">გასუფთავება</button>
-        <button class="btn btn-sm" onclick="exportExhaustCSV()" style="background:rgba(5,150,105,.1);color:#065f46;border:1px solid rgba(5,150,105,.3);font-weight:700">📊 CSV</button>
       </div>
 
       <!-- LIST -->
@@ -991,10 +969,10 @@ function buildNav(role, userData) {
   const nav = document.getElementById('main-nav');
   nav.innerHTML = '';
   const map = {
-    worker: [['sec-submit','📤 გაგზავნა'],['sec-myworks','📁 ჩემი'],['sec-tasks','📬 დავალებები'],['sec-inspections','🔥 საქვაბეები']],
-    nightwatch: [['sec-submit','📤 გაგზავნა'],['sec-myworks','📁 ჩემი'],['sec-inspections','🔥 საქვაბეები']],
-    supervisor: [['sec-submit','📤 გაგზავნა'],['sec-myworks','📁 ჩემი'],['sec-tasks','📬 დავალებები'],['sec-review','🔍 შემოწმება'],['sec-inspections','🔥 საქვაბეები']],
-    admin: [['sec-dashboard','📊 Dashboard'],['sec-stats','📈 სტატისტიკა'],['sec-inspections','🔥 საქვაბეები'],['sec-users','👥 მომხმარებლები'],['sec-exhaust','💨 გამწოვები'],['sec-preview','👁 Preview'],['sec-export','📥 ექსპორტი']]
+    worker: [['sec-submit','📤 გაგზავნა'],['sec-myworks','📁 ჩემი'],['sec-tasks','📬 დავალებები'],['sec-inspections','🔥 საქვაბეები'],['sec-exhaust','💨 გამწოვები']],
+    nightwatch: [['sec-submit','📤 გაგზავნა'],['sec-myworks','📁 ჩემი'],['sec-inspections','🔥 საქვაბეები'],['sec-exhaust','💨 გამწოვები']],
+    supervisor: [['sec-submit','📤 გაგზავნა'],['sec-myworks','📁 ჩემი'],['sec-tasks','📬 დავალებები'],['sec-review','🔍 შემოწმება'],['sec-inspections','🔥 საქვაბეები'],['sec-exhaust','💨 გამწოვები']],
+    admin: [['sec-dashboard','📊 Dashboard'],['sec-stats','📈 სტატისტიკა'],['sec-inspections','🔥 საქვაბეები'],['sec-exhaust','💨 გამწოვები'],['sec-users','👥 მომხმარებლები'],['sec-preview','👁 Preview'],['sec-export','📥 ექსპორტი']]
   };
   const items = map[role] || [];
   if (!items.length) { showSection('sec-pending'); return; }
@@ -1006,9 +984,9 @@ function buildNav(role, userData) {
     nav.appendChild(el);
   });
   showSection(items[0][0]);
-  if (role === 'worker') { listenMyWorks(); listenUsers(); listenMyTasks(); listenMyNotifications(); listenMyInspections(); }
-  if (role === 'nightwatch') { listenMyWorks(); listenUsers(); listenMyNotifications(); listenMyInspections(); }
-  if (role === 'supervisor') { listenMyWorks(); listenAllWorks('supervisor'); listenUsers(); listenMyTasks(); listenMyNotifications(); listenMyInspections(); listenAllInspections(); }
+  if (role === 'worker') { listenMyWorks(); listenUsers(); listenMyTasks(); listenMyNotifications(); listenMyInspections(); listenExhaustChecks(); }
+  if (role === 'nightwatch') { listenMyWorks(); listenUsers(); listenMyNotifications(); listenMyInspections(); listenExhaustChecks(); }
+  if (role === 'supervisor') { listenMyWorks(); listenAllWorks('supervisor'); listenUsers(); listenMyTasks(); listenMyNotifications(); listenMyInspections(); listenAllInspections(); listenExhaustChecks(); }
   if (role === 'admin') { listenAllWorks('admin'); listenUsers(); listenExhaustChecks(); listenAllInspections(); }
 }
 
@@ -1132,16 +1110,22 @@ window.selChip = function(group, input, cls) {
   if (group === 'cat') toggleBoilerFlow();
 };
 
-// ---- BOILER FLOW TOGGLE ----
+// ---- SPECIAL FLOW TOGGLE (boiler + exhaust) ----
 function toggleBoilerFlow() {
-  const on = chipState.cat === 'საქვაბის შემოწმება';
+  const cat = chipState.cat;
+  const isBoiler = cat === 'საქვაბის შემოწმება';
+  const isExhaust = cat === 'გამწოვების შემოწმება';
+  const isSpecial = isBoiler || isExhaust;
   const loc = document.getElementById('fg-loc');
   const std = document.getElementById('work-standard-fields');
   const bf = document.getElementById('boiler-flow');
-  if (loc) loc.style.display = on ? 'none' : 'block';
-  if (std) std.style.display = on ? 'none' : 'block';
-  if (bf) bf.style.display = on ? 'block' : 'none';
-  if (on) resetInspectPicker();
+  const ef = document.getElementById('exhaust-flow');
+  if (loc) loc.style.display = isSpecial ? 'none' : 'block';
+  if (std) std.style.display = isSpecial ? 'none' : 'block';
+  if (bf) bf.style.display = isBoiler ? 'block' : 'none';
+  if (ef) ef.style.display = isExhaust ? 'block' : 'none';
+  if (isBoiler) resetInspectPicker();
+  if (isExhaust) resetExhaustPicker();
 }
 
 // ---- SUBMIT WORK ----
@@ -1758,7 +1742,8 @@ window.sendTestEmail = async function() {
 
 // ---- EXHAUST CHECKS ----
 let allExhaustChecks = [];
-let exhaustStatus = null;
+let currentExhaustFlowUnit = null;
+let exhaustFlowStatus = null;
 
 function listenExhaustChecks() {
   const q = query(collection(db, 'exhaustChecks'), orderBy('checkedAt', 'desc'));
@@ -1768,39 +1753,94 @@ function listenExhaustChecks() {
   });
 }
 
-window.selectExhaustStatus = function(val, el) {
-  exhaustStatus = val;
-  document.getElementById('ex-on').classList.remove('sel-green','sel-red');
-  document.getElementById('ex-off').classList.remove('sel-green','sel-red');
-  el.classList.add(val === 'ჩართული' ? 'sel-green' : 'sel-red');
+// ---- EXHAUST FLOW (submit form) ----
+const EXHAUST_OBJECTS = [
+  { id:'ahu1',  name:'პირველი აჰუ' },
+  { id:'ahu2',  name:'მეორე აჰუ' },
+  { id:'other', name:'დანარჩენი გამწოვები' },
+];
+
+window.resetExhaustPicker = function() {
+  currentExhaustFlowUnit = null;
+  exhaustFlowStatus = null;
+  const host = document.getElementById('exhaust-form-host');
+  if (host) { host.style.display = 'none'; host.innerHTML = ''; }
+  const picker = document.getElementById('exhaust-picker');
+  if (picker) picker.style.display = 'block';
+  renderExhaustObjGrid();
 };
 
-window.submitExhaustCheck = async function() {
-  const unit = document.getElementById('ex-unit').value;
-  const comment = document.getElementById('ex-comment').value.trim();
-  if (!unit) { notify('გამწოვის დასახელება სავალდებულოა', 'error'); return; }
-  if (!exhaustStatus) { notify('სტატუსი სავალდებულოა', 'error'); return; }
+function renderExhaustObjGrid() {
+  const grid = document.getElementById('exhaust-obj-grid');
+  if (!grid) return;
+  grid.innerHTML = EXHAUST_OBJECTS.map(o => {
+    const last = allExhaustChecks.find(x => x.unit === o.name && x.workerId === currentUser?.uid);
+    const lastTxt = last ? `ბოლო: ${last.status || ''}` : 'ჯერ არ შემოწმებულა';
+    return `<button class="obj-btn" onclick="openExhaustFlowForm('${o.id}')">
+      <span class="obj-name">💨 ${e(o.name)}</span>
+      <span class="obj-last">${lastTxt}</span>
+    </button>`;
+  }).join('');
+}
+
+window.openExhaustFlowForm = function(unitId) {
+  const obj = EXHAUST_OBJECTS.find(o => o.id === unitId);
+  if (!obj) return;
+  currentExhaustFlowUnit = obj;
+  exhaustFlowStatus = null;
+  const host = document.getElementById('exhaust-form-host');
+  host.innerHTML = `
+    <button class="ins-back" onclick="resetExhaustPicker()">← გამწოვის შეცვლა</button>
+    <div class="section-header" style="margin-bottom:14px"><h2 style="font-size:17px">💨 ${e(obj.name)}</h2></div>
+    <div class="sys-block" style="border-left:4px solid var(--sky)">
+      <div class="sys-title">💨 სტატუსი *</div>
+      <div class="form-group">
+        <div class="chip-group ins-status">
+          <label class="chip" data-cls="sel-green" id="exfl-on"><input type="radio" name="exfl-status" value="ჩართული" onchange="exhaustFlowSel(this)"><span>✅ ჩართული</span></label>
+          <label class="chip" data-cls="sel-red" id="exfl-off"><input type="radio" name="exfl-status" value="გამორთული" onchange="exhaustFlowSel(this)"><span>❌ გამორთული</span></label>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>💬 კომენტარი <span style="color:var(--text3);font-weight:400">(სურვილისამებრ)</span></label>
+        <textarea id="exfl-comment" placeholder="შენიშვნა..." style="min-height:60px"></textarea>
+      </div>
+    </div>
+    <button class="btn btn-primary btn-full" onclick="submitExhaustFlowCheck()">💨 შემოწმების გაგზავნა</button>`;
+  document.getElementById('exhaust-picker').style.display = 'none';
+  host.style.display = 'block';
+  host.scrollIntoView({ behavior:'smooth', block:'start' });
+};
+
+window.exhaustFlowSel = function(input) {
+  document.querySelectorAll('#exhaust-form-host input[name="exfl-status"]').forEach(r =>
+    r.closest('.chip').classList.remove('sel-green','sel-red')
+  );
+  const chip = input.closest('.chip'); chip.classList.add(chip.dataset.cls);
+  exhaustFlowStatus = input.value;
+};
+
+window.submitExhaustFlowCheck = async function() {
+  const obj = currentExhaustFlowUnit;
+  if (!obj) { notify('აირჩიეთ გამწოვი', 'error'); return; }
+  if (!exhaustFlowStatus) { notify('სტატუსი სავალდებულოა', 'error'); return; }
+  const comment = document.getElementById('exfl-comment')?.value.trim() || '';
   const snap = await getDoc(doc(db, 'users', currentUser.uid));
   const ud = snap.data();
   try {
     await addDoc(collection(db, 'exhaustChecks'), {
-      unit, status: exhaustStatus, comment,
-      workerName: ud.name, workerId: currentUser.uid,
+      unit: obj.name, status: exhaustFlowStatus, comment,
+      workerName: ud.displayName || ud.name, workerId: currentUser.uid,
       checkedAt: serverTimestamp()
     });
-    document.getElementById('ex-unit').value = '';
-    document.getElementById('ex-comment').value = '';
-    exhaustStatus = null;
-    document.getElementById('ex-on').classList.remove('sel-green','sel-red');
-    document.getElementById('ex-off').classList.remove('sel-green','sel-red');
-    notify('✓ შემოწმება დაემატა!', 'success');
+    notify('✓ შემოწმება გაიგზავნა!', 'success');
+    resetExhaustPicker();
   } catch(err) { notify('შეცდომა: ' + err.message, 'error'); }
 };
 
 window.renderExhaustList = function() {
-  const uf = document.getElementById('exf-unit')?.value || 'all';
-  const sf = document.getElementById('exf-status')?.value || 'all';
-  const df = document.getElementById('exf-date')?.value || '';
+  const uf = document.getElementById('exf-unit2')?.value || 'all';
+  const sf = document.getElementById('exf-status2')?.value || 'all';
+  const df = document.getElementById('exf-date2')?.value || '';
   let list = [...allExhaustChecks];
   if (uf !== 'all') list = list.filter(x => x.unit === uf);
   if (sf !== 'all') list = list.filter(x => x.status === sf);
