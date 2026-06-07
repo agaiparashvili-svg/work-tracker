@@ -585,6 +585,64 @@
       </div>
     </div>
 
+    <!-- EXHAUST FANS -->
+    <div class="section" id="sec-exhaust">
+      <div class="section-header"><h2>💨 გამწოვების შემოწმება</h2></div>
+
+      <!-- ADD FORM -->
+      <div class="card" style="margin-bottom:16px">
+        <div style="font-weight:700;font-size:15px;margin-bottom:16px">+ ახალი შემოწმება</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>გამწოვის დასახელება *</label>
+            <select id="ex-unit">
+              <option value="">— აირჩიეთ —</option>
+              <option value="პირველი აჰუ">პირველი აჰუ</option>
+              <option value="მეორე აჰუ">მეორე აჰუ</option>
+              <option value="დანარჩენი გამწოვები">დანარჩენი გამწოვები</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>სტატუსი *</label>
+            <div style="display:flex;gap:10px;margin-top:4px">
+              <label class="chip" id="ex-on" onclick="selectExhaustStatus('ჩართული',this)">
+                <span>✅ ჩართული</span>
+              </label>
+              <label class="chip" id="ex-off" onclick="selectExhaustStatus('გამორთული',this)">
+                <span>❌ გამორთული</span>
+              </label>
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>კომენტარი <span style="color:var(--text3);font-weight:400">(სურვილისამებრ)</span></label>
+          <input type="text" id="ex-comment" placeholder="შენიშვნა...">
+        </div>
+        <button class="btn btn-primary" onclick="submitExhaustCheck()">💨 შემოწმების დამატება</button>
+      </div>
+
+      <!-- FILTERS -->
+      <div class="filter-row">
+        <select id="exf-unit" onchange="renderExhaustList()" style="flex:1;min-width:160px">
+          <option value="all">ყველა გამწოვი</option>
+          <option value="პირველი აჰუ">პირველი აჰუ</option>
+          <option value="მეორე აჰუ">მეორე აჰუ</option>
+          <option value="დანარჩენი გამწოვები">დანარჩენი გამწოვები</option>
+        </select>
+        <select id="exf-status" onchange="renderExhaustList()" style="flex:1;min-width:140px">
+          <option value="all">ყველა სტატუსი</option>
+          <option value="ჩართული">✅ ჩართული</option>
+          <option value="გამორთული">❌ გამორთული</option>
+        </select>
+        <input type="date" id="exf-date" onchange="renderExhaustList()" style="flex:1;min-width:140px;padding:7px 11px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-family:inherit;font-size:12px">
+        <button class="btn btn-ghost btn-sm" onclick="document.getElementById('exf-unit').value='all';document.getElementById('exf-status').value='all';document.getElementById('exf-date').value='';renderExhaustList()">გასუფთავება</button>
+        <button class="btn btn-sm" onclick="exportExhaustCSV()" style="background:rgba(5,150,105,.1);color:#065f46;border:1px solid rgba(5,150,105,.3);font-weight:700">📊 CSV</button>
+      </div>
+
+      <!-- LIST -->
+      <div id="exhaust-list"></div>
+    </div>
+
     <!-- EXPORT -->
     <div class="section" id="sec-export">
       <div class="section-header"><h2>📥 Excel ექსპორტი</h2></div>
@@ -881,7 +939,7 @@ function buildNav(role, userData) {
     worker: [['sec-submit','📤 გაგზავნა'],['sec-myworks','📁 ჩემი'],['sec-tasks','📬 დავალებები']],
     nightwatch: [['sec-submit','📤 გაგზავნა'],['sec-myworks','📁 ჩემი']],
     supervisor: [['sec-submit','📤 გაგზავნა'],['sec-myworks','📁 ჩემი'],['sec-tasks','📬 დავალებები'],['sec-review','🔍 შემოწმება'],],
-    admin: [['sec-dashboard','📊 Dashboard'],['sec-stats','📈 სტატისტიკა'],['sec-users','👥 მომხმარებლები'],['sec-preview','👁 Preview'],['sec-export','📥 ექსპორტი']]
+    admin: [['sec-dashboard','📊 Dashboard'],['sec-stats','📈 სტატისტიკა'],['sec-users','👥 მომხმარებლები'],['sec-exhaust','💨 გამწოვები'],['sec-preview','👁 Preview'],['sec-export','📥 ექსპორტი']]
   };
   const items = map[role] || [];
   if (!items.length) { showSection('sec-pending'); return; }
@@ -896,7 +954,7 @@ function buildNav(role, userData) {
   if (role === 'worker') { listenMyWorks(); listenUsers(); listenMyTasks(); listenMyNotifications(); }
   if (role === 'nightwatch') { listenMyWorks(); listenUsers(); listenMyNotifications(); }
   if (role === 'supervisor') { listenMyWorks(); listenAllWorks('supervisor'); listenUsers(); listenMyTasks(); listenMyNotifications(); }
-  if (role === 'admin') { listenAllWorks('admin'); listenUsers(); }
+  if (role === 'admin') { listenAllWorks('admin'); listenUsers(); listenExhaustChecks(); }
 }
 
 function activateSection(id, el) {
@@ -907,6 +965,7 @@ function activateSection(id, el) {
   if (id === 'sec-review') renderReview();
   if (id === 'sec-myworks') renderMyWorks();
   if (id === 'sec-submit') renderAssigneeChips();
+  if (id === 'sec-exhaust') renderExhaustList();
   if (id === 'sec-stats') renderStats();
   if (id === 'sec-preview') renderPreviewSection();
   if (id === 'sec-dashboard') { renderAdminStats(); renderAdminWorks(); }
@@ -1626,6 +1685,110 @@ window.sendTestEmail = async function() {
     btn.disabled = false;
     btn.textContent = '📧 საცდელი მეილი';
   }
+};
+
+// ---- EXHAUST CHECKS ----
+let allExhaustChecks = [];
+let exhaustStatus = null;
+
+function listenExhaustChecks() {
+  const q = query(collection(db, 'exhaustChecks'), orderBy('checkedAt', 'desc'));
+  onSnapshot(q, snap => {
+    allExhaustChecks = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    if (document.getElementById('sec-exhaust')?.classList.contains('active')) renderExhaustList();
+  });
+}
+
+window.selectExhaustStatus = function(val, el) {
+  exhaustStatus = val;
+  document.getElementById('ex-on').classList.remove('sel-green','sel-red');
+  document.getElementById('ex-off').classList.remove('sel-green','sel-red');
+  el.classList.add(val === 'ჩართული' ? 'sel-green' : 'sel-red');
+};
+
+window.submitExhaustCheck = async function() {
+  const unit = document.getElementById('ex-unit').value;
+  const comment = document.getElementById('ex-comment').value.trim();
+  if (!unit) { notify('გამწოვის დასახელება სავალდებულოა', 'error'); return; }
+  if (!exhaustStatus) { notify('სტატუსი სავალდებულოა', 'error'); return; }
+  const snap = await getDoc(doc(db, 'users', currentUser.uid));
+  const ud = snap.data();
+  try {
+    await addDoc(collection(db, 'exhaustChecks'), {
+      unit, status: exhaustStatus, comment,
+      workerName: ud.name, workerId: currentUser.uid,
+      checkedAt: serverTimestamp()
+    });
+    document.getElementById('ex-unit').value = '';
+    document.getElementById('ex-comment').value = '';
+    exhaustStatus = null;
+    document.getElementById('ex-on').classList.remove('sel-green','sel-red');
+    document.getElementById('ex-off').classList.remove('sel-green','sel-red');
+    notify('✓ შემოწმება დაემატა!', 'success');
+  } catch(err) { notify('შეცდომა: ' + err.message, 'error'); }
+};
+
+window.renderExhaustList = function() {
+  const uf = document.getElementById('exf-unit')?.value || 'all';
+  const sf = document.getElementById('exf-status')?.value || 'all';
+  const df = document.getElementById('exf-date')?.value || '';
+  let list = [...allExhaustChecks];
+  if (uf !== 'all') list = list.filter(x => x.unit === uf);
+  if (sf !== 'all') list = list.filter(x => x.status === sf);
+  if (df) list = list.filter(x => {
+    if (!x.checkedAt) return false;
+    const d = new Date(x.checkedAt.toMillis ? x.checkedAt.toMillis() : x.checkedAt);
+    return d.toISOString().slice(0,10) === df;
+  });
+  const el = document.getElementById('exhaust-list');
+  if (!el) return;
+  if (!list.length) { el.innerHTML = '<div class="empty-state"><div class="empty-icon">💨</div><p>ჩანაწერები არ მოიძებნა</p></div>'; return; }
+  el.innerHTML = list.map(x => {
+    const ts = x.checkedAt ? new Date(x.checkedAt.toMillis ? x.checkedAt.toMillis() : x.checkedAt) : null;
+    const dateStr = ts ? ts.toLocaleDateString('ka-GE') + ' · ' + ts.toLocaleTimeString('ka-GE',{hour:'2-digit',minute:'2-digit'}) : '—';
+    const isOn = x.status === 'ჩართული';
+    return `<div class="wcard" style="margin-bottom:8px">
+      <div class="wcard-stripe ${isOn?'wcard-stripe-green':'wcard-stripe-red'}"></div>
+      <div class="wcard-body">
+        <div class="wcard-top">
+          <div class="wcard-info">
+            <div class="wcard-location" style="font-size:14px">💨 ${e(x.unit||'')}</div>
+            <div class="wcard-row" style="margin-top:6px">
+              <span class="wcard-worker"><span class="wcard-avatar" style="background:${isOn?'#059669':'#dc2626'}">${(x.workerName||'?')[0]}</span>${e(x.workerName||'')}</span>
+              <span class="wcard-date">📅 ${dateStr}</span>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span class="status ${isOn?'s-approved':'s-rejected'}">${isOn?'✅ ჩართული':'❌ გამორთული'}</span>
+            <button class="btn btn-danger btn-sm" onclick="deleteExhaustCheck('${x.id}')">🗑</button>
+          </div>
+        </div>
+        ${x.comment ? `<div class="wcard-detail">${e(x.comment)}</div>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+};
+
+window.deleteExhaustCheck = async function(id) {
+  if (!confirm('წაიშალოს?')) return;
+  await deleteDoc(doc(db, 'exhaustChecks', id));
+  notify('✓ წაიშალა', 'success');
+};
+
+window.exportExhaustCSV = function() {
+  const list = allExhaustChecks;
+  if (!list.length) { notify('ჩანაწერები არ არის', 'error'); return; }
+  const hdr = ['#','გამწოვი','სტატუსი','თანამშრომელი','კომენტარი','თარიღი'];
+  const rows = list.map((x, i) => {
+    const ts = x.checkedAt ? new Date(x.checkedAt.toMillis ? x.checkedAt.toMillis() : x.checkedAt).toLocaleString('ka-GE') : '';
+    return [i+1, x.unit||'', x.status||'', x.workerName||'', x.comment||'', ts];
+  });
+  const csv = [hdr,...rows].map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href=url; a.download=`gamwovebi_${new Date().toISOString().slice(0,10)}.csv`; a.click();
+  URL.revokeObjectURL(url);
+  notify('✓ CSV ჩამოიტვირთა!','success');
 };
 
 // ---- EXPORT EXCEL ----
