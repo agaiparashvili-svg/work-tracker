@@ -252,6 +252,48 @@ exports.handleEmailQueue = functions
     return null;
   });
 
+// ── 5. დავალების push შეტყობინება ────────────────────────
+exports.onTaskAssigned = functions
+  .region('us-central1')
+  .firestore.document('redirects/{docId}')
+  .onCreate(async (snap) => {
+    const data = snap.data();
+    const assignedTo = data.assignedTo || [];
+    if (!assignedTo.length) return null;
+
+    // Find FCM tokens of assigned workers
+    const usersSnap = await db.collection('users').get();
+    const tokens = usersSnap.docs
+      .filter(d => {
+        const ud = d.data();
+        const label = ud.displayName || ud.name || '';
+        return assignedTo.includes(label);
+      })
+      .map(d => d.data().fcmToken)
+      .filter(Boolean);
+
+    if (!tokens.length) {
+      console.log('No FCM tokens found for:', assignedTo);
+      return null;
+    }
+
+    const supervisor = data.supervisorName || 'სუპერვაიზერი';
+    const location = data.location || '';
+    const note = data.note || data.description || '';
+    const body = [location, note].filter(Boolean).join(' — ') || 'ახალი დავალება';
+
+    const msg = {
+      tokens,
+      notification: { title: `📬 ახალი დავალება — ${supervisor}`, body },
+      android: { priority: 'high' },
+      apns: { payload: { aps: { sound: 'default', badge: 1 } } },
+    };
+
+    const result = await admin.messaging().sendEachForMulticast(msg);
+    console.log(`Task push: ${result.successCount}/${tokens.length} sent`);
+    return null;
+  });
+
 // ── 4. საქვაბის შემოწმება: დღიური შეჯამება 10:00 Tbilisi ──
 //    (დროის შესაცვლელად შეცვალე '0 10' — წუთი/საათი)
 exports.dailyBoilerReport = functions
