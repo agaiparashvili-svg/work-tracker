@@ -406,6 +406,7 @@
             <option value="failed">❌ ვერ შესრულდა</option>
             <option value="temp">🔧 დროებით</option>
           </select>
+          <button class="btn btn-sm" onclick="exportTasksCSV()" style="background:rgba(5,150,105,.1);color:#065f46;border:1px solid rgba(5,150,105,.3);font-weight:700">📊 CSV</button>
         </div>
       </div>
       <div id="tasks-list"></div>
@@ -2416,6 +2417,30 @@ function renderMyTasks() {
   }).join('');
 }
 window.renderMyTasks = renderMyTasks;
+
+window.exportTasksCSV = function() {
+  if (!myTasks.length) { notify('დავალებები არ არის', 'error'); return; }
+  const me = allUsers.find(u => u.id === currentUser.uid);
+  const userName = me?.displayName || me?.name || '';
+  const hdr = ['#','ობიექტი','კატეგორია','თარიღი','დრო','სუპერვაიზერი','შენიშვნა','ჩემი სტატუსი','ჩემი კომენტარი'];
+  const stLabels = { new:'ახალი', in_progress:'მიმდინარე', done:'შესრულდა', failed:'ვერ შესრულდა', temp:'დროებით' };
+  const rows = myTasks.map((r, i) => {
+    const myStatus = (r.taskStatus || {})[userName] || {};
+    return [
+      i+1,
+      r.location||'', r.category||'', r.date||'', r.time||'',
+      r.supervisorName||'', r.note||r.description||'',
+      stLabels[myStatus.status||'new']||'ახალი',
+      myStatus.comment||''
+    ];
+  });
+  const csv = [hdr,...rows].map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href=url; a.download=`davalebebi_${new Date().toISOString().slice(0,10)}.csv`; a.click();
+  URL.revokeObjectURL(url);
+  notify('✓ CSV ჩამოიტვირთა!','success');
+};
 
 window.openTaskUpdate = function(redirectId, userName, location) {
   const r = myTasks.find(x => x.id === redirectId);
