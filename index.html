@@ -538,7 +538,15 @@
 
     <!-- MY WORKS -->
     <div class="section" id="sec-myworks">
-      <div class="section-header"><h2>ჩემი სამუშაოები</h2></div>
+      <div class="section-header">
+        <h2>ჩემი სამუშაოები</h2>
+        <div class="filter-row" style="margin:0;flex-wrap:wrap">
+          <input type="date" id="mw-from" onchange="renderMyWorks()" style="font-size:12px;padding:7px 10px;border-radius:9px;border:1.5px solid var(--border)">
+          <span style="align-self:center;font-size:12px;color:var(--text3)">—</span>
+          <input type="date" id="mw-to" onchange="renderMyWorks()" style="font-size:12px;padding:7px 10px;border-radius:9px;border:1.5px solid var(--border)">
+          <button class="btn btn-ghost btn-sm" onclick="document.getElementById('mw-from').value='';document.getElementById('mw-to').value='';renderMyWorks()">✕</button>
+        </div>
+      </div>
       <div id="my-list"></div>
     </div>
 
@@ -560,6 +568,10 @@
             <option value="ვერ შესრულდა">ვერ შესრულდა</option>
             <option value="დროებით გაკეთდა">დროებით გაკეთდა</option>
           </select>
+          <input type="date" id="f-from" onchange="renderReview()" style="font-size:12px;padding:6px 10px;border-radius:9px;border:1.5px solid var(--border)">
+          <span style="align-self:center;font-size:12px;color:var(--text3)">—</span>
+          <input type="date" id="f-to" onchange="renderReview()" style="font-size:12px;padding:6px 10px;border-radius:9px;border:1.5px solid var(--border)">
+          <button class="btn btn-ghost btn-sm" onclick="document.getElementById('f-from').value='';document.getElementById('f-to').value='';renderReview()">✕</button>
         </div>
       </div>
       <div id="review-list"></div>
@@ -570,12 +582,18 @@
       <div class="section-header">
         <h2>📈 სტატისტიკა</h2>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <select id="stat-period" onchange="renderStats()" style="font-size:12px;padding:7px 11px;border-radius:9px;border:1.5px solid var(--border)">
+          <select id="stat-period" onchange="onStatPeriodChange()" style="font-size:12px;padding:7px 11px;border-radius:9px;border:1.5px solid var(--border)">
             <option value="all">სულ ყველა</option>
             <option value="today">დღეს</option>
             <option value="week">ამ კვირაში</option>
             <option value="month">ამ თვეში</option>
+            <option value="custom">📅 კონკრეტული პერიოდი</option>
           </select>
+          <div id="stat-custom-range" style="display:none;gap:6px;align-items:center;flex-wrap:wrap">
+            <input type="date" id="stat-from" onchange="renderStats()" style="font-size:12px;padding:6px 10px;border-radius:9px;border:1.5px solid var(--border)">
+            <span style="font-size:12px;color:var(--text3)">—</span>
+            <input type="date" id="stat-to" onchange="renderStats()" style="font-size:12px;padding:6px 10px;border-radius:9px;border:1.5px solid var(--border)">
+          </div>
         </div>
       </div>
       <!-- Overall stats -->
@@ -1327,16 +1345,24 @@ window.submitWork = async function() {
 function renderMyWorks() {
   const el = document.getElementById('my-list');
   if (!el) return;
-  const list = myOwnWorks;
-  el.innerHTML = list.length ? list.map(w => wCard(w, currentRole === 'supervisor' ? 'worker' : 'worker')).join('') : empty('📭', 'ჯერ სამუშაოები არ გაქვთ');
+  const from = document.getElementById('mw-from')?.value || '';
+  const to = document.getElementById('mw-to')?.value || '';
+  let list = [...myOwnWorks];
+  if (from) list = list.filter(w => w.date && w.date >= from);
+  if (to)   list = list.filter(w => w.date && w.date <= to);
+  el.innerHTML = list.length ? list.map(w => wCard(w, 'worker')).join('') : empty('📭', from||to ? 'ამ პერიოდში სამუშაოები არ მოიძებნა' : 'ჯერ სამუშაოები არ გაქვთ');
 }
 
 function renderReview() {
   const sf = document.getElementById('f-status')?.value || 'all';
   const rf = document.getElementById('f-res')?.value || 'all';
+  const from = document.getElementById('f-from')?.value || '';
+  const to   = document.getElementById('f-to')?.value || '';
   let list = [...allWorks];
   if (sf !== 'all') list = list.filter(w => w.status === sf);
   if (rf !== 'all') list = list.filter(w => w.result === rf);
+  if (from) list = list.filter(w => w.date && w.date >= from);
+  if (to)   list = list.filter(w => w.date && w.date <= to);
   const el = document.getElementById('review-list');
   if (!el) return;
   el.innerHTML = list.length ? list.map(w => wCard(w, 'supervisor')).join('') : empty('🔍', 'სამუშაოები არ მოიძებნა');
@@ -2061,6 +2087,13 @@ window.renderReview = renderReview;
 window.renderAdminWorks = renderAdminWorks;
 
 // ---- STATISTICS ----
+window.onStatPeriodChange = function() {
+  const period = document.getElementById('stat-period')?.value || 'all';
+  const cr = document.getElementById('stat-custom-range');
+  if (cr) cr.style.display = period === 'custom' ? 'flex' : 'none';
+  renderStats();
+};
+
 function getStatWorks() {
   const period = document.getElementById('stat-period')?.value || 'all';
   const now = new Date();
@@ -2070,17 +2103,25 @@ function getStatWorks() {
 
   if (period === 'all') return allWorks;
 
+  if (period === 'custom') {
+    const from = document.getElementById('stat-from')?.value || '';
+    const to   = document.getElementById('stat-to')?.value || '';
+    return allWorks.filter(w => {
+      if (!w.date) return false;
+      if (from && w.date < from) return false;
+      if (to   && w.date > to)   return false;
+      return true;
+    });
+  }
+
   return allWorks.filter(w => {
     if (!w.date) return false;
     if (period === 'today') return w.date === today;
     if (period === 'week') {
-      const d = new Date(w.date);
       const weekAgo = new Date(tbNow - 7*86400000);
-      return d >= weekAgo;
+      return new Date(w.date) >= weekAgo;
     }
-    if (period === 'month') {
-      return w.date.slice(0,7) === today.slice(0,7);
-    }
+    if (period === 'month') return w.date.slice(0,7) === today.slice(0,7);
     return true;
   });
 }
@@ -2090,7 +2131,15 @@ function renderStats() {
   const period = document.getElementById('stat-period')?.value || 'all';
   const labels = { all:'სულ ყველა', today:'დღეს', week:'ამ კვირაში', month:'ამ თვეში' };
   const lbl = document.getElementById('stat-period-label');
-  if (lbl) lbl.textContent = labels[period] || '';
+  if (lbl) {
+    if (period === 'custom') {
+      const from = document.getElementById('stat-from')?.value || '';
+      const to   = document.getElementById('stat-to')?.value || '';
+      lbl.textContent = from || to ? `${from||'...'} – ${to||'...'}` : 'კონკრეტული პერიოდი';
+    } else {
+      lbl.textContent = labels[period] || '';
+    }
+  }
 
   // ── Overall stats ──
   const total  = works.length;
