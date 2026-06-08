@@ -650,6 +650,9 @@
             <option>რესტორნები</option><option>გარეტერიტორია</option><option>ოთახები</option><option>სხვა</option>
           </select>
           <select id="af-wk" onchange="renderAdminWorks()" style="flex:1;min-width:140px;font-size:12px;padding:6px 8px;border-radius:8px"><option value="all">ყველა შემსრულებელი</option></select>
+          <input type="date" id="af-from" onchange="renderAdminWorks()" style="flex:1;min-width:130px;font-size:12px;padding:6px 8px;border-radius:8px;border:1.5px solid var(--border)">
+          <input type="date" id="af-to"   onchange="renderAdminWorks()" style="flex:1;min-width:130px;font-size:12px;padding:6px 8px;border-radius:8px;border:1.5px solid var(--border)">
+          <button class="btn btn-ghost btn-sm" onclick="document.getElementById('af-from').value='';document.getElementById('af-to').value='';renderAdminWorks()" title="თარიღი გასუფთავება">✕ თარ.</button>
         </div>
         <!-- Batch action bar -->
         <div id="batch-bar" style="display:none;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 12px;background:rgba(79,70,229,.06);border:1px solid rgba(79,70,229,.2);border-radius:10px;margin-bottom:10px">
@@ -1412,15 +1415,19 @@ window.filterBystat = function(st, res) {
 };
 
 function renderAdminWorks() {
-  const sf = document.getElementById('af-st')?.value || 'all';
-  const rf = document.getElementById('af-res')?.value || 'all';
-  const cf = document.getElementById('af-cat')?.value || 'all';
-  const wf = document.getElementById('af-wk')?.value || 'all';
+  const sf   = document.getElementById('af-st')?.value   || 'all';
+  const rf   = document.getElementById('af-res')?.value  || 'all';
+  const cf   = document.getElementById('af-cat')?.value  || 'all';
+  const wf   = document.getElementById('af-wk')?.value   || 'all';
+  const from = document.getElementById('af-from')?.value || '';
+  const to   = document.getElementById('af-to')?.value   || '';
   let list = [...allWorks];
   if (sf !== 'all') list = list.filter(w => w.status === sf);
   if (rf !== 'all') list = list.filter(w => w.result === rf);
   if (cf !== 'all') list = list.filter(w => w.category === cf);
   if (wf !== 'all') list = list.filter(w => w.workerId === wf);
+  if (from)         list = list.filter(w => w.date && w.date >= from);
+  if (to)           list = list.filter(w => w.date && w.date <= to);
   const tb = document.getElementById('adm-tbody');
   if (!tb) return;
   if (!list.length) { tb.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--text3);padding:30px">სამუშაოები არ მოიძებნა</td></tr>'; return; }
