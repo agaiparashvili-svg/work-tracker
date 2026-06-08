@@ -687,10 +687,48 @@
       <!-- Items list -->
       <div id="inv-list"></div>
 
+      <!-- Write-off history -->
+      <div id="inv-writeoffs-wrap" style="display:none;margin-top:24px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <div style="font-size:15px;font-weight:800;color:var(--text)">📝 ჩამოწერების ისტორია</div>
+          <button class="btn btn-sm" onclick="exportWriteoffsCSV()" style="background:rgba(5,150,105,.1);color:#065f46;border:1px solid rgba(5,150,105,.3);font-weight:700">📊 CSV</button>
+        </div>
+        <div id="inv-writeoffs-list"></div>
+      </div>
+
       <!-- Admin: all users inventories -->
       <div id="inv-admin-wrap" style="display:none;margin-top:24px">
         <div style="font-size:16px;font-weight:800;color:var(--text);margin-bottom:16px">👥 ყველა მომხმარებლის ინვენტარი</div>
         <div id="inv-all-users"></div>
+      </div>
+    </div>
+
+    <!-- Write-off modal -->
+    <div id="writeoff-modal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;padding:16px">
+      <div class="card" style="width:100%;max-width:420px;padding:20px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+          <strong style="font-size:16px">📝 ჩამოწერა</strong>
+          <button class="btn btn-ghost btn-sm" onclick="closeWriteoffModal()">✕</button>
+        </div>
+        <div style="font-size:13px;color:var(--text2);margin-bottom:14px">ნივთი: <strong id="wo-item-name"></strong></div>
+        <div class="form-row" style="margin-bottom:12px">
+          <div class="form-group">
+            <label>ჩამოსაწერი რაოდენობა *</label>
+            <input type="number" id="wo-qty" min="1" value="1" style="width:100%">
+          </div>
+          <div class="form-group">
+            <label>ერთეული</label>
+            <input type="text" id="wo-unit" readonly style="width:100%;opacity:.7">
+          </div>
+        </div>
+        <div class="form-group" style="margin-bottom:14px">
+          <label>ჩამოწერის მიზეზი *</label>
+          <textarea id="wo-reason" placeholder="მაგ: გაფუჭდა, დაიკარგა, გამოიყო..." style="min-height:90px"></textarea>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-primary" style="flex:1" onclick="submitWriteoff()">📝 ჩამოწერა</button>
+          <button class="btn btn-ghost" onclick="closeWriteoffModal()">გაუქმება</button>
+        </div>
       </div>
     </div>
 
@@ -1059,10 +1097,10 @@ function buildNav(role, userData) {
     nav.appendChild(el);
   });
   showSection(items[0][0]);
-  if (role === 'worker') { listenMyWorks(); listenUsers(); listenMyTasks(); listenMyNotifications(); listenMyInspections(); listenExhaustChecks(); }
-  if (role === 'nightwatch') { listenMyWorks(); listenUsers(); listenMyNotifications(); listenMyInspections(); listenExhaustChecks(); }
-  if (role === 'supervisor') { listenMyWorks(); listenAllWorks('supervisor'); listenUsers(); listenMyTasks(); listenMyNotifications(); listenMyInspections(); listenAllInspections(); listenExhaustChecks(); }
-  if (role === 'admin') { listenAllWorks('admin'); listenUsers(); listenExhaustChecks(); listenAllInspections(); }
+  if (role === 'worker') { listenMyWorks(); listenUsers(); listenMyTasks(); listenMyNotifications(); listenMyInspections(); listenExhaustChecks(); listenWriteoffs(); }
+  if (role === 'nightwatch') { listenMyWorks(); listenUsers(); listenMyNotifications(); listenMyInspections(); listenExhaustChecks(); listenWriteoffs(); }
+  if (role === 'supervisor') { listenMyWorks(); listenAllWorks('supervisor'); listenUsers(); listenMyTasks(); listenMyNotifications(); listenMyInspections(); listenAllInspections(); listenExhaustChecks(); listenWriteoffs(); }
+  if (role === 'admin') { listenAllWorks('admin'); listenUsers(); listenExhaustChecks(); listenAllInspections(); listenWriteoffs(); }
 }
 
 function activateSection(id, el) {
@@ -3079,6 +3117,9 @@ window.exportInspectCSV = function() {
 // ---- END BOILER INSPECTION ----
 
 // ---- INVENTORY ----
+let myWriteoffs = [];
+let allWriteoffs = [];
+
 function renderInventory() {
   const me = allUsers.find(u => u.id === currentUser.uid);
   if (!me) return;
@@ -3103,7 +3144,7 @@ function renderInventory() {
           <th style="padding:10px 14px;text-align:left;font-size:12px;color:var(--text3);font-weight:700">დასახელება</th>
           <th style="padding:10px 14px;text-align:center;font-size:12px;color:var(--text3);font-weight:700">რაოდ.</th>
           <th style="padding:10px 14px;text-align:center;font-size:12px;color:var(--text3);font-weight:700">ერთ.</th>
-          ${!locked ? '<th style="width:40px"></th>' : ''}
+          <th style="width:80px"></th>
         </tr></thead>
         <tbody>
           ${items.map((item, i) => `
@@ -3111,13 +3152,24 @@ function renderInventory() {
               <td style="padding:10px 14px;font-size:14px;font-weight:600">${e(item.name)}</td>
               <td style="padding:10px 14px;text-align:center;font-size:14px">${item.qty||1}</td>
               <td style="padding:10px 14px;text-align:center;font-size:13px;color:var(--text3)">${e(item.unit||'ც')}</td>
-              ${!locked ? `<td style="padding:6px 10px;text-align:center"><button class="btn btn-ghost btn-sm" style="color:var(--danger);font-size:16px;padding:4px 8px" onclick="removeInventoryItem(${i})">✕</button></td>` : ''}
+              <td style="padding:6px 8px;text-align:center">
+                ${locked
+                  ? `<button class="btn btn-ghost btn-sm" style="font-size:11px;padding:4px 8px;white-space:nowrap" onclick="openWriteoffModal('${e(item.name)}','${e(item.unit||'ც')}')">📝 ჩამოწ.</button>`
+                  : `<button class="btn btn-ghost btn-sm" style="color:var(--danger);font-size:16px;padding:4px 8px" onclick="removeInventoryItem(${i})">✕</button>`}
+              </td>
             </tr>
           `).join('')}
         </tbody>
       </table>
       ${locked ? `<div style="padding:11px 14px;background:rgba(16,185,129,.07);border-top:1px solid rgba(16,185,129,.2);font-size:12px;color:#059669;font-weight:700">✓ ადმინმა დაადასტურა — ჩამონათვალი ჩაკეტილია</div>` : ''}
     </div>`;
+  }
+
+  // Write-offs history (show when there are write-offs or inventory is locked)
+  const woWrap = document.getElementById('inv-writeoffs-wrap');
+  if (woWrap) {
+    woWrap.style.display = (locked || myWriteoffs.length) ? 'block' : 'none';
+    renderWriteoffs();
   }
 
   const adminWrap = document.getElementById('inv-admin-wrap');
@@ -3178,12 +3230,26 @@ function renderAllInventories() {
             ? `<button class="btn btn-sm" style="background:rgba(16,185,129,.12);color:#34d399;border:1px solid rgba(16,185,129,.22);font-weight:700" onclick="lockInventory('${u.id}')">✓ დადასტურება</button>`
             : '<span style="font-size:12px;color:var(--text3)">ინვენტარი ცარიელია</span>'}
       </div>
-      ${items.length ? `<table style="width:100%;border-collapse:collapse;font-size:13px">
+      ${items.length ? `<table style="width:100%;border-collapse:collapse;font-size:13px;margin-bottom:8px">
         ${items.map(item => `<tr style="border-bottom:1px solid var(--border)">
           <td style="padding:7px 0;font-weight:600">${e(item.name)}</td>
           <td style="padding:7px 0;text-align:right;color:var(--text2)">${item.qty||1} ${e(item.unit||'ც')}</td>
         </tr>`).join('')}
       </table>` : ''}
+      ${(function(uid) {
+        const uWriteoffs = allWriteoffs.filter(w => w.userId === uid);
+        if (!uWriteoffs.length) return '';
+        return `<details style="margin-top:4px"><summary style="font-size:12px;color:var(--text3);cursor:pointer;font-weight:600">📝 ჩამოწერები (${uWriteoffs.length})</summary>
+          <table style="width:100%;border-collapse:collapse;font-size:12px;margin-top:6px">
+            ${uWriteoffs.map(w => `<tr style="border-bottom:1px solid var(--border)">
+              <td style="padding:5px 4px;color:var(--text3)">${w.date||''}</td>
+              <td style="padding:5px 4px;font-weight:600">${e(w.itemName||'')}</td>
+              <td style="padding:5px 4px;text-align:center">${w.qty||1} ${e(w.unit||'ც')}</td>
+              <td style="padding:5px 4px;color:var(--text2)">${e(w.reason||'')}</td>
+            </tr>`).join('')}
+          </table>
+        </details>`;
+      })(u.id)}
     </div>`;
   }).join('');
 }
@@ -3198,6 +3264,99 @@ window.lockInventory = async function(uid) {
     });
     notify('✓ ინვენტარი დადასტურდა', 'success');
   } catch(err) { notify('შეცდომა: ' + err.message, 'error'); }
+};
+
+// ---- WRITE-OFFS ----
+window.openWriteoffModal = function(itemName, unit) {
+  document.getElementById('wo-item-name').textContent = itemName;
+  document.getElementById('wo-qty').value = '1';
+  document.getElementById('wo-unit').value = unit || 'ც';
+  document.getElementById('wo-reason').value = '';
+  document.getElementById('wo-item-name').dataset.item = itemName;
+  const m = document.getElementById('writeoff-modal');
+  m.style.display = 'flex';
+};
+
+window.closeWriteoffModal = function() {
+  document.getElementById('writeoff-modal').style.display = 'none';
+};
+
+window.submitWriteoff = async function() {
+  const itemName = document.getElementById('wo-item-name').dataset.item || '';
+  const qty = parseFloat(document.getElementById('wo-qty')?.value) || 1;
+  const unit = document.getElementById('wo-unit')?.value.trim() || 'ც';
+  const reason = document.getElementById('wo-reason')?.value.trim();
+  if (!reason) { notify('მიზეზი სავალდებულოა', 'error'); return; }
+  const me = allUsers.find(u => u.id === currentUser.uid);
+  const userName = me?.displayName || me?.name || '';
+  try {
+    await addDoc(collection(db, 'inventoryWriteoffs'), {
+      userId: currentUser.uid,
+      userName,
+      itemName, qty, unit, reason,
+      date: new Date().toISOString().slice(0, 10),
+      createdAt: serverTimestamp()
+    });
+    closeWriteoffModal();
+    notify('✓ ჩამოწერა დაფიქსირდა', 'success');
+  } catch(err) { notify('შეცდომა: ' + err.message, 'error'); }
+};
+
+function listenWriteoffs() {
+  const q = query(
+    collection(db, 'inventoryWriteoffs'),
+    orderBy('createdAt', 'desc')
+  );
+  onSnapshot(q, snap => {
+    const all = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    allWriteoffs = all;
+    myWriteoffs = all.filter(w => w.userId === currentUser.uid);
+    if (document.getElementById('sec-inventory')?.classList.contains('active')) {
+      renderWriteoffs();
+      const me = allUsers.find(u => u.id === currentUser.uid);
+      const woWrap = document.getElementById('inv-writeoffs-wrap');
+      if (woWrap) woWrap.style.display = (me?.inventoryLocked || myWriteoffs.length) ? 'block' : 'none';
+      if (currentRole === 'admin') renderAllInventories();
+    }
+  });
+}
+
+function renderWriteoffs() {
+  const el = document.getElementById('inv-writeoffs-list');
+  if (!el) return;
+  if (!myWriteoffs.length) { el.innerHTML = empty('📝', 'ჩამოწერები ჯერ არ არის'); return; }
+  el.innerHTML = `<div class="card" style="padding:0;overflow:hidden">
+    <table style="width:100%;border-collapse:collapse">
+      <thead><tr style="border-bottom:1.5px solid var(--border);background:var(--surface2)">
+        <th style="padding:9px 12px;text-align:left;font-size:12px;color:var(--text3);font-weight:700">თარიღი</th>
+        <th style="padding:9px 12px;text-align:left;font-size:12px;color:var(--text3);font-weight:700">ნივთი</th>
+        <th style="padding:9px 12px;text-align:center;font-size:12px;color:var(--text3);font-weight:700">რაოდ.</th>
+        <th style="padding:9px 12px;text-align:left;font-size:12px;color:var(--text3);font-weight:700">მიზეზი</th>
+      </tr></thead>
+      <tbody>
+        ${myWriteoffs.map(w => `
+          <tr style="border-bottom:1px solid var(--border)">
+            <td style="padding:9px 12px;font-size:12px;color:var(--text3);white-space:nowrap">${w.date||''}</td>
+            <td style="padding:9px 12px;font-size:13px;font-weight:600">${e(w.itemName||'')}</td>
+            <td style="padding:9px 12px;text-align:center;font-size:13px">${w.qty||1} ${e(w.unit||'ც')}</td>
+            <td style="padding:9px 12px;font-size:13px;color:var(--text2)">${e(w.reason||'')}</td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  </div>`;
+}
+
+window.exportWriteoffsCSV = function() {
+  if (!myWriteoffs.length) { notify('ჩამოწერები არ არის', 'error'); return; }
+  const hdr = ['თარიღი','ნივთი','რაოდენობა','ერთეული','მიზეზი'];
+  const rows = myWriteoffs.map(w => [w.date||'', w.itemName||'', w.qty||1, w.unit||'ც', w.reason||'']);
+  const csv = [hdr,...rows].map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href=url; a.download=`chamowera_${new Date().toISOString().slice(0,10)}.csv`; a.click();
+  URL.revokeObjectURL(url);
+  notify('✓ CSV ჩამოიტვირთა!', 'success');
 };
 // ---- END INVENTORY ----
 </script>
