@@ -658,6 +658,42 @@
     </div>
 
     <!-- USERS -->
+    <!-- INVENTORY -->
+    <div class="section" id="sec-inventory">
+      <div class="section-header">
+        <h2>🗃 ჩემი ინვენტარი</h2>
+        <span id="inv-lock-badge" class="status s-approved" style="display:none">✓ დადასტურებულია</span>
+      </div>
+
+      <!-- Add form (hidden when locked) -->
+      <div id="inv-add-wrap" class="card" style="margin-bottom:16px">
+        <div class="form-group" style="margin-bottom:10px">
+          <label>დასახელება *</label>
+          <input type="text" id="inv-name" placeholder="მაგ: ხელსაწყო, ჩიბუხი, ლესტვი...">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>რაოდენობა</label>
+            <input type="number" id="inv-qty" placeholder="1" min="1" value="1" style="width:100%">
+          </div>
+          <div class="form-group">
+            <label>ერთეული</label>
+            <input type="text" id="inv-unit" placeholder="ც, კგ, კომ...">
+          </div>
+        </div>
+        <button class="btn btn-primary btn-full" onclick="addInventoryItem()">➕ ჩამატება</button>
+      </div>
+
+      <!-- Items list -->
+      <div id="inv-list"></div>
+
+      <!-- Admin: all users inventories -->
+      <div id="inv-admin-wrap" style="display:none;margin-top:24px">
+        <div style="font-size:16px;font-weight:800;color:var(--text);margin-bottom:16px">👥 ყველა მომხმარებლის ინვენტარი</div>
+        <div id="inv-all-users"></div>
+      </div>
+    </div>
+
     <div class="section" id="sec-users">
       <div class="section-header"><h2>მომხმარებლები</h2></div>
       <div class="card">
@@ -1008,10 +1044,10 @@ function buildNav(role, userData) {
   const nav = document.getElementById('main-nav');
   nav.innerHTML = '';
   const map = {
-    worker: [['sec-submit','📤 გაგზავნა'],['sec-myworks','📁 ჩემი'],['sec-tasks','📬 დავალებები'],['sec-inspections','🔥 საქვაბეები'],['sec-exhaust','💨 გამწოვები']],
-    nightwatch: [['sec-submit','📤 გაგზავნა'],['sec-myworks','📁 ჩემი'],['sec-inspections','🔥 საქვაბეები'],['sec-exhaust','💨 გამწოვები']],
-    supervisor: [['sec-submit','📤 გაგზავნა'],['sec-myworks','📁 ჩემი'],['sec-tasks','📬 დავალებები'],['sec-review','🔍 შემოწმება'],['sec-inspections','🔥 საქვაბეები'],['sec-exhaust','💨 გამწოვები']],
-    admin: [['sec-dashboard','📊 Dashboard'],['sec-stats','📈 სტატისტიკა'],['sec-inspections','🔥 საქვაბეები'],['sec-exhaust','💨 გამწოვები'],['sec-users','👥 მომხმარებლები'],['sec-preview','👁 Preview'],['sec-export','📥 ექსპორტი']]
+    worker: [['sec-submit','📤 გაგზავნა'],['sec-myworks','📁 ჩემი'],['sec-tasks','📬 დავალებები'],['sec-inventory','🗃 ინვენტარი'],['sec-inspections','🔥 საქვაბეები'],['sec-exhaust','💨 გამწოვები']],
+    nightwatch: [['sec-submit','📤 გაგზავნა'],['sec-myworks','📁 ჩემი'],['sec-inventory','🗃 ინვენტარი'],['sec-inspections','🔥 საქვაბეები'],['sec-exhaust','💨 გამწოვები']],
+    supervisor: [['sec-submit','📤 გაგზავნა'],['sec-myworks','📁 ჩემი'],['sec-tasks','📬 დავალებები'],['sec-review','🔍 შემოწმება'],['sec-inventory','🗃 ინვენტარი'],['sec-inspections','🔥 საქვაბეები'],['sec-exhaust','💨 გამწოვები']],
+    admin: [['sec-dashboard','📊 Dashboard'],['sec-stats','📈 სტატისტიკა'],['sec-inspections','🔥 საქვაბეები'],['sec-exhaust','💨 გამწოვები'],['sec-inventory','🗃 ინვენტარი'],['sec-users','👥 მომხმარებლები'],['sec-preview','👁 Preview'],['sec-export','📥 ექსპორტი']]
   };
   const items = map[role] || [];
   if (!items.length) { showSection('sec-pending'); return; }
@@ -1040,6 +1076,7 @@ function activateSection(id, el) {
   if (id === 'sec-exhaust') renderExhaustList();
   if (id === 'sec-inspections') { populateInspectFilters(); renderInspectionsView(); }
   if (id === 'sec-stats') renderStats();
+  if (id === 'sec-inventory') renderInventory();
   if (id === 'sec-preview') renderPreviewSection();
   if (id === 'sec-dashboard') { renderAdminStats(); renderAdminWorks(); }
   if (id === 'sec-users') renderUsers();
@@ -1084,6 +1121,9 @@ function listenUsers() {
     }
     if (document.getElementById('sec-preview')?.classList.contains('active')) {
       renderPreviewSection();
+    }
+    if (document.getElementById('sec-inventory')?.classList.contains('active')) {
+      renderInventory();
     }
   });
 }
@@ -3037,6 +3077,129 @@ window.exportInspectCSV = function() {
   notify('✓ ჩამოიტვირთა!', 'success');
 };
 // ---- END BOILER INSPECTION ----
+
+// ---- INVENTORY ----
+function renderInventory() {
+  const me = allUsers.find(u => u.id === currentUser.uid);
+  if (!me) return;
+  const items = me.inventory || [];
+  const locked = me.inventoryLocked || false;
+
+  const badge = document.getElementById('inv-lock-badge');
+  if (badge) badge.style.display = locked ? 'inline-flex' : 'none';
+
+  const addWrap = document.getElementById('inv-add-wrap');
+  if (addWrap) addWrap.style.display = locked ? 'none' : 'block';
+
+  const el = document.getElementById('inv-list');
+  if (!el) return;
+
+  if (!items.length) {
+    el.innerHTML = empty('📦', locked ? 'ინვენტარი ცარიელია' : 'ჯერ ინვენტარი არ გაქვს დამატებული — შეავსე ზემოდ');
+  } else {
+    el.innerHTML = `<div class="card" style="padding:0;overflow:hidden">
+      <table style="width:100%;border-collapse:collapse">
+        <thead><tr style="border-bottom:1.5px solid var(--border);background:var(--surface2)">
+          <th style="padding:10px 14px;text-align:left;font-size:12px;color:var(--text3);font-weight:700">დასახელება</th>
+          <th style="padding:10px 14px;text-align:center;font-size:12px;color:var(--text3);font-weight:700">რაოდ.</th>
+          <th style="padding:10px 14px;text-align:center;font-size:12px;color:var(--text3);font-weight:700">ერთ.</th>
+          ${!locked ? '<th style="width:40px"></th>' : ''}
+        </tr></thead>
+        <tbody>
+          ${items.map((item, i) => `
+            <tr style="border-bottom:1px solid var(--border)">
+              <td style="padding:10px 14px;font-size:14px;font-weight:600">${e(item.name)}</td>
+              <td style="padding:10px 14px;text-align:center;font-size:14px">${item.qty||1}</td>
+              <td style="padding:10px 14px;text-align:center;font-size:13px;color:var(--text3)">${e(item.unit||'ც')}</td>
+              ${!locked ? `<td style="padding:6px 10px;text-align:center"><button class="btn btn-ghost btn-sm" style="color:var(--danger);font-size:16px;padding:4px 8px" onclick="removeInventoryItem(${i})">✕</button></td>` : ''}
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+      ${locked ? `<div style="padding:11px 14px;background:rgba(16,185,129,.07);border-top:1px solid rgba(16,185,129,.2);font-size:12px;color:#059669;font-weight:700">✓ ადმინმა დაადასტურა — ჩამონათვალი ჩაკეტილია</div>` : ''}
+    </div>`;
+  }
+
+  const adminWrap = document.getElementById('inv-admin-wrap');
+  if (adminWrap) {
+    adminWrap.style.display = currentRole === 'admin' ? 'block' : 'none';
+    if (currentRole === 'admin') renderAllInventories();
+  }
+}
+
+window.addInventoryItem = async function() {
+  const me = allUsers.find(u => u.id === currentUser.uid);
+  if (!me || me.inventoryLocked) { notify('ინვენტარი ჩაკეტილია', 'error'); return; }
+  const name = document.getElementById('inv-name')?.value.trim();
+  const qty = parseInt(document.getElementById('inv-qty')?.value) || 1;
+  const unit = document.getElementById('inv-unit')?.value.trim() || 'ც';
+  if (!name) { notify('დასახელება სავალდებულოა', 'error'); return; }
+  const items = [...(me.inventory || [])];
+  items.push({ id: Date.now().toString(), name, qty, unit });
+  try {
+    await updateDoc(doc(db, 'users', currentUser.uid), { inventory: items });
+    document.getElementById('inv-name').value = '';
+    document.getElementById('inv-qty').value = '1';
+    document.getElementById('inv-unit').value = '';
+    notify('✓ ჩამატებულია', 'success');
+  } catch(err) { notify('შეცდომა: ' + err.message, 'error'); }
+};
+
+window.removeInventoryItem = async function(index) {
+  const me = allUsers.find(u => u.id === currentUser.uid);
+  if (!me || me.inventoryLocked) { notify('ინვენტარი ჩაკეტილია', 'error'); return; }
+  const items = [...(me.inventory || [])];
+  items.splice(index, 1);
+  try {
+    await updateDoc(doc(db, 'users', currentUser.uid), { inventory: items });
+    notify('✓ წაიშალა', 'success');
+  } catch(err) { notify('შეცდომა: ' + err.message, 'error'); }
+};
+
+function renderAllInventories() {
+  const el = document.getElementById('inv-all-users');
+  if (!el) return;
+  const users = allUsers.filter(u => u.role !== 'admin' && u.role !== 'pending');
+  if (!users.length) { el.innerHTML = empty('👥', 'მომხმარებლები არ მოიძებნა'); return; }
+  const roleLabel = { worker:'შემსრულებელი', supervisor:'სუპერვაიზერი', nightwatch:'ღამის მორიგე' };
+  el.innerHTML = users.map(u => {
+    const items = u.inventory || [];
+    const locked = u.inventoryLocked || false;
+    const name = u.displayName || u.name || '';
+    return `<div class="card" style="margin-bottom:12px">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:${items.length?'12px':'0'}">
+        <div>
+          <strong style="font-size:15px">${e(name)}</strong>
+          <span style="font-size:12px;color:var(--text3);margin-left:8px">${roleLabel[u.role]||u.role||''}</span>
+        </div>
+        ${locked
+          ? '<span class="status s-approved">✓ დადასტურებულია</span>'
+          : items.length
+            ? `<button class="btn btn-sm" style="background:rgba(16,185,129,.12);color:#34d399;border:1px solid rgba(16,185,129,.22);font-weight:700" onclick="lockInventory('${u.id}')">✓ დადასტურება</button>`
+            : '<span style="font-size:12px;color:var(--text3)">ინვენტარი ცარიელია</span>'}
+      </div>
+      ${items.length ? `<table style="width:100%;border-collapse:collapse;font-size:13px">
+        ${items.map(item => `<tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:7px 0;font-weight:600">${e(item.name)}</td>
+          <td style="padding:7px 0;text-align:right;color:var(--text2)">${item.qty||1} ${e(item.unit||'ც')}</td>
+        </tr>`).join('')}
+      </table>` : ''}
+    </div>`;
+  }).join('');
+}
+
+window.lockInventory = async function(uid) {
+  if (!confirm('ინვენტარი დადასტურდეს? შემდეგ მომხმარებელს ცვლილება აღარ შეეძლება.')) return;
+  try {
+    await updateDoc(doc(db, 'users', uid), {
+      inventoryLocked: true,
+      inventoryLockedAt: serverTimestamp(),
+      inventoryLockedBy: currentUser.uid
+    });
+    notify('✓ ინვენტარი დადასტურდა', 'success');
+  } catch(err) { notify('შეცდომა: ' + err.message, 'error'); }
+};
+// ---- END INVENTORY ----
 </script>
 </body>
 </html>
