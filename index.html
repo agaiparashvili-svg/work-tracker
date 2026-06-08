@@ -2542,7 +2542,7 @@ let taskWorkers = [];
 function renderRdPeopleChips() {
   const container = document.getElementById('new-task-workers');
   if (!container) return;
-  const workers = allUsers.filter(u => u.role === 'worker' || u.role === 'nightwatch');
+  const workers = allUsers.filter(u => u.role === 'worker' || u.role === 'nightwatch' || u.role === 'supervisor');
   container.innerHTML = workers.map(u => {
     const name = u.displayName || u.name || '';
     const sel = taskWorkers.includes(name);
