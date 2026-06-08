@@ -396,8 +396,8 @@
     <!-- MY TASKS (received redirects) -->
     <div class="section" id="sec-tasks">
       <div class="section-header">
-        <h2>📬 ჩემი დავალებები</h2>
-        <div class="filter-row" style="margin:0">
+        <h2 id="tasks-section-title">📬 დავალებები</h2>
+        <div class="filter-row" style="margin:0" id="tasks-worker-filters">
           <select id="tf-st" onchange="renderMyTasks()">
             <option value="all">ყველა</option>
             <option value="new">🆕 ახალი</option>
@@ -408,7 +408,45 @@
           </select>
           <button class="btn btn-sm" onclick="exportTasksCSV()" style="background:rgba(5,150,105,.1);color:#065f46;border:1px solid rgba(5,150,105,.3);font-weight:700">📊 CSV</button>
         </div>
+        <button id="tasks-send-btn" class="btn btn-primary btn-sm" onclick="toggleNewTaskForm()" style="display:none">➕ ახალი დავალება</button>
       </div>
+
+      <!-- SUPERVISOR: new task form -->
+      <div id="new-task-form-wrap" style="display:none;margin-bottom:16px">
+        <div class="card">
+          <div class="form-group">
+            <label>📍 ობიექტი *</label>
+            <input type="text" id="nt-loc" placeholder="მაგ: მარანი N3, ბაღი, სასტუმრო...">
+          </div>
+          <div class="form-group">
+            <label>📋 კატეგორია</label>
+            <select id="nt-cat">
+              <option value="">— აირჩიეთ —</option>
+              <option value="რესტორნები">🍽 რესტორნები</option>
+              <option value="გარეტერიტორია">🌿 გარეტერიტორია</option>
+              <option value="ოთახები">🛏 ოთახები</option>
+              <option value="სხვა">📦 სხვა</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>💬 შენიშვნა / დავალება</label>
+            <textarea id="nt-note" placeholder="რა უნდა გაკეთდეს?" style="min-height:80px"></textarea>
+          </div>
+          <div class="form-group">
+            <label>👥 შემსრულებლები *</label>
+            <div id="new-task-workers" class="chip-group" style="margin-top:8px;flex-wrap:wrap"></div>
+          </div>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-primary" style="flex:1" onclick="submitNewTask()">📤 გაგზავნა</button>
+            <button class="btn btn-ghost" onclick="toggleNewTaskForm()">გაუქმება</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- SUPERVISOR: sent tasks list -->
+      <div id="sent-tasks-list" style="display:none"></div>
+
+      <!-- WORKER: received tasks list -->
       <div id="tasks-list"></div>
     </div>
 
@@ -2364,20 +2402,121 @@ window.markAllRead = async function() {
   }
 };
 
+// ---- TASK CREATION (supervisor) ----
+let taskWorkers = [];
+
+function renderRdPeopleChips() {
+  const container = document.getElementById('new-task-workers');
+  if (!container) return;
+  const workers = allUsers.filter(u => u.role === 'worker' || u.role === 'nightwatch');
+  container.innerHTML = workers.map(u => {
+    const name = u.displayName || u.name || '';
+    const sel = taskWorkers.includes(name);
+    return `<label class="chip ${sel ? 'sel-blue' : ''}" onclick="toggleTaskWorker('${e(name)}')"><span>👤 ${e(name)}</span></label>`;
+  }).join('') || '<span style="color:var(--text3);font-size:13px">თანამშრომლები არ მოიძებნა</span>';
+}
+
+window.toggleTaskWorker = function(name) {
+  const idx = taskWorkers.indexOf(name);
+  if (idx === -1) taskWorkers.push(name);
+  else taskWorkers.splice(idx, 1);
+  renderRdPeopleChips();
+};
+
+window.toggleNewTaskForm = function() {
+  const wrap = document.getElementById('new-task-form-wrap');
+  if (!wrap) return;
+  const visible = wrap.style.display !== 'none';
+  wrap.style.display = visible ? 'none' : 'block';
+  if (!visible) renderRdPeopleChips();
+};
+
+window.submitNewTask = async function() {
+  const loc = document.getElementById('nt-loc')?.value.trim() || '';
+  const cat = document.getElementById('nt-cat')?.value || '';
+  const note = document.getElementById('nt-note')?.value.trim() || '';
+  if (!loc) { notify('ობიექტის სახელი სავალდებულოა', 'error'); return; }
+  if (!taskWorkers.length) { notify('გთხოვთ შეარჩიოთ მინიმუმ ერთი შემსრულებელი', 'error'); return; }
+  const snap = await getDoc(doc(db, 'users', currentUser.uid));
+  const ud = snap.data();
+  const supervisorName = ud.displayName || ud.name || '';
+  try {
+    await addDoc(collection(db, 'redirects'), {
+      location: loc, category: cat, note, description: note,
+      assignedTo: [...taskWorkers],
+      supervisorId: currentUser.uid, supervisorName,
+      date: new Date().toISOString().slice(0, 10),
+      createdAt: serverTimestamp(),
+      taskStatus: {}
+    });
+    document.getElementById('nt-loc').value = '';
+    document.getElementById('nt-note').value = '';
+    document.getElementById('nt-cat').value = '';
+    taskWorkers = [];
+    renderRdPeopleChips();
+    document.getElementById('new-task-form-wrap').style.display = 'none';
+    notify('✓ დავალება გაიგზავნა!', 'success');
+  } catch(err) { notify('შეცდომა: ' + err.message, 'error'); }
+};
+
+function renderSentTasks() {
+  const el = document.getElementById('sent-tasks-list');
+  if (!el) return;
+  const mySent = allRedirects.filter(r => r.supervisorId === currentUser.uid);
+  if (!mySent.length) { el.innerHTML = empty('📭', 'ჯერ დავალებები არ გაქვს გაგზავნილი'); return; }
+  const stLabels = { new:'🆕 ახალი', in_progress:'🔄 მიმდინარე', done:'✅ შესრულდა', failed:'❌ ვერ შესრულდა', temp:'🔧 დროებით' };
+  el.innerHTML = mySent.map(r => {
+    const workers = (r.assignedTo || []);
+    const statuses = workers.map(w => {
+      const st = (r.taskStatus || {})[w]?.status || 'new';
+      return `<span style="font-size:12px;margin-right:8px">👤 ${e(w)}: <strong>${stLabels[st]||st}</strong></span>`;
+    }).join('');
+    return `<div class="card">
+      <div class="card-title">📍 ${e(r.location||'')}</div>
+      <div class="card-meta">${e(r.category||'')} · ${r.date||''}</div>
+      ${r.note ? `<div style="font-size:13px;color:var(--text2);margin:8px 0">${e(r.note)}</div>` : ''}
+      <div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:4px">${statuses}</div>
+    </div>`;
+  }).join('');
+}
+
 // ---- MY TASKS (received redirects) ----
 function listenMyTasks() {
   const q = query(collection(db, 'redirects'), orderBy('createdAt', 'desc'));
   onSnapshot(q, snap => {
     const me = allUsers.find(u => u.id === currentUser.uid);
     const myLabel = me?.displayName || me?.name || '';
-    myTasks = snap.docs
-      .map(d => ({ id: d.id, ...d.data() }))
-      .filter(r => myLabel && (r.assignedTo || []).includes(myLabel));
+    const all = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    allRedirects = all;
+    myTasks = all.filter(r => myLabel && (r.assignedTo || []).includes(myLabel));
     renderMyTasks();
+    renderSentTasks();
   });
 }
 
 function renderMyTasks() {
+  const isSup = currentRole === 'supervisor' || currentRole === 'admin';
+  // Toggle supervisor vs worker UI
+  const sendBtn = document.getElementById('tasks-send-btn');
+  const workerFilters = document.getElementById('tasks-worker-filters');
+  const sentList = document.getElementById('sent-tasks-list');
+  const tasksList = document.getElementById('tasks-list');
+  const titleEl = document.getElementById('tasks-section-title');
+  if (isSup) {
+    if (sendBtn) sendBtn.style.display = 'inline-flex';
+    if (workerFilters) workerFilters.style.display = 'none';
+    if (sentList) sentList.style.display = 'block';
+    if (tasksList) tasksList.style.display = 'none';
+    if (titleEl) titleEl.textContent = '📬 გაგზავნილი დავალებები';
+    renderSentTasks();
+    return;
+  }
+  if (sendBtn) sendBtn.style.display = 'none';
+  if (workerFilters) workerFilters.style.display = 'flex';
+  if (sentList) sentList.style.display = 'none';
+  if (tasksList) tasksList.style.display = 'block';
+  if (titleEl) titleEl.textContent = '📬 ჩემი დავალებები';
+
   const el = document.getElementById('tasks-list');
   if (!el) return;
   const sf = document.getElementById('tf-st')?.value || 'all';
