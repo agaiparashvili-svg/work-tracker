@@ -10,7 +10,8 @@ const GMAIL_PASS = functions.config().gmail.pass;
 
 const REPORT_EMAILS = [
   'a.gaiparashvili@lopotaresort.com',
-  'a.akhalmosulishvili@lopotaresort.com'
+  'a.akhalmosulishvili@lopotaresort.com',
+  'a.tsikhelashvili@lopotaresort.com'
 ];
 
 const transporter = nodemailer.createTransport({
