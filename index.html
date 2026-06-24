@@ -1490,11 +1490,21 @@ function renderUsers() {
 
 function populateWorkerSelects() {
   const workers = allUsers.filter(u => u.role === 'worker' || u.role === 'nightwatch');
+  const supervisors = allUsers.filter(u => u.role === 'supervisor');
   ['af-wk','ex-wk'].forEach(id => {
     const sel = document.getElementById(id);
     if (!sel) return;
     sel.innerHTML = '<option value="all">ყველა შემსრულებელი</option>';
-    workers.forEach(u => sel.innerHTML += `<option value="${u.id}">${e(u.displayName||u.name)}</option>`);
+    if (supervisors.length) {
+      sel.innerHTML += `<optgroup label="სუპერვაიზერები">`;
+      supervisors.forEach(u => sel.innerHTML += `<option value="${u.id}">${e(u.displayName||u.name)}</option>`);
+      sel.innerHTML += `</optgroup>`;
+      sel.innerHTML += `<optgroup label="შემსრულებლები">`;
+      workers.forEach(u => sel.innerHTML += `<option value="${u.id}">${e(u.displayName||u.name)}</option>`);
+      sel.innerHTML += `</optgroup>`;
+    } else {
+      workers.forEach(u => sel.innerHTML += `<option value="${u.id}">${e(u.displayName||u.name)}</option>`);
+    }
   });
 }
 
