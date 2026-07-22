@@ -2052,8 +2052,8 @@ window.exportExhaustCSV = function() {
     const ts = x.checkedAt ? new Date(x.checkedAt.toMillis ? x.checkedAt.toMillis() : x.checkedAt).toLocaleString('ka-GE') : '';
     return [i+1, x.unit||'', x.status||'', x.workerName||'', x.comment||'', ts];
   });
-  const csv = [hdr,...rows].map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
-  const blob = new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8;'});
+  const csv = [hdr,...rows].map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(';')).join('\n');
+  const blob = new Blob(['﻿sep=;\n'+csv],{type:'text/csv;charset=utf-8;'});
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a'); a.href=url; a.download=`gamwovebi_${new Date().toISOString().slice(0,10)}.csv`; a.click();
   URL.revokeObjectURL(url);
@@ -2090,8 +2090,8 @@ function downloadCSV(list) {
     w.date||'', w.time||'', sm[w.status]||w.status,
     w.checkedBy||'', w.checkerComment||''
   ]);
-  const csv = [hdr, ...rows].map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
-  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+  const csv = [hdr, ...rows].map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(';')).join('\n');
+  const blob = new Blob(['\uFEFF' + 'sep=;\n' + csv], { type: 'text/csv;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url; a.download = `samushaoebi_${new Date().toISOString().slice(0,10)}.csv`; a.click();
@@ -2717,8 +2717,8 @@ window.exportTasksCSV = function() {
       myStatus.comment||''
     ];
   });
-  const csv = [hdr,...rows].map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
-  const blob = new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8;'});
+  const csv = [hdr,...rows].map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(';')).join('\n');
+  const blob = new Blob(['﻿sep=;\n'+csv],{type:'text/csv;charset=utf-8;'});
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a'); a.href=url; a.download=`davalebebi_${new Date().toISOString().slice(0,10)}.csv`; a.click();
   URL.revokeObjectURL(url);
@@ -3173,8 +3173,8 @@ window.exportInspectCSV = function() {
       w.filled||'', w.pump||'', w.comment||'',
       c.status||'', c.pumps||'', c.expander||'', c.comment||''];
   });
-  const csv = [hdr, ...rows].map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
-  const blob = new Blob(['﻿' + csv], { type:'text/csv;charset=utf-8;' });
+  const csv = [hdr, ...rows].map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(';')).join('\n');
+  const blob = new Blob(['﻿sep=;\n' + csv], { type:'text/csv;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a'); a.href = url; a.download = `saqvabis_shemowmebebi_${new Date().toISOString().slice(0,10)}.csv`; a.click();
   URL.revokeObjectURL(url);
@@ -3417,8 +3417,8 @@ window.exportWriteoffsCSV = function() {
   if (!myWriteoffs.length) { notify('ჩამოწერები არ არის', 'error'); return; }
   const hdr = ['თარიღი','ნივთი','რაოდენობა','ერთეული','მიზეზი'];
   const rows = myWriteoffs.map(w => [w.date||'', w.itemName||'', w.qty||1, w.unit||'ც', w.reason||'']);
-  const csv = [hdr,...rows].map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
-  const blob = new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8;'});
+  const csv = [hdr,...rows].map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(';')).join('\n');
+  const blob = new Blob(['﻿sep=;\n'+csv],{type:'text/csv;charset=utf-8;'});
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a'); a.href=url; a.download=`chamowera_${new Date().toISOString().slice(0,10)}.csv`; a.click();
   URL.revokeObjectURL(url);
