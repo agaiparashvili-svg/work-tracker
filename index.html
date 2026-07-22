@@ -857,6 +857,23 @@
         </div>
         <button class="btn btn-primary" style="max-width:260px" onclick="exportExcel()">📊 Excel ჩამოტვირთვა</button>
       </div>
+
+      <!-- GMAIL PASSWORD SETTINGS -->
+      <div class="card" style="border-left:4px solid var(--warn);margin-top:16px">
+        <div style="font-weight:800;font-size:15px;margin-bottom:10px">⚙️ Gmail App Password</div>
+        <div style="font-size:13px;color:var(--text2);margin-bottom:12px">
+          Google-ის App Password (16 სიმბოლო, ჯგუფები გარეშე). შეინახე — Functions ამ პაროლს გამოიყენებს.
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+          <input type="password" id="gmail-pass-input" placeholder="xxxx xxxx xxxx xxxx"
+            style="flex:1;min-width:200px;font-size:14px;padding:8px 12px;border-radius:8px;border:1.5px solid var(--border)">
+          <button class="btn btn-sm" onclick="saveGmailPass()"
+            style="background:rgba(217,119,6,.12);color:#92400e;border:1.5px solid rgba(217,119,6,.4);font-weight:700;white-space:nowrap">
+            💾 შენახვა
+          </button>
+        </div>
+        <div id="gmail-pass-status" style="display:none;font-size:12px;font-weight:600;margin-top:8px"></div>
+      </div>
     </div>
   </div>
 </div>
@@ -1870,6 +1887,27 @@ window.saveEditWork = async function(wid) {
     window.closeModal();
     notify('✓ ცვლილებები შენახულია', 'success');
   } catch(err) { notify('შეცდომა: ' + err.message, 'error'); }
+};
+
+// ---- GMAIL PASS SETTINGS ----
+window.saveGmailPass = async function() {
+  const input = document.getElementById('gmail-pass-input');
+  const statusEl = document.getElementById('gmail-pass-status');
+  const pass = input.value.replace(/\s+/g,'').trim();
+  if (pass.length < 16) {
+    statusEl.style.display='block'; statusEl.style.color='var(--bad)';
+    statusEl.textContent = '❌ პაროლი ძალიან მოკლეა (min 16 სიმბოლო)';
+    return;
+  }
+  try {
+    await setDoc(doc(db,'settings','emailConfig'), { gmailPass: pass }, { merge: true });
+    statusEl.style.display='block'; statusEl.style.color='var(--good)';
+    statusEl.textContent = '✅ პაროლი შენახულია — შემდეგ Function-ი ამ პაროლს გამოიყენებს';
+    input.value = '';
+  } catch(err) {
+    statusEl.style.display='block'; statusEl.style.color='var(--bad)';
+    statusEl.textContent = '❌ ' + err.message;
+  }
 };
 
 // ---- TEST EMAIL ----

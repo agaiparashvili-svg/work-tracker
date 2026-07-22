@@ -5,8 +5,8 @@ const nodemailer = require('nodemailer');
 admin.initializeApp();
 const db = admin.firestore();
 
-const GMAIL_USER = functions.config().gmail.user;
-const GMAIL_PASS = functions.config().gmail.pass;
+const GMAIL_USER = (functions.config().gmail || {}).user || '';
+const GMAIL_PASS_CONFIG = (functions.config().gmail || {}).pass || '';
 
 const REPORT_EMAILS = [
   'a.gaiparashvili@lopotaresort.com',
@@ -14,10 +14,14 @@ const REPORT_EMAILS = [
   'a.tsikhelashvili@lopotaresort.com'
 ];
 
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: { user: GMAIL_USER, pass: GMAIL_PASS }
-});
+async function getTransporter() {
+  const cfgDoc = await db.collection('settings').doc('emailConfig').get();
+  const pass = (cfgDoc.exists && cfgDoc.data().gmailPass) ? cfgDoc.data().gmailPass : GMAIL_PASS_CONFIG;
+  return nodemailer.createTransport({
+    service: 'gmail',
+    auth: { user: GMAIL_USER, pass }
+  });
+}
 
 // ── სამუშაოების წამოღება და ფილტრი ──────────────────────
 async function getWorks(hoursBack) {
@@ -201,7 +205,8 @@ exports.morningReport = functions
     const works = await getWorks(15);
     const html = buildHtml('🌅 ღამის ცვლის შეჯამება', works, 'ბოლო 15 საათი');
     const date = new Date(Date.now()+4*3600000).toISOString().slice(0,10);
-    await transporter.sendMail({
+    const t = await getTransporter();
+    await t.sendMail({
       from: `"სამუშაო Tracker" <${GMAIL_USER}>`,
       to: REPORT_EMAILS.join(', '),
       subject: `🌅 ღამის ცვლა — ${date}`,
@@ -220,7 +225,8 @@ exports.eveningReport = functions
     const works = await getWorks(9);
     const html = buildHtml('🌇 დღის ცვლის შეჯამება', works, 'ბოლო 9 საათი');
     const date = new Date(Date.now()+4*3600000).toISOString().slice(0,10);
-    await transporter.sendMail({
+    const t = await getTransporter();
+    await t.sendMail({
       from: `"სამუშაო Tracker" <${GMAIL_USER}>`,
       to: REPORT_EMAILS.join(', '),
       subject: `🌇 დღის ცვლა — ${date}`,
@@ -241,7 +247,8 @@ exports.handleEmailQueue = functions
     const html = buildHtml('🧪 საცდელი მეილი', works, 'ბოლო 24 საათი');
     const date = new Date(Date.now()+4*3600000).toISOString().slice(0,10);
     const recipients = data.recipients || REPORT_EMAILS;
-    await transporter.sendMail({
+    const t = await getTransporter();
+    await t.sendMail({
       from: `"სამუშაო Tracker" <${GMAIL_USER}>`,
       to: recipients.join(', '),
       subject: `🧪 საცდელი — ${date}`,
